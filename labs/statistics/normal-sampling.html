@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>正态分布随机实验 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/normal-sampling.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="normal-sampling">
+<div class="shell">
+
+  <div class="topbar">
+    <a href="../../index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>正态分布实验室</h1>
+
+    </div>
+
+    <div class="controls-row">
+
+      <!-- 均值 -->
+      <div class="field">
+        <label>均值 μ</label>
+        <input type="number" id="mean" value="0" step="1" />
+      </div>
+
+      <!-- 方差 -->
+      <div class="field">
+        <label>方差 σ²<span class="unit">（σ 为标准差）</span></label>
+        <input type="number" id="variance" value="1" min="0.01" step="0.1" />
+      </div>
+
+      <!-- 试验次数 -->
+      <div class="trial-selector">
+        <label>随机试验次数</label>
+        <div class="trial-btns">
+          <button class="trial-btn" data-n="20">20</button>
+          <button class="trial-btn" data-n="50">50</button>
+          <button class="trial-btn active" data-n="200">200</button>
+          <button class="trial-btn" data-n="1000">1 000</button>
+          <button class="trial-btn" data-n="5000">5 000</button>
+          <button class="trial-btn" data-n="10000">10 000</button>
+        </div>
+      </div>
+
+      <!-- 分组数 -->
+      <div class="bins-selector">
+        <label>直方图分组数</label>
+        <div class="bins-row">
+          <input type="range" id="bins" min="5" max="50" value="20" />
+          <span class="bins-val" id="binsVal">20</span>
+        </div>
+      </div>
+
+      <!-- 运行按钮 -->
+      <button class="run-btn" id="runBtn">▶ 运行实验</button>
+
+    </div>
+
+    <div class="model-note">修改均值或方差后，请重新运行实验。调整分组数只重画同一批样本。</div>
+    <!-- 统计指标 -->
+    <div class="stats-bar" id="statsBar" style="display:none">
+      <div class="stat-box">
+        <div class="stat-label">样本数量</div>
+        <div class="stat-value" id="statN">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">样本均值</div>
+        <div class="stat-value" id="statMean">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">样本方差</div>
+        <div class="stat-value" id="statVar">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">理论均值 μ</div>
+        <div class="stat-value" id="statThMean">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">理论方差 σ²</div>
+        <div class="stat-value" id="statThVar">—</div>
+      </div>
+    </div>
+
+    <!-- 图表 -->
+    <div class="chart-wrap">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">📊</div>
+        <p>点击「运行实验」开始</p>
+      </div>
+      <canvas id="chart" height="400"></canvas>
+    </div>
+
+    <!-- 洞察提示 -->
+    <div class="insight" id="insight" style="display:none"></div>
+
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/normal-sampling.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

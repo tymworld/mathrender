@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>三角不等式探究 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/triangle-inequality.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="triangle-inequality" data-stage="0">
+  <header class="topbar">
+    <a class="back" href="../../index.html">← 实验室</a>
+    <div class="title">三角不等式探究实验室</div>
+    <div class="lesson">08｜分类讨论与取等条件</div>
+    <div class="stages" aria-label="课堂探究阶段">
+      <button type="button" class="active" data-stage-button="0">① 观察</button>
+      <button type="button" data-stage-button="1">② 分类</button>
+      <button type="button" data-stage-button="2">③ 归纳</button>
+    </div>
+    <div class="top-actions">
+      <button type="button" id="focusBtn">聚焦</button>
+      <button type="button" id="themeBtn">深色</button>
+    </div>
+  </header>
+
+  <main class="app">
+    <div class="layout">
+      <aside class="card sidebar">
+        <div class="card-head"><h2>数值设置</h2><span>拖动滑块</span></div>
+        <div class="card-body">
+          <div class="formula" aria-label="绝对值三角不等式">|a + b| ≤ |a| + |b|</div>
+          <p class="instruction">改变两个实数，观察“分步走过的路程”与“起点到终点的距离”有什么关系。</p>
+
+          <div class="field">
+            <div class="field-top">
+              <label for="aRange">第一个数 a</label>
+              <input class="number-box" id="aInput" type="number" min="-8" max="8" step="0.5" value="4" aria-label="输入 a 的值" />
+            </div>
+            <input id="aRange" type="range" min="-8" max="8" step="0.5" value="4" aria-label="调整 a 的值" />
+            <div class="range-scale"><span>−8</span><span>0</span><span>8</span></div>
+          </div>
+
+          <div class="field">
+            <div class="field-top">
+              <label for="bRange">第二个数 b</label>
+              <input class="number-box" id="bInput" type="number" min="-8" max="8" step="0.5" value="3" aria-label="输入 b 的值" />
+            </div>
+            <input id="bRange" type="range" min="-8" max="8" step="0.5" value="3" aria-label="调整 b 的值" />
+            <div class="range-scale"><span>−8</span><span>0</span><span>8</span></div>
+          </div>
+
+          <div class="section-label">课堂预设</div>
+          <div class="presets">
+            <button class="btn active" type="button" data-a="4" data-b="3">同向</button>
+            <button class="btn" type="button" data-a="5" data-b="-2">反向</button>
+            <button class="btn" type="button" data-a="2" data-b="-5">跨过原点</button>
+            <button class="btn" type="button" data-a="4" data-b="0">边界</button>
+          </div>
+          <div class="secondary-actions">
+            <button class="btn" type="button" id="randomBtn">随机取值</button>
+            <button class="btn" type="button" id="resetBtn">重置</button>
+          </div>
+
+          <div class="case-key" aria-label="图示颜色说明">
+            <div class="key-row"><i class="swatch"></i><span>第一步：从 0 走到 a</span></div>
+            <div class="key-row"><i class="swatch b"></i><span>第二步：从 a 走到 a+b</span></div>
+            <div class="key-row"><i class="swatch sum"></i><span>直接位移：从 0 到 a+b</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="card visual-card">
+        <div class="card-head">
+          <h2>数轴动态演示</h2>
+          <span id="visualHint">先比较两个长度</span>
+        </div>
+        <div class="card-body">
+          <div class="canvas-wrap">
+            <canvas id="numberLine" role="img" aria-label="三角不等式数轴动态演示"></canvas>
+            <div class="canvas-help">蓝色走 a · 橙色再走 b</div>
+          </div>
+
+          <div class="comparison" aria-label="距离比较">
+            <div class="measure-row">
+              <div class="measure-label">直接距离 |a+b|</div>
+              <div class="track"><div class="bar" id="directBar"></div></div>
+              <div class="measure-value" id="directValue">7</div>
+            </div>
+            <div class="measure-row">
+              <div class="measure-label">分步路程 |a|+|b|</div>
+              <div class="track"><div class="bar path" id="pathBar"></div></div>
+              <div class="measure-value" id="pathValue">7</div>
+            </div>
+          </div>
+
+          <div class="metrics" aria-live="polite">
+            <div class="metric"><span>乘积 ab</span><strong id="productValue">12</strong></div>
+            <div class="metric relation"><span>当前关系</span><strong id="relationValue">=</strong></div>
+            <div class="metric"><span>差值 Δ</span><strong id="gapValue">0</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card evidence">
+        <div class="card-head"><h2>分类与结论</h2><span id="stageLabel">观察阶段</span></div>
+        <div class="card-body">
+          <div class="state-box" id="stateBox">
+            <div class="state-top"><strong id="stateTitle">先观察箭头方向</strong><span class="badge" id="stateBadge">待分类</span></div>
+            <p id="stateText">尝试改变 a、b 的正负，比较两种长度是否始终相等。</p>
+          </div>
+
+          <div class="plane-block" id="planeBlock" hidden>
+            <div class="block-title">a-b 符号分区图 <span>点的位置随数值变化</span></div>
+            <div class="plane-wrap"><canvas id="signPlane" role="img" aria-label="a 与 b 的乘积符号分区图"></canvas></div>
+          </div>
+
+          <div class="proof" id="proofBlock" hidden>
+            <div class="proof-title">分类讨论</div>
+            <div class="proof-line" id="sameSignProof">
+              若 <span class="math">ab ≥ 0</span>，两个方向相同或至少一个数为 0，<span class="math">|a+b| = |a|+|b|</span>。
+            </div>
+            <div class="proof-line" id="oppositeSignProof">
+              若 <span class="math">ab &lt; 0</span>，两个方向相反并发生折返，<span class="math">|a+b| &lt; |a|+|b|</span>。
+            </div>
+          </div>
+
+          <div class="theorem" id="theoremBlock" hidden>
+            <div class="main">|a+b| ≤ |a|+|b|</div>
+            <div class="condition">等号成立 ⇔ ab ≥ 0</div>
+          </div>
+
+          <div class="stage-locked" id="stageLocked">先拖动滑块或选择预设，寻找等号成立与不成立的情形。</div>
+          <button class="btn primary next-stage" type="button" id="nextStageBtn">进入分类讨论 →</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/triangle-inequality.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+.connection-label[aria-haspopup="dialog"] { cursor: pointer; }
+.connection-label[aria-haspopup="dialog"]:hover { background: white; border-color: #a9c8ff; }
+.api-dialog { width: min(460px, calc(100vw - 36px)); max-height: calc(100dvh - 36px); overflow: auto; margin: auto; padding: 30px; color: #17234d; background: linear-gradient(145deg, #fff, #f3f8ff); border: 1px solid #dce7ff; border-radius: 25px; box-shadow: 0 24px 90px #173f8130; font: inherit; }
+.api-dialog::backdrop { background: #102b573b; backdrop-filter: blur(5px); }
+.api-dialog-heading { display: flex; align-items: center; gap: 8px; color: #697cca; font-size: 13px; margin-bottom: 9px; }
+.api-dialog-heading>span { font-size: 23px; color: #f2bc33; }
+.api-dialog h2 { font-size: 25px; line-height: 1.4; }
+.api-settings-subtitle { color: #6e7997; font-size: 13px; margin: 10px 0 23px; }
+.api-dialog label { display: block; color: #304371; font-size: 14px; font-weight: 650; margin-bottom: 7px; }
+#api-key { display: block; width: 100%; min-height: 48px; padding: 11px 13px; border: 1px solid #ccd6ee; border-radius: 11px; outline: none; background: #fff; color: #24365a; font-family: inherit; font-size: 16px; line-height: 1.5; }
+#api-key:focus { border-color: #8674ec; box-shadow: 0 0 0 3px #826cf018; }
+#api-key::placeholder { font-size: 13px; color: #96a0b6; }
+#api-settings-note { margin: 10px 0 21px; color: #7986a1; font-size: 12px; line-height: 1.8; }
+#api-settings-message { margin: -8px 0 16px; padding: 8px 11px; background: #fff2e2; color: #9c562c; border-radius: 8px; font-size: 13px; }
+.api-save { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; padding: 9px 19px; background: linear-gradient(115deg, #738bfa, #7e62eb); color: white; font-size: 17px; font-weight: 600; border: 0; border-radius: 12px; box-shadow: 0 3px 0 #e1e6ff; }
+.api-save span { font-size: 25px; line-height: 1; }
+.api-settings-actions { display: flex; align-items: center; justify-content: center; gap: 25px; margin-top: 19px; }
+.api-settings-actions button { border: 0; padding: 3px 0; background: none; color: #657494; font-size: 12px; }
+.api-settings-actions button:hover { color: #5741c9; }
+@media (max-width: 600px) { .api-dialog { padding: 24px; } .api-dialog h2 { font-size: 23px; } }
+@media print { .api-dialog { display: none !important; } }

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>考试成绩与正态模型 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/exam-scores.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="exam-scores">
+<div class="shell">
+
+  <div class="topbar">
+    <a href="../../index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>考试成绩与正态分布</h1>
+    </div>
+
+    <div class="controls-row">
+
+      <!-- 均值 -->
+      <div class="field">
+        <label>平均分 μ</label>
+        <input type="number" id="mean" value="75" min="0" max="100" step="1" />
+      </div>
+
+      <!-- 标准差 -->
+      <div class="field">
+        <label>标准差 σ</label>
+        <input type="number" id="sigma" value="10" min="1" max="30" step="0.5" />
+      </div>
+
+      <!-- 每班人数 -->
+      <div class="field">
+        <label>每班人数</label>
+        <input type="number" id="classSize" value="40" min="10" max="60" step="1" />
+      </div>
+
+      <!-- 班级多选 -->
+      <div class="class-selector">
+        <label>参与统计的班级<span class="unit">（可多选）</span></label>
+        <div class="class-btns">
+          <button class="class-btn active" data-n="1">1</button>
+          <button class="class-btn" data-n="2">2</button>
+          <button class="class-btn" data-n="3">3</button>
+          <button class="class-btn" data-n="4">4</button>
+          <button class="class-btn" data-n="5">5</button>
+          <button class="class-btn" data-n="6">6</button>
+          <button class="class-btn" data-n="7">7</button>
+          <button class="class-btn" data-n="8">8</button>
+          <button class="class-btn" data-n="9">9</button>
+          <button class="class-btn" data-n="10">10</button>
+        </div>
+      </div>
+
+      <!-- 分组数 -->
+      <div class="bins-selector">
+        <label>直方图分组数</label>
+        <div class="bins-row">
+          <input type="range" id="bins" min="5" max="30" value="15" />
+          <span class="bins-val" id="binsVal">15</span>
+        </div>
+      </div>
+
+      <div class="action-group">
+        <button class="run-btn" id="runBtn">▶ 模拟考试</button>
+        <button class="curve-btn active" id="curveBtn">📈 正态曲线</button>
+      </div>
+
+    </div>
+
+    <div class="model-note">修改模型参数后，请重新模拟。切换班级或分组数会使用本次模拟的固定成绩。</div>
+    <!-- 主内容：左表 + 右图 -->
+    <div class="body-grid" id="bodyGrid" style="display:none">
+
+      <!-- 左：各班数据 -->
+      <div class="side-card">
+        <h3>各班成绩摘要</h3>
+        <table class="class-table" id="classTable">
+          <thead>
+            <tr>
+              <th>班</th>
+              <th>n</th>
+              <th>x̄</th>
+              <th>σ</th>
+            </tr>
+          </thead>
+          <tbody id="classTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 右：图 -->
+      <div>
+        <div class="chart-wrap">
+          <div class="empty-state" id="emptyState">
+            <div class="icon">📊</div>
+            <p>点击「模拟考试」开始</p>
+          </div>
+          <canvas id="chart" height="420"></canvas>
+        </div>
+        <!-- 统计摘要在图表下方 -->
+        <div class="stats-bar" id="statsBar" style="display:none">
+          <div class="stat-box">
+            <div class="stat-label">参与统计人数</div>
+            <div class="stat-value" id="statN">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">样本均值</div>
+            <div class="stat-value" id="statMean">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">样本标准差</div>
+            <div class="stat-value" id="statSd">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">最低分</div>
+            <div class="stat-value" id="statMin">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">最高分</div>
+            <div class="stat-value" id="statMax">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 空状态图（未运行时） -->
+    <div class="chart-wrap" id="initChart" style="margin-top:20px">
+      <div class="empty-state">
+        <div class="icon">📝</div>
+        <p>点击「模拟考试」开始</p>
+      </div>
+      <canvas id="chartDummy" height="420" style="display:none"></canvas>
+    </div>
+
+    <!-- 洞察 -->
+    <div class="insight" id="insight" style="display:none"></div>
+
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/exam-scores.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

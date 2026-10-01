@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>杨辉三角与二项式 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/pascal-triangle.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+
+<body data-lab-id="pascal-triangle" data-theme="dark">
+  <div class="home-nav-bar">
+    <a class="home-nav-link" href="../../index.html">← 返回主页 Home</a>
+    <div class="home-nav-meta">高中数学教学实验室 · 开心课堂荣誉出品 MathRender.com · © 2026</div>
+    <button id="themeToggle" class="theme-toggle" type="button">切换浅色</button>
+  </div>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>杨辉三角（教学增强版）</h1>
+        <div class="sub">从第 0 行开始：观察每个数如何由上一行相邻的两个数相加得到。</div>
+      </div>
+    </header>
+
+    <div class="panel" id="topPanel">
+      <div class="toolbar">
+        <div class="cluster">
+          <label>行数 <input id="rowsInput" type="number" min="1" max="30" value="5" /></label>
+          <button id="buildBtn">应用</button>
+          <button id="nextBtn" class="primary">下一行</button>
+          <button id="playBtn">播放</button>
+          <button id="resetBtn" class="danger">重置</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="cluster">
+          <label>模式
+            <select id="modeSelect">
+              <option value="beginner" selected>初学</option>
+              <option value="compact">熟练</option>
+              <option value="static">静态</option>
+            </select>
+          </label>
+          <div class="sliderWrap">
+            <span style="color:var(--muted);font-size:12px;">速度</span>
+            <input id="speedRange" type="range" min="0.5" max="2.0" step="0.05" value="1.0" />
+            <span class="mono" id="speedText">1.00×</span>
+          </div>
+          <label>密度
+            <select id="densitySelect">
+              <option value="detailed">详细</option>
+              <option value="simple" selected>简洁</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="cluster">
+          <label><input id="toggleLabels" type="checkbox" checked />标签</label>
+          <label><input id="toggleSum" type="checkbox" checked />行和</label>
+          <label><input id="toggleLog" type="checkbox" />记录</label>
+          <label><input id="toggleBinomial" type="checkbox" checked />二项式</label>
+          <label>变量
+            <input id="varA" type="text" value="a" maxlength="2" />
+            <span style="color:var(--muted);font-size:12px;">+</span>
+            <input id="varB" type="text" value="b" maxlength="2" />
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="cluster">
+          <button id="focusBtn">聚焦模式(F)</button>
+          <button id="captureBtn">截图模式(C)</button>
+          <label>主题
+            <select id="themeSelect">
+              <option value="dark" selected>深黑</option>
+              <option value="white">白板</option>
+            </select>
+          </label>
+          <button id="printBtn">打印/存PDF</button>
+        </div>
+      </div>
+
+      <div class="status">
+        <span class="pill"><span id="stateDot" class="dot pause"></span><span id="stateText">暂停</span></span>
+        <span class="pill">已显示：<b id="shownCount">0</b> / <b id="totalCount">5</b> 行</span>
+        <span class="pill">当前行：<b id="selectedRowText">—</b></span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="triangleWrap" id="triangleWrap">
+        <svg class="overlay" id="overlay"></svg>
+        <div class="triangle" id="triangle"></div>
+      </div>
+
+      <div class="side" id="sidePanel">
+        <section class="card" id="binomialCard">
+          <h2>
+            <span>二项式 <small id="binomialTitle">(a+b)^n</small></span>
+            <button id="copyPolyBtn">复制</button>
+          </h2>
+          <div class="poly mono" id="polyBox">—</div>
+        </section>
+
+        <section class="card" id="logCard">
+          <h2>推导记录 <small>（点击格子也会记录）</small></h2>
+          <div class="tools">
+            <button id="clearLogBtn" class="danger">清空</button>
+          </div>
+          <div class="logList" id="logList"></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="err" id="errBox"></div>
+
+    <div class="hint">
+      快捷键：<span class="kbd">Enter</span> 下一行，
+      <span class="kbd">Space</span> 播放/暂停，
+      <span class="kbd">R</span> 重置，
+      <span class="kbd">Esc</span> 清除箭头/高亮/展开，
+      <span class="kbd">F</span> 聚焦，
+      <span class="kbd">C</span> 截图，
+      <span class="kbd">T</span> 主题切换。
+    </div>
+
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <!-- 浮动按钮：聚焦/截图模式下 -->
+  <div class="floatDock" id="floatDock">
+    <button id="exitBtn" class="primary">退出</button>
+
+    <!-- ✅ 只在“聚焦模式”显示：课堂用控件 -->
+    <button id="floatNextBtn" class="focusOnly">下一行</button>
+    <button id="floatPlayBtn" class="focusOnly">播放</button>
+    <button id="floatResetBtn" class="focusOnly danger">重置</button>
+
+    <button id="floatThemeBtn" class="focusOnly">主题</button>
+    <button id="floatPrintBtn" class="focusOnly">打印</button>
+  </div>
+
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/pascal-triangle.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>线段不断取半 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/segment-halving.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="segment-halving">
+  <header class="topbar"><a class="back" href="../../index.html">← 实验室</a><div class="title">线段不断取半</div><div class="lesson">05｜长度模型</div><div class="top-actions"><button id="focusBtn">聚焦模式</button><button id="themeBtn">深色</button></div></header>
+  <main class="app"><div class="layout">
+    <aside class="card sidebar"><div class="head"><h2>动画控制</h2><span id="status">已暂停</span></div><div class="body"><div class="stage-number" id="stageNum">0</div><div class="stage-label">第 <span id="stageInline">0</span> 次截取</div><div class="rule">每次从<strong>剩余线段</strong>中取出一半。上方排列已取部分，下方保留未取部分。</div><div class="range-row"><label><span>演示步数</span><b id="rangeValue">0</b></label><input id="stageRange" type="range" min="0" max="20" value="0" /></div><div class="controls"><button class="primary" id="playBtn">▶ 播放</button><button class="secondary" id="nextBtn">下一步 →</button><button id="prevBtn">← 上一步</button><button id="resetBtn">↻ 重置</button><div class="zoom-actions"><button class="zoom-control" id="zoomBtn" title="放大并居中显示线段最右侧的本次截取与剩余部分">⌕ 放大右侧</button><button class="restore-control" id="restoreViewBtn" title="恢复初始视图">↺ 还原</button></div><button class="auto-track-control" id="autoTrackBtn" aria-pressed="false" title="每次截取完成后自动跟踪放大当前剩余部分">◎ 自动跟踪：关</button><button class="vertical-line-control" id="verticalLineBtn" aria-pressed="true">纵向虚线：显示</button><button class="arrow-control" id="arrowBtn" aria-pressed="false">显示虚线箭头</button></div><div class="speed"><button data-speed=".6">0.5×</button><button class="active" data-speed="1">1×</button><button data-speed="1.8">2×</button></div></div></aside>
+    <section class="card canvas-card"><div class="head"><h2>单位线段</h2><span>拖动平移 · 滚轮缩放</span></div><div class="body"><div class="canvas-wrap"><canvas id="board" tabindex="0" aria-label="线段不断取半动画；可拖动平移，可用滚轮放大缩小"></canvas><div class="question">永远没有取尽，为什么总长度却可以无限接近 1？</div></div></div></section>
+    <aside class="card evidence"><div class="head"><h2>数学证据</h2><span>动态更新</span></div><div class="body"><div class="formula">L<sub>n</sub> = 1 − (1/2)<sup>n</sup></div><div class="formula">R<sub>n</sub> = (1/2)<sup>n</sup></div><div class="length-metrics"><div class="length-card"><strong>已取长度</strong><b id="sumValue">0</b><span id="sumDecimalValue">0.0000</span></div><div class="length-card"><strong>剩余长度</strong><b id="restValue">1</b><span id="restDecimalValue">1.0000</span></div></div><div class="takeaway"><span id="conclusion" class="hidden-conclusion">“没有某一步等于 1”与“极限等于 1”可以同时成立。</span></div><button class="reveal" id="revealBtn">显示结论</button></div></aside>
+  </div></main>
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/segment-halving.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

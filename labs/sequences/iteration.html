@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>迭代序列与蛛网图 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/iteration.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="iteration">
+  <header class="topbar"><a class="back" href="../../index.html">← 实验室</a><div class="title">迭代序列实验室</div><div class="lesson">07｜求 √2 的近似值</div><div class="tabs"><button data-tab="babylon" class="active">巴比伦法</button><button data-tab="general">一般迭代</button></div><div class="top-actions"><button id="focusBtn">聚焦模式</button><button id="themeBtn">深色</button></div></header>
+  <main class="app"><div class="layout">
+    <aside class="card sidebar"><div class="head"><h2>迭代设置</h2><span id="modeLabel">巴比伦法</span></div><div class="body"><div class="formula" id="formula">x<sub>n+1</sub>=(x<sub>n</sub>+2/x<sub>n</sub>)/2</div><div class="field"><label><span>迭代函数</span></label><select id="presetSelect"><option value="babylon">(x+2/x)/2</option><option value="inverse">2/x</option><option value="relax">x-0.5*(x^2-2)</option><option value="cycle">x-(x^2-2)</option><option value="custom">自定义</option></select></div><div class="field" id="customField" hidden><label><span>f(x)</span></label><input id="customInput" value="(x+2/x)/2"><div class="hintline">支持 + − * / ^、括号及 sqrt、abs、sin、cos、exp、log；不使用 eval。</div></div><div class="field"><label><span>初值 x₁</span><input id="x1Input" type="number" step="0.1" value="3.5"></label></div><div class="field"><label><span>最多迭代</span><input id="nInput" type="number" min="2" max="100" step="1" value="12"></label></div><div class="field"><label><span>误差阈值</span></label><select id="tolSelect"><option value=".001">10⁻³</option><option value=".000001" selected>10⁻⁶</option><option value=".000000001">10⁻⁹</option></select></div><div class="actions"><button class="primary" id="playBtn">▶ 播放</button><button class="next" id="stepBtn">单步 →</button><button id="resetBtn">重置</button><button id="runBtn">全部计算</button></div><div class="presets"><button data-x="1">1</button><button data-x="3.5" class="active">3.5</button><button data-x="-2">−2</button></div><div class="zoom-panel"><div class="zoom-head"><span>蛛网图视图</span><b id="zoomModeLabel">平滑跟随</b></div><div class="zoom-controls"><button id="autoZoomBtn" class="active" aria-pressed="true">跟随</button><button id="zoomInBtn">＋ 放大</button><button id="zoomOutBtn">− 缩小</button><button id="globalViewBtn" aria-pressed="false">全程</button></div><div class="domain-label" id="domainLabel">准备显示视野范围</div><div class="zoom-hint">滚轮缩放 · 按住画布拖动；按钮也可控制</div></div><div class="error" id="errorBox"></div></div></aside>
+    <section class="card graph-card"><div class="head"><h2>函数与蛛网轨迹</h2><span id="graphNote">从直线 y=x 上的 (x₁,x₁) 出发</span></div><div class="body"><div class="graph-wrap"><div class="graph-help">滚轮缩放 · 按住拖动</div><canvas id="graph" tabindex="0" aria-label="可用鼠标滚轮缩放、按住拖动的迭代函数与蛛网图"></canvas></div><div class="error-wrap"><div class="error-title">误差 |xₙ²−2|（对数刻度）</div><canvas id="errorChart"></canvas></div><div class="prompt">从 y=x 上的 xₙ 出发：竖直到 y=f(x)，再水平回到 y=x</div></div></section>
+    <aside class="card evidence"><div class="head"><h2>迭代结果</h2><span id="rowCount">显示 1 项</span></div><div class="body"><div class="table-wrap"><table><thead><tr><th>n</th><th>x<sub>n</sub></th><th>x<sub>n</sub><sup>2</sup></th><th>|x<sub>n</sub><sup>2</sup>−2|</th></tr></thead><tbody id="dataBody"></tbody></table></div><div class="status"><strong id="statusTitle">等待观察</strong><span id="statusText">点击“单步”观察数值怎样变化。</span></div><div class="criteria"><div>可行性<b id="validity">正常</b></div><div>稳定性<b id="stability">待判断</b></div><div>精度<b id="accuracy">—</b></div><div>效率<b id="efficiency">—</b></div></div></div></aside>
+  </div></main>
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/iteration.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

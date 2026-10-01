@@ -1,0 +1,13 @@
+  <dialog class="api-dialog" id="api-settings" aria-labelledby="api-settings-title" aria-describedby="api-settings-note">
+    <form id="api-settings-form" autocomplete="off">
+      <div class="api-dialog-heading"><span aria-hidden="true">✦</span><p>开始你的数学探索</p></div>
+      <h2 id="api-settings-title">连接千问，开启评价</h2>
+      <p class="api-settings-subtitle">填写一次密钥，本次课堂可连续评价多份作品。</p>
+      <label for="api-key">千问 API Key</label>
+      <input id="api-key" type="password" placeholder="粘贴百炼控制台复制的完整密钥" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="api-settings-note api-settings-message">
+      <p id="api-settings-note">华北2（北京） · qwen3.5-plus<br>密钥仅在当前页面内存中使用，刷新或关闭后清除。</p>
+      <p id="api-settings-message" role="alert" hidden></p>
+      <button class="api-save" type="submit">开始使用 <span aria-hidden="true">→</span></button>
+      <div class="api-settings-actions"><button id="clear-api-key" type="button" hidden>清除密钥</button><button id="close-api-settings" type="button">暂不设置，先看看</button></div>
+    </form>
+  </dialog>

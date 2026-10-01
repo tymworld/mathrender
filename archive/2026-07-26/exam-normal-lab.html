@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>考试成绩与正态分布</title>
+  <style>
+    :root {
+      --ink: #16202d;
+      --sub: #546170;
+      --line: rgba(22, 32, 45, 0.12);
+      --card: rgba(255, 251, 245, 0.92);
+      --card-strong: #fffdfa;
+      --accent: #1d7a4f;
+      --accent2: #b25733;
+      --shadow: 0 24px 60px rgba(10, 60, 35, 0.12);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(92, 210, 150, 0.16), transparent 24%),
+        radial-gradient(circle at left top, rgba(29, 122, 79, 0.10), transparent 20%),
+        linear-gradient(180deg, #edfaf3 0%, #e2f5eb 100%);
+      min-height: 100vh;
+    }
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(240, 255, 248, 0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(10, 60, 35, 0.08);
+    }
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 24px 28px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 6px 0 18px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(26px, 3.2vw, 40px);
+      letter-spacing: 0.06em;
+      color: var(--accent);
+    }
+
+    /* Controls */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      padding: 20px 0 8px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1 1 120px;
+    }
+    .field label {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .field label .unit {
+      font-size: 14px;
+      color: var(--sub);
+      font-weight: 700;
+      margin-left: 4px;
+    }
+    .field input[type="number"] {
+      width: 100%;
+      height: 52px;
+      padding: 0 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      background: #f4fbf7;
+      color: var(--ink);
+      font: 800 22px "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .field input[type="number"]:focus {
+      outline: 3px solid rgba(29, 122, 79, 0.18);
+      border-color: rgba(29, 122, 79, 0.5);
+    }
+
+    /* Class selector */
+    .class-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 3 1 320px;
+    }
+    .class-selector label {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    .class-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+    .class-btn {
+      height: 52px;
+      padding: 0 0;
+      flex: 1;
+      border: 1.5px solid rgba(29, 122, 79, 0.3);
+      border-radius: 16px;
+      background: #f0faf5;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .class-btn:hover { background: #d8f5e7; }
+    .class-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 8px 20px rgba(29, 122, 79, 0.28);
+    }
+
+    /* Bins */
+    .bins-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1 1 170px;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 10px;
+      align-self: flex-end;
+      flex: 0 0 auto;
+    }
+    .bins-selector label {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    .bins-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bins-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .bins-val {
+      min-width: 40px;
+      text-align: right;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    /* Run button */
+    .run-btn {
+      height: 56px;
+      padding: 0 28px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #1d7a4f 0%, #28a06a 100%);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      box-shadow: 0 14px 32px rgba(29, 122, 79, 0.28);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .run-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 40px rgba(29, 122, 79, 0.36);
+    }
+
+    .curve-btn {
+      height: 56px;
+      padding: 0 16px;
+      border: 2px solid rgba(178, 87, 51, 0.4);
+      border-radius: 18px;
+      background: #fff8f4;
+      color: #b25733;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .curve-btn.active {
+      background: linear-gradient(135deg, #b25733 0%, #d4805a 100%);
+      color: #fff;
+      border-color: #b25733;
+      box-shadow: 0 8px 20px rgba(178, 87, 51, 0.28);
+    }
+
+    /* Stats */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .stat-box {
+      flex: 1 1 130px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 1.5px solid rgba(29, 122, 79, 0.2);
+      background: linear-gradient(160deg, #f0faf5 0%, #e2f5eb 100%);
+      box-shadow: 0 8px 20px rgba(29, 122, 79, 0.1);
+    }
+    .stat-box .stat-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--sub);
+      margin-bottom: 4px;
+    }
+    .stat-box .stat-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+
+    /* Class table - mini */
+    .class-table-wrap {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    .class-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+    .class-table th {
+      padding: 8px 12px;
+      background: rgba(29, 122, 79, 0.08);
+      font-weight: 900;
+      color: var(--ink);
+      text-align: center;
+      border-bottom: 2px solid rgba(29, 122, 79, 0.15);
+      font-size: 16px;
+    }
+    .class-table td {
+      padding: 7px 12px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink);
+    }
+    .class-table tr:last-child td { border-bottom: none; }
+    .class-table td.highlight {
+      color: var(--accent);
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    /* Chart */
+    .chart-wrap {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      position: relative;
+      min-height: 440px;
+    }
+    .chart-wrap canvas { width: 100% !important; display: block; }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--sub);
+      pointer-events: none;
+    }
+    .empty-state .icon { font-size: 56px; opacity: 0.4; }
+    .empty-state p { font-size: 20px; font-weight: 800; margin: 0; opacity: 0.6; }
+
+    /* Insight */
+    .insight {
+      margin-top: 16px;
+      padding: 16px 22px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(29, 122, 79, 0.07) 0%, rgba(92, 210, 150, 0.09) 100%);
+      border: 1.5px solid rgba(29, 122, 79, 0.2);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .insight .hl  { color: var(--accent); }
+    .insight .hl2 { color: var(--accent2); }
+
+    /* Two-col layout for table + chart */
+    .body-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+      margin-top: 20px;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .body-grid { grid-template-columns: 1fr; }
+    }
+    .side-card {
+      padding: 18px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+    }
+    .side-card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <a href="index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>考试成绩与正态分布</h1>
+    </div>
+
+    <div class="controls-row">
+
+      <!-- 均值 -->
+      <div class="field">
+        <label>平均分 μ</label>
+        <input type="number" id="mean" value="75" min="0" max="100" step="1" />
+      </div>
+
+      <!-- 标准差 -->
+      <div class="field">
+        <label>标准差 σ</label>
+        <input type="number" id="sigma" value="10" min="1" max="30" step="0.5" />
+      </div>
+
+      <!-- 每班人数 -->
+      <div class="field">
+        <label>每班人数</label>
+        <input type="number" id="classSize" value="40" min="10" max="60" step="1" />
+      </div>
+
+      <!-- 班级多选 -->
+      <div class="class-selector">
+        <label>参与统计的班级<span class="unit">（可多选）</span></label>
+        <div class="class-btns">
+          <button class="class-btn active" data-n="1">1</button>
+          <button class="class-btn" data-n="2">2</button>
+          <button class="class-btn" data-n="3">3</button>
+          <button class="class-btn" data-n="4">4</button>
+          <button class="class-btn" data-n="5">5</button>
+          <button class="class-btn" data-n="6">6</button>
+          <button class="class-btn" data-n="7">7</button>
+          <button class="class-btn" data-n="8">8</button>
+          <button class="class-btn" data-n="9">9</button>
+          <button class="class-btn" data-n="10">10</button>
+        </div>
+      </div>
+
+      <!-- 分组数 -->
+      <div class="bins-selector">
+        <label>直方图分组数</label>
+        <div class="bins-row">
+          <input type="range" id="bins" min="5" max="30" value="15" />
+          <span class="bins-val" id="binsVal">15</span>
+        </div>
+      </div>
+
+      <div class="action-group">
+        <button class="run-btn" id="runBtn">▶ 模拟考试</button>
+        <button class="curve-btn active" id="curveBtn">📈 正态曲线</button>
+      </div>
+
+    </div>
+
+    <!-- 主内容：左表 + 右图 -->
+    <div class="body-grid" id="bodyGrid" style="display:none">
+
+      <!-- 左：各班数据 -->
+      <div class="side-card">
+        <h3>各班成绩摘要</h3>
+        <table class="class-table" id="classTable">
+          <thead>
+            <tr>
+              <th>班</th>
+              <th>n</th>
+              <th>x̄</th>
+              <th>σ</th>
+            </tr>
+          </thead>
+          <tbody id="classTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 右：图 -->
+      <div>
+        <div class="chart-wrap">
+          <div class="empty-state" id="emptyState">
+            <div class="icon">📊</div>
+            <p>点击「模拟考试」开始</p>
+          </div>
+          <canvas id="chart" height="420"></canvas>
+        </div>
+        <!-- 统计摘要在图表下方 -->
+        <div class="stats-bar" id="statsBar" style="display:none">
+          <div class="stat-box">
+            <div class="stat-label">参与统计人数</div>
+            <div class="stat-value" id="statN">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">样本均值</div>
+            <div class="stat-value" id="statMean">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">样本标准差</div>
+            <div class="stat-value" id="statSd">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">最低分</div>
+            <div class="stat-value" id="statMin">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">最高分</div>
+            <div class="stat-value" id="statMax">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 空状态图（未运行时） -->
+    <div class="chart-wrap" id="initChart" style="margin-top:20px">
+      <div class="empty-state">
+        <div class="icon">📝</div>
+        <p>点击「模拟考试」开始</p>
+      </div>
+      <canvas id="chartDummy" height="420" style="display:none"></canvas>
+    </div>
+
+    <!-- 洞察 -->
+    <div class="insight" id="insight" style="display:none"></div>
+
+  </div>
+</div>
+
+<script>
+// Box-Muller
+function randNormal(mu, sigma) {
+  let u, v;
+  do { u = Math.random(); } while (u === 0);
+  do { v = Math.random(); } while (v === 0);
+  return mu + sigma * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function normalPDF(x, mu, sigma) {
+  return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * ((x - mu) / sigma) ** 2);
+}
+
+// Clamp scores to [0,100]
+function genClass(mu, sigma, size) {
+  return Array.from({ length: size }, () => Math.min(100, Math.max(0, Math.round(randNormal(mu, sigma)))));
+}
+
+// State
+let selectedClassSet = new Set([1]); // multi-select
+let animFrame = null;
+let classData = []; // index 0 = class1, … keyed by class number
+let showCurve = true;
+
+// UI refs
+const meanInput      = document.getElementById('mean');
+const sigmaInput     = document.getElementById('sigma');
+const classSizeInput = document.getElementById('classSize');
+const binsSlider     = document.getElementById('bins');
+const binsVal        = document.getElementById('binsVal');
+const runBtn         = document.getElementById('runBtn');
+const statsBar       = document.getElementById('statsBar');
+const bodyGrid       = document.getElementById('bodyGrid');
+const initChart      = document.getElementById('initChart');
+const emptyState     = document.getElementById('emptyState');
+const insight        = document.getElementById('insight');
+const canvas         = document.getElementById('chart');
+const ctx            = canvas.getContext('2d');
+const classTableBody = document.getElementById('classTableBody');
+
+binsSlider.addEventListener('input', () => {
+  binsVal.textContent = binsSlider.value;
+  if (classData.length > 0) reRender();
+});
+
+document.querySelectorAll('.class-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const n = parseInt(btn.dataset.n);
+    if (selectedClassSet.has(n)) {
+      // Always keep at least one selected
+      if (selectedClassSet.size > 1) {
+        selectedClassSet.delete(n);
+        btn.classList.remove('active');
+      }
+    } else {
+      selectedClassSet.add(n);
+      btn.classList.add('active');
+    }
+  });
+});
+
+runBtn.addEventListener('click', runExperiment);
+
+document.getElementById('curveBtn').addEventListener('click', () => {
+  showCurve = !showCurve;
+  document.getElementById('curveBtn').classList.toggle('active', showCurve);
+  if (Object.keys(classData).length > 0) reRender();
+});
+
+function runExperiment() {
+  const mu    = parseFloat(meanInput.value) || 75;
+  const sigma = Math.max(1, parseFloat(sigmaInput.value) || 10);
+  const size  = Math.max(5, parseInt(classSizeInput.value) || 40);
+
+  // classData is a Map: classNumber -> scores array
+  classData = {};
+  for (const cn of selectedClassSet) {
+    classData[cn] = genClass(mu, sigma, size);
+  }
+
+  reRender();
+}
+
+function reRender() {
+  if (Object.keys(classData).length === 0) return;
+
+  const mu    = parseFloat(meanInput.value) || 75;
+  const sigma = Math.max(1, parseFloat(sigmaInput.value) || 10);
+  const bins  = parseInt(binsSlider.value);
+  const classNums = Object.keys(classData).map(Number).sort((a, b) => a - b);
+  const nClasses  = classNums.length;
+
+  // Flatten all scores
+  const allScores = classNums.flatMap(cn => classData[cn]);
+  const n = allScores.length;
+
+  // Stats
+  const sampleMean = allScores.reduce((a, b) => a + b, 0) / n;
+  const sampleSd   = Math.sqrt(allScores.reduce((a, b) => a + (b - sampleMean) ** 2, 0) / (n - 1));
+  const minScore   = Math.min(...allScores);
+  const maxScore   = Math.max(...allScores);
+
+  // Update stats bar
+  document.getElementById('statN').textContent    = n.toLocaleString('zh-CN');
+  document.getElementById('statMean').textContent = sampleMean.toFixed(1);
+  document.getElementById('statSd').textContent   = sampleSd.toFixed(1);
+  document.getElementById('statMin').textContent  = minScore;
+  document.getElementById('statMax').textContent  = maxScore;
+  statsBar.style.display = 'flex';
+
+  // Class table
+  classTableBody.innerHTML = '';
+  for (const cn of classNums) {
+    const cls = classData[cn];
+    const cm  = (cls.reduce((a, b) => a + b, 0) / cls.length).toFixed(1);
+    const csd = Math.sqrt(cls.reduce((a, b) => a + (b - parseFloat(cm)) ** 2, 0) / (cls.length - 1)).toFixed(1);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="highlight">${cn}</td>
+      <td>${cls.length}</td>
+      <td>${cm}</td>
+      <td>${csd}</td>
+    `;
+    classTableBody.appendChild(tr);
+  }
+  // Total row
+  const totTr = document.createElement('tr');
+  totTr.style.background = 'rgba(29,122,79,0.07)';
+  totTr.innerHTML = `
+    <td class="highlight" style="font-size:17px">∑</td>
+    <td class="highlight">${n}</td>
+    <td class="highlight">${sampleMean.toFixed(1)}</td>
+    <td class="highlight">${sampleSd.toFixed(1)}</td>
+  `;
+  classTableBody.appendChild(totTr);
+
+  // Show body grid, hide init chart
+  bodyGrid.style.display = 'grid';
+  initChart.style.display = 'none';
+  emptyState.style.display = 'none';
+
+  // Histogram: scores 0-100
+  const lo = 0, hi = 100;
+  const binWidth = (hi - lo) / bins;
+  const counts = new Array(bins).fill(0);
+  for (const s of allScores) {
+    const i = Math.min(bins - 1, Math.floor((s - lo) / binWidth));
+    counts[i]++;
+  }
+  const densities = counts.map(c => c / (n * binWidth));
+
+  // Normal curve
+  const curvePoints = 400;
+  const curveData = Array.from({ length: curvePoints + 1 }, (_, i) => {
+    const x = lo + (i / curvePoints) * (hi - lo);
+    return { x: (x - lo) / binWidth, y: normalPDF(x, mu, sigma) };
+  });
+
+  drawChart(densities, curveData, bins, lo, hi, binWidth, mu, sigma, n, nClasses, classNums);
+
+  // Insight
+  insight.style.display = 'block';
+  let level, col;
+  if (nClasses <= 2)      { level = '较少'; col = 'hl2'; }
+  else if (nClasses <= 5) { level = '中等'; col = 'hl2'; }
+  else                    { level = '大量'; col = 'hl'; }
+  const classLabel = classNums.join('、');
+
+  insight.innerHTML = `
+    已选第 <span class="${col}">${classLabel}</span> 班（共 ${nClasses} 个班，${level}数据，合计 <span class="${col}">${n}</span> 人）——
+    班级<span class="hl2">越多</span>，成绩分布越接近<span class="hl">正态曲线</span>，中间多、两头少的规律越明显。
+  `;
+}
+
+function drawChart(densities, curveData, bins, lo, hi, binWidth, mu, sigma, n, nClasses, classNums) {
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+
+  const dpr   = window.devicePixelRatio || 1;
+  const W_CSS = canvas.parentElement.clientWidth - 40;
+  const H_CSS = 420;
+  canvas.style.width  = W_CSS + 'px';
+  canvas.style.height = H_CSS + 'px';
+  canvas.width  = W_CSS * dpr;
+  canvas.height = H_CSS * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const pad = { top: 28, right: 28, bottom: 72, left: 96 };
+  const W = W_CSS - pad.left - pad.right;
+  const H = H_CSS - pad.top  - pad.bottom;
+
+  const maxDensity = Math.max(...densities, ...curveData.map(p => p.y));
+  const yMax = maxDensity * 1.12;
+
+  const toX  = (i)  => pad.left + (i / bins) * W;
+  const toXc = (fi) => pad.left + (fi / bins) * W;
+  const toY  = (d)  => pad.top + H - (d / yMax) * H;
+
+  const DURATION = 600;
+  const start = performance.now();
+
+  function frame(now) {
+    const t    = Math.min(1, (now - start) / DURATION);
+    const ease = 1 - Math.pow(1 - t, 3);
+
+    ctx.clearRect(0, 0, W_CSS, H_CSS);
+
+    // Grid + Y labels
+    ctx.strokeStyle = 'rgba(22,32,45,0.07)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const y   = pad.top + (i / 5) * H;
+      const val = yMax * (1 - i / 5);
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + W, y); ctx.stroke();
+      ctx.fillStyle = '#1a2636';
+      ctx.font = `bold 18px "PingFang SC",sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.fillText(val.toFixed(3), pad.left - 10, y + 6);
+    }
+
+    // Bars (colored by class contribution)
+    const barW = W / bins;
+    // Grade-color palette per class (up to 10)
+    const palette = [
+      'rgba(29,122,79,', 'rgba(36,94,157,', 'rgba(178,87,51,',
+      'rgba(130,60,160,', 'rgba(200,140,20,', 'rgba(20,140,160,',
+      'rgba(180,40,80,',  'rgba(60,160,80,',  'rgba(100,80,180,', 'rgba(160,100,40,'
+    ];
+
+    // Stack bars by class
+    for (let b = 0; b < bins; b++) {
+      const x = toX(b);
+      let yBottom = pad.top + H;
+
+      for (let ci = 0; ci < nClasses; ci++) {
+        const cn   = classNums[ci];
+        const lo_b = lo + b * binWidth;
+        const hi_b = lo_b + binWidth;
+        const classScores = window._classData[cn];
+        const cnt = classScores.filter(s => s >= lo_b && s < hi_b).length;
+        const clsDensity = cnt / (window._allN * binWidth);
+        const barH = (clsDensity / yMax) * H * ease;
+        if (barH < 0.5) continue;
+        const col = palette[ci % palette.length];
+        ctx.fillStyle = col + '0.72)';
+        ctx.beginPath();
+        ctx.rect(x + 1, yBottom - barH, barW - 2, barH);
+        ctx.fill();
+        yBottom -= barH;
+      }
+
+      // Rounded top on topmost segment
+      if (yBottom < pad.top + H) {
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.beginPath();
+        ctx.roundRect(x + 1, yBottom, barW - 2, 6, [3, 3, 0, 0]);
+        ctx.fill();
+      }
+    }
+
+    // Normal curve
+    if (showCurve) {
+      ctx.globalAlpha = ease;
+      ctx.strokeStyle = '#b25733';
+      ctx.lineWidth = 3.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      let first = true;
+      for (const pt of curveData) {
+        const cx = toXc(pt.x);
+        const cy = toY(pt.y);
+        if (cx < pad.left - 2 || cx > pad.left + W + 2) continue;
+        if (first) { ctx.moveTo(cx, cy); first = false; }
+        else ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    if (showCurve) {
+      // Mean dashed line
+      const meanFrac = (mu - lo) / (hi - lo);
+      const meanXpx  = pad.left + meanFrac * W;
+      ctx.globalAlpha = ease;
+      ctx.strokeStyle = 'rgba(178,87,51,0.55)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 5]);
+      ctx.beginPath(); ctx.moveTo(meanXpx, pad.top); ctx.lineTo(meanXpx, pad.top + H); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#b25733';
+      ctx.font = `bold 17px "PingFang SC",sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`μ = ${mu}`, meanXpx, pad.top - 6);
+      ctx.globalAlpha = 1;
+    }
+
+    // Axes
+    ctx.strokeStyle = 'rgba(22,32,45,0.22)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + H); ctx.lineTo(pad.left + W, pad.top + H);
+    ctx.stroke();
+
+    // X labels (scores)
+    ctx.fillStyle = '#1a2636';
+    ctx.font = `bold 18px "PingFang SC",sans-serif`;
+    ctx.textAlign = 'center';
+    const step = Math.max(1, Math.round(bins / 10));
+    for (let i = 0; i <= bins; i += step) {
+      const score = lo + i * binWidth;
+      ctx.fillText(score.toFixed(0), toX(i), pad.top + H + 24);
+    }
+
+    // Axis titles
+    ctx.fillStyle = '#16202d';
+    ctx.font = `bold 19px "PingFang SC",sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('成绩（分）', pad.left + W / 2, H_CSS - 4);
+    ctx.save();
+    ctx.translate(pad.left - 74, pad.top + H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('频率密度', 0, 0);
+    ctx.restore();
+
+    // Legend — stacked bar colors
+    const lx = pad.left + 10;
+    const ly = pad.top + 12;
+    for (let ci = 0; ci < nClasses; ci++) {
+      const cn      = classNums[ci];
+      const col     = palette[ci % palette.length];
+      const col_str = ci < 5 ? (lx + ci * 72) : (lx + (ci - 5) * 72);
+      const row_y   = ci < 5 ? ly : ly + 26;
+      ctx.fillStyle = col + '0.80)';
+      ctx.fillRect(col_str, row_y, 18, 14);
+      ctx.fillStyle = '#16202d';
+      ctx.font = `bold 14px "PingFang SC",sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText(`第${cn}班`, col_str + 22, row_y + 12);
+    }
+
+    // Curve legend
+    if (showCurve) {
+      const curveLx = pad.left + W - 200;
+      ctx.strokeStyle = '#b25733';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(curveLx, ly + 8); ctx.lineTo(curveLx + 24, ly + 8); ctx.stroke();
+      ctx.fillStyle = '#16202d';
+      ctx.font = `bold 15px "PingFang SC",sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('理论正态曲线', curveLx + 28, ly + 13);
+    }
+
+    if (t < 1) animFrame = requestAnimationFrame(frame);
+  }
+
+  animFrame = requestAnimationFrame(frame);
+}
+
+// Expose classData to drawChart closure
+Object.defineProperty(window, '_classData', {
+  get: () => classData,
+  configurable: true
+});
+Object.defineProperty(window, '_allN', {
+  get: () => Object.values(classData).flat().length,
+  configurable: true
+});
+Object.defineProperty(window, '_classNums', {
+  get: () => Object.keys(classData).map(Number).sort((a, b) => a - b),
+  configurable: true
+});
+
+window.addEventListener('resize', () => {
+  if (classData.length > 0) reRender();
+});
+</script>
+</body>
+</html>

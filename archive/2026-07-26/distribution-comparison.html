@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>超几何分布与二项分布对照实验</title>
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --card: #ffffff;
+      --ink: #1f2a44;
+      --sub: #5f6b85;
+      --line: #dde4f0;
+      --blue: #4f7cff;
+      --blue-soft: #eaf0ff;
+      --orange: #ff9b55;
+      --orange-soft: #fff1e7;
+      --green: #1ea672;
+      --yellow: #c28d12;
+      --red: #dd5252;
+      --shadow: 0 14px 34px rgba(31, 42, 68, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #f8fbff 0%, #f6f8fc 100%);
+      color: var(--ink);
+      font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    .app {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+
+    .hero {
+      padding: 16px 18px;
+      border-radius: 28px;
+      color: #fff;
+      background: linear-gradient(135deg, #3d63f3 0%, #4f7cff 45%, #6a92ff 100%);
+      box-shadow: 0 18px 42px rgba(79, 124, 255, 0.28);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -70px;
+      top: -50px;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(255,255,255,0.24), rgba(255,255,255,0));
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(14px, 4vw, 28px);
+      letter-spacing: 0.2px;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 980px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.92);
+      font-size: 15px;
+    }
+
+    .hero-badges {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(4px);
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(221, 228, 240, 0.88);
+    }
+
+    .controls {
+      margin-top: 18px;
+      padding: 22px;
+    }
+
+    .controls-line {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .field.inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1 1 0;
+    }
+
+    .field.inline label {
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .field.inline input,
+    .field.inline select {
+      width: 96px;
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .field label,
+    .toggle-group .title,
+    .button-panel .title,
+    .scale-panel .title {
+      display: block;
+      font-size: 13px;
+      color: var(--sub);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcff;
+      color: var(--ink);
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(79,124,255,0.12);
+    }
+
+    .button-panel,
+    .toggle-group,
+    .scale-panel {
+      margin-top: 16px;
+    }
+
+    .controls-line .button-panel,
+    .controls-line .scale-panel {
+      margin-top: 0;
+    }
+
+    .controls-line .title {
+      display: none;
+    }
+
+    .btn-row,
+    .toggle-row,
+    .preset-row,
+    .scale-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      transition: 0.18s ease;
+      font-family: inherit;
+    }
+
+    .btn {
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 14px;
+      background: #f0f4ff;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { cursor: not-allowed; opacity: 0.55; transform: none; }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #4f7cff 0%, #6289ff 100%);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(79, 124, 255, 0.22);
+    }
+
+    .btn.warm {
+      background: linear-gradient(135deg, #ff9b55 0%, #ffb36e 100%);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(255, 155, 85, 0.22);
+    }
+
+    .btn.ghost {
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .btn.subtle-blue { background: var(--blue-soft); color: var(--blue); }
+    .btn.subtle-orange { background: var(--orange-soft); color: #d8732d; }
+
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #f8faff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 14px;
+      color: var(--ink);
+      user-select: none;
+    }
+
+    .toggle-pill input { accent-color: var(--blue); }
+
+    .status-strip {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: #fbfcff;
+      border: 1px solid var(--line);
+      min-height: 90px;
+    }
+
+    .metric .label {
+      font-size: 13px;
+      color: var(--sub);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .metric .value {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .metric .hint {
+      margin-top: 7px;
+      font-size: 13px;
+      color: var(--sub);
+      line-height: 1.5;
+    }
+
+    .metric.good .value { color: var(--green); }
+    .metric.mid .value { color: var(--yellow); }
+    .metric.warn .value { color: var(--red); }
+
+    .concept-grid,
+    .summary-grid,
+    .chart-2col,
+    .sim-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .concept-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .concept-card,
+    .summary-card {
+      padding: 18px 18px 16px;
+    }
+
+    .concept-card h3,
+    .summary-card h3,
+    .panel h3,
+    .chart-card h3,
+    .table-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .concept-card p,
+    .summary-card p,
+    .panel p,
+    .chart-card p,
+    .table-card p {
+      margin: 0;
+      color: var(--sub);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .concept-card .tag,
+    .panel .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .tag.blue { background: var(--blue-soft); color: var(--blue); }
+    .tag.orange { background: var(--orange-soft); color: #d8732d; }
+    .tag.green { background: rgba(30,166,114,0.12); color: var(--green); }
+    .tag.red { background: rgba(221,82,82,0.12); color: var(--red); }
+
+    .sim-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .panel {
+      padding: 20px;
+      min-height: 560px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .bag-shell {
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fcfdff 0%, #f3f7ff 100%);
+      border: 1px solid #dfe7f5;
+      padding: 16px;
+    }
+
+    .bag-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sub);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bag-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(20, 1fr);
+      gap: 4px;
+      align-content: start;
+      padding: 6px 2px 2px;
+    }
+
+    .ball {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      box-shadow: inset 0 -4px 7px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0,0,0,0.08);
+      border: 1px solid rgba(31,42,68,0.08);
+      transition: transform 0.18s ease;
+    }
+
+    .ball:hover { transform: translateY(-1px); }
+    .ball.white { background: radial-gradient(circle at 35% 30%, #ffffff, #f2f4f9 70%, #d9dde6 100%); }
+    .ball.black { background: radial-gradient(circle at 35% 30%, #727b94, #2b3347 68%, #161d2c 100%); }
+    .ball.drawn {
+      transform: scale(1.08);
+      outline: 3px solid rgba(255, 184, 76, 0.9);
+      box-shadow: 0 0 0 3px rgba(255, 184, 76, 0.28), 0 0 18px rgba(255, 184, 76, 0.52);
+      animation: ballFlash 0.28s ease;
+    }
+
+    @keyframes ballFlash {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.08); }
+    }
+
+    .bag-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      color: var(--sub);
+      font-size: 16px;
+    }
+
+    .current-wrap {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 12px;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .current-ball {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      border: 1px solid rgba(31,42,68,0.08);
+      box-shadow: inset 0 -6px 10px rgba(0,0,0,0.08), 0 10px 22px rgba(0,0,0,0.08);
+      animation: pop 0.35s ease;
+    }
+
+    .current-ball.white { background: radial-gradient(circle at 35% 30%, #ffffff, #eef3ff 70%, #dbe1ee 100%); color: #6a7896; }
+    .current-ball.black { background: radial-gradient(circle at 35% 30%, #77829d, #1f2940 68%, #121b2b 100%); color: #ffffff; }
+    .current-ball.idle { background: linear-gradient(135deg, #eef3ff, #e6ecfb); color: #7d8aa7; }
+
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0.4; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .sample-shell {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 18px;
+      background: #fbfcff;
+      border: 1px solid var(--line);
+    }
+
+    .sample-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .sample-top strong {
+      font-size: 14px;
+    }
+
+    .sample-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 78px;
+      align-content: flex-start;
+      padding-top: 4px;
+    }
+
+    .draw-chip {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      border: 1px solid rgba(31,42,68,0.08);
+      box-shadow: inset 0 -3px 6px rgba(0,0,0,0.08), 0 2px 6px rgba(31,42,68,0.08);
+    }
+
+    .draw-chip.pending {
+      background: radial-gradient(circle at 35% 30%, #ffffff, #f2f4f9 70%, #d9dde6 100%);
+      color: #9ba7c0;
+      border-style: dashed;
+    }
+
+    .draw-chip.white {
+      background: radial-gradient(circle at 35% 30%, #ffffff, #eef3ff 70%, #dbe1ee 100%);
+      color: transparent;
+    }
+
+    .draw-chip.black {
+      background: radial-gradient(circle at 35% 30%, #77829d, #1f2940 68%, #121b2b 100%);
+      color: transparent;
+    }
+
+    .draw-chip.active { outline: 3px solid rgba(79,124,255,0.22); transform: translateY(-1px); }
+
+    .stats-grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-stat {
+      padding: 12px;
+      border-radius: 16px;
+      background: #f8fbff;
+      border: 1px solid var(--line);
+    }
+
+    .mini-stat .k {
+      font-size: 12px;
+      color: var(--sub);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .mini-stat .v {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .summary-grid {
+      grid-template-columns: 1.2fr 1fr 1fr;
+    }
+
+    .summary-card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--sub);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .chart-card,
+    .table-card {
+      padding: 20px;
+      margin-top: 18px;
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 340px;
+      display: block;
+      margin-top: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+      border-radius: 18px;
+      border: 1px solid #ccd3df;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.95);
+    }
+
+    .chart-canvas.small { height: 300px; }
+
+    .chart-2col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .table-wrap {
+      margin-top: 14px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: #fff;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f7faff;
+      color: var(--ink);
+      font-size: 16px;
+      text-align: center;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    tbody td {
+      text-align: center;
+      padding: 10px 8px;
+      font-size: 16px;
+      border-top: 1px solid #eef2f8;
+      color: var(--ink);
+    }
+
+    tbody tr:nth-child(even) td { background: #fcfdff; }
+
+    .message {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: rgba(31, 42, 68, 0.92);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 14px;
+      box-shadow: 0 12px 26px rgba(31,42,68,0.22);
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+      transition: 0.25s ease;
+      max-width: 360px;
+      line-height: 1.6;
+    }
+
+    .message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .footnote {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    .reference-info {
+      margin-top: 18px;
+      padding: 20px;
+    }
+
+    .reference-info summary {
+      cursor: pointer;
+      list-style: none;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reference-info summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .reference-info summary::before {
+      content: "▶";
+      font-size: 12px;
+      color: var(--sub);
+      transform: translateY(1px);
+      transition: transform 0.2s ease;
+    }
+
+    .reference-info[open] summary::before {
+      transform: rotate(90deg) translateX(1px);
+    }
+
+    .reference-info h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .reference-info .status-strip,
+    .reference-info .concept-grid {
+      margin-top: 14px;
+    }
+
+    .reference-info .summary-grid {
+      margin-top: 14px;
+    }
+
+    @media (max-width: 1180px) {
+      .concept-grid,
+      .sim-grid,
+      .summary-grid,
+      .chart-2col,
+      .status-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .concept-grid,
+      .sim-grid,
+      .summary-grid,
+      .chart-2col,
+      .status-strip,
+      .stats-grid,
+      .current-wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .app { padding: 16px 12px 34px; }
+      .panel { min-height: auto; }
+      .bag-grid { grid-template-columns: repeat(20, 1fr); }
+      .controls-line { align-items: stretch; }
+      .control-group { flex-wrap: wrap; }
+      .field.inline { min-width: 100%; justify-content: space-between; }
+      .field.inline input,
+      .field.inline select { width: 56%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>超几何分布 vs 二项分布：放回与不放回的对照实验</h1>
+
+    </section>
+
+    <section class="card controls">
+      <div class="controls-line">
+        <div class="control-group">
+          <div class="field inline">
+          <label for="aInput">白球数 a</label>
+          <input id="aInput" type="number" min="1" max="3000" step="1" value="10" />
+        </div>
+          <div class="field inline">
+          <label for="bInput">黑球数 b</label>
+          <input id="bInput" type="number" min="1" max="3000" step="1" value="10" />
+        </div>
+          <div class="field inline">
+          <label for="nInput">抽取次数 n</label>
+          <input id="nInput" type="number" min="1" max="30" step="1" value="5" />
+        </div>
+          <div class="field inline">
+          <label for="speedSelect">动画速度</label>
+          <select id="speedSelect">
+            <option>慢</option>
+            <option>中</option>
+            <option selected>快</option>
+            <option>极快</option>
+          </select>
+        </div>
+          <div class="field inline">
+          <label for="autoBatchSelect">自动实验轮数</label>
+          <select id="autoBatchSelect">
+            <option value="10">10 次</option>
+            <option value="50">50 次</option>
+            <option value="100" selected>100 次</option>
+            <option value="500">500 次</option>
+            <option value="1000">1000 次</option>
+          </select>
+        </div>
+          <div class="field inline">
+          <label for="histHeightInput">图1高度</label>
+          <input id="histHeightInput" type="number" min="220" max="700" step="10" value="340" />
+        </div>
+        </div>
+
+        <div class="button-panel">
+          <span class="title">操作区</span>
+          <div class="btn-row">
+            <button class="btn primary" id="singleBtn">单次演示</button>
+            <button class="btn warm" id="autoBtn">自动实验</button>
+            <button class="btn ghost" id="pauseBtn">暂停</button>
+            <button class="btn ghost" id="resetBtn">重置统计</button>
+            <button class="btn subtle-blue" id="randomBtn">随机生成参数</button>
+          </div>
+        </div>
+
+        <div class="button-panel">
+          <span class="title">参数预设</span>
+          <div class="preset-row">
+            <button class="btn ghost preset" data-a="5" data-b="5" data-n="5">5个球</button>
+            <button class="btn ghost preset" data-a="50" data-b="50" data-n="5">50个球</button>
+            <button class="btn ghost preset" data-a="500" data-b="500" data-n="5">500个球</button>
+          </div>
+        </div>
+
+        <div class="scale-panel">
+          <span class="title">保持比例不变，直接放大总体规模</span>
+          <div class="scale-row">
+            <button class="btn ghost" id="scale10Btn">规模 ×10</button>
+            <button class="btn ghost" id="scale100Btn">规模 ×100</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <label class="toggle-pill"><input id="showTheory" type="checkbox" /> 显示理论分布</label>
+          <label class="toggle-pill"><input id="showExp" type="checkbox" checked /> 显示实验频率</label>
+          <label class="toggle-pill"><input id="showDiff" type="checkbox" /> 显示差值图</label>
+          <label class="toggle-pill"><input id="highlightRatio" type="checkbox" /> 高亮 n / (a+b) 指标</label>
+          <label class="toggle-pill"><input id="showMiniStats" type="checkbox" /> 显示过程统计</label>
+          <label class="toggle-pill"><input id="useBatchAuto" type="checkbox" /> 自动实验全部批处理</label>
+          <label class="toggle-pill"><input id="sequentialMode" type="checkbox" checked /> 先左后右演示</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="sim-grid">
+      <div class="card panel" id="withoutPanel">
+        <div class="panel-head">
+          <div>
+            <h3>不放回抽样（超几何分布）</h3>
+          </div>
+        </div>
+
+        <div class="bag-shell">
+          <div class="bag-grid" id="withoutBag"></div>
+        </div>
+
+        <div class="current-wrap">
+          <div class="current-ball idle" id="withoutCurrentBall">?</div>
+          <div>
+            <div class="sample-top">
+              <strong>本轮抽样轨迹</strong>
+              <span id="withoutStepText">第 0 / 5 次</span>
+            </div>
+            <div class="sample-row" id="withoutSample"></div>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="withoutStatsGrid">
+          <div class="mini-stat">
+            <div class="k">当前抽到</div>
+            <div class="v" id="withoutCurrentText">—</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">本轮白球数</div>
+            <div class="v" id="withoutWhiteCount">0</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中剩余白球</div>
+            <div class="v" id="withoutWhiteRemain">10</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中剩余黑球</div>
+            <div class="v" id="withoutBlackRemain">10</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card panel" id="withPanel">
+        <div class="panel-head">
+          <div>
+            <h3>放回抽样（二项分布）</h3>
+          </div>
+        </div>
+
+        <div class="bag-shell">
+          <div class="bag-grid" id="withBag"></div>
+        </div>
+
+        <div class="current-wrap">
+          <div class="current-ball idle" id="withCurrentBall">?</div>
+          <div>
+            <div class="sample-top">
+              <strong>本轮抽样轨迹</strong>
+              <span id="withStepText">第 0 / 5 次</span>
+            </div>
+            <div class="sample-row" id="withSample"></div>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="withStatsGrid">
+          <div class="mini-stat">
+            <div class="k">当前抽到</div>
+            <div class="v" id="withCurrentText">—</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">本轮白球数</div>
+            <div class="v" id="withWhiteCount">0</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中白球数</div>
+            <div class="v" id="withWhiteRemain">10</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中黑球数</div>
+            <div class="v" id="withBlackRemain">10</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card chart-card">
+      <!--<h3>图1：柱状图对照</h3>-->
+      <canvas class="chart-canvas" id="histCanvas"></canvas>
+    </section>
+
+    <section class="chart-2col">
+      <div class="card chart-card">
+        <h3>图2：理论分布对照</h3>
+        <p>蓝线表示不放回对应的超几何分布，橙线表示放回对应的二项分布。</p>
+        <canvas class="chart-canvas small" id="theoryCanvas"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3>图3：差值图 |P<sub>HG</sub> - P<sub>Bin</sub>|</h3>
+        <p>这张图专门刻画每个 k 处的理论差值。峰值和总和越小，说明“差别不大”的表述越有依据。</p>
+        <canvas class="chart-canvas small" id="diffCanvas"></canvas>
+      </div>
+    </section>
+
+    <section class="card table-card">
+      <h3>结果表</h3>
+      <p>便于课堂截图或对照讲解。若尚未开始实验，则实验频率列为 0。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>k</th>
+              <th>超几何理论值</th>
+              <th>二项理论值</th>
+              <th>|Δ|</th>
+              <th>不放回实验频率</th>
+              <th>放回实验频率</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="footnote">提示：当 a+b 很大时，袋中球会采用“按比例缩略显示”，但统计与理论计算均使用真实参数。</div>
+
+    <details class="card reference-info">
+      <summary>参考信息（点击展开）</summary>
+      <div class="status-strip">
+        <div class="metric" id="ratioMetric">
+          <div class="label">核心比例指标</div>
+          <div class="value" id="ratioText">n / (a+b) = 0.25</div>
+          <div class="hint" id="ratioHint">当这个比例较小时，不放回中每次抽取对总体组成的影响更小，两种分布通常更接近。</div>
+        </div>
+        <div class="metric" id="judgeMetric">
+          <div class="label">当前理论判断</div>
+          <div class="value" id="judgeText">差异较明显</div>
+          <div class="hint" id="judgeHint">请先看机制差异，再看总体规模放大后两种分布如何逐渐靠近。</div>
+        </div>
+        <div class="metric">
+          <div class="label">总实验轮数</div>
+          <div class="value" id="expCount">0</div>
+          <div class="hint">每轮都会同时完成一次“放回”和“不放回”的 n 次抽样。</div>
+        </div>
+        <div class="metric">
+          <div class="label">总体差异指标</div>
+          <div class="value" id="tvText">Σ|ΔP| = 0.0000</div>
+          <div class="hint" id="maxDiffText">max|ΔP| = 0.0000</div>
+        </div>
+      </div>
+
+      <section class="concept-grid">
+        <div class="card concept-card">
+          <div class="tag red">不放回</div>
+          <h3>后续概率会变化</h3>
+          <p>每次抽走一个球后，袋中白球数和黑球数都可能改变，因此后面每一步的抽取概率依赖前面已经发生的结果。</p>
+        </div>
+        <div class="card concept-card">
+          <div class="tag blue">放回</div>
+          <h3>每次环境保持不变</h3>
+          <p>摸出后放回，袋中组成始终不变，各次抽取共享同一个白球概率 <span id="pText">p = 0.5000</span>。</p>
+        </div>
+        <div class="card concept-card">
+          <div class="tag green">统计对照</div>
+          <h3>看分布而不是只看单轮</h3>
+          <p>单轮结果有波动，但大量重复实验后，“抽到白球个数”的频率分布会稳定下来，更适合比较两种抽样机制。</p>
+        </div>
+        <div class="card concept-card">
+          <div class="tag orange">关键结论</div>
+          <h3>总体足够大时更接近</h3>
+          <p>当 a+b 远大于 n 时，不放回造成的组成变化在短时间内变得很小，因此超几何分布可由二项分布近似。</p>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="card summary-card">
+          <h3>当前课堂观察</h3>
+          <p id="observationText">先通过单次演示观察“袋中组成是否变化”，再通过自动实验比较两种分布的频率图。</p>
+          <ul>
+            <li id="lastResultText">本轮尚未开始。</li>
+            <li id="mechanismText">不放回：后一步的概率会受到前一步结果影响；放回：每一步环境相同。</li>
+            <li id="ratioExplainText">当 n / (a+b) 较小时，单次抽取对总体组成的扰动更弱。</li>
+          </ul>
+        </div>
+        <div class="card summary-card">
+          <h3>理论结论</h3>
+          <p id="conclusionText">当前参数下，超几何分布与二项分布的理论差异可通过下方差值图与结果表来量化观察。</p>
+        </div>
+        <div class="card summary-card">
+          <h3>课堂建议</h3>
+          <p>建议先用“预设1”让学生感受差异，再点击“规模 ×10”或切换到“预设3”，观察分布如何逐步重合。</p>
+        </div>
+      </section>
+    </details>
+  </div>
+
+  <div class="message" id="messageBar"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+      aInput: $("aInput"),
+      bInput: $("bInput"),
+      nInput: $("nInput"),
+      speedSelect: $("speedSelect"),
+      autoBatchSelect: $("autoBatchSelect"),
+      histHeightInput: $("histHeightInput"),
+      singleBtn: $("singleBtn"),
+      autoBtn: $("autoBtn"),
+      pauseBtn: $("pauseBtn"),
+      resetBtn: $("resetBtn"),
+      randomBtn: $("randomBtn"),
+      scale10Btn: $("scale10Btn"),
+      scale100Btn: $("scale100Btn"),
+      showTheory: $("showTheory"),
+      showExp: $("showExp"),
+      showDiff: $("showDiff"),
+      highlightRatio: $("highlightRatio"),
+      showMiniStats: $("showMiniStats"),
+      useBatchAuto: $("useBatchAuto"),
+      sequentialMode: $("sequentialMode"),
+      ratioMetric: $("ratioMetric"),
+      ratioText: $("ratioText"),
+      ratioHint: $("ratioHint"),
+      judgeMetric: $("judgeMetric"),
+      judgeText: $("judgeText"),
+      judgeHint: $("judgeHint"),
+      expCount: $("expCount"),
+      tvText: $("tvText"),
+      maxDiffText: $("maxDiffText"),
+      pText: $("pText"),
+      withoutBag: $("withoutBag"),
+      withBag: $("withBag"),
+      withoutCurrentBall: $("withoutCurrentBall"),
+      withCurrentBall: $("withCurrentBall"),
+      withoutStepText: $("withoutStepText"),
+      withStepText: $("withStepText"),
+      withoutSample: $("withoutSample"),
+      withSample: $("withSample"),
+      withoutCurrentText: $("withoutCurrentText"),
+      withCurrentText: $("withCurrentText"),
+      withoutWhiteCount: $("withoutWhiteCount"),
+      withWhiteCount: $("withWhiteCount"),
+      withoutWhiteRemain: $("withoutWhiteRemain"),
+      withoutBlackRemain: $("withoutBlackRemain"),
+      withWhiteRemain: $("withWhiteRemain"),
+      withBlackRemain: $("withBlackRemain"),
+      withoutStatsGrid: $("withoutStatsGrid"),
+      withStatsGrid: $("withStatsGrid"),
+      withoutPanel: $("withoutPanel"),
+      withPanel: $("withPanel"),
+      observationText: $("observationText"),
+      lastResultText: $("lastResultText"),
+      mechanismText: $("mechanismText"),
+      ratioExplainText: $("ratioExplainText"),
+      conclusionText: $("conclusionText"),
+      histCanvas: $("histCanvas"),
+      theoryCanvas: $("theoryCanvas"),
+      diffCanvas: $("diffCanvas"),
+      resultBody: $("resultBody"),
+      messageBar: $("messageBar")
+    };
+
+    const state = {
+      a: 10,
+      b: 10,
+      n: 5,
+      speed: "中",
+      showTheory: false,
+      showExp: true,
+      showDiff: false,
+      highlightRatio: false,
+      showMiniStats: false,
+      useBatchAuto: false,
+      sequentialMode: true,
+      experiments: 0,
+      withoutCounts: [],
+      withCounts: [],
+      running: false,
+      paused: false,
+      autoRemaining: 0,
+      histHeight: 340,
+      timers: [],
+      display: null,
+      lastRound: null
+    };
+
+    function clampInt(v, min, max, fallback) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, Math.round(n)));
+    }
+
+    function speedDelay() {
+      if (state.speed === "极快") return 80;
+      if (state.speed === "慢") return 540;
+      if (state.speed === "快") return 160;
+      return 300;
+    }
+
+    function batchPause() {
+      if (state.speed === "极快") return 70;
+      if (state.speed === "慢") return 360;
+      if (state.speed === "快") return 130;
+      return 220;
+    }
+
+    function schedule(fn, delay) {
+      const id = setTimeout(fn, delay);
+      state.timers.push(id);
+      return id;
+    }
+
+    function clearAllTimers() {
+      state.timers.forEach(clearTimeout);
+      state.timers = [];
+    }
+
+    function showMessage(text) {
+      els.messageBar.textContent = text;
+      els.messageBar.classList.add("show");
+      clearTimeout(showMessage._timer);
+      showMessage._timer = setTimeout(() => {
+        els.messageBar.classList.remove("show");
+      }, 2200);
+    }
+
+    function createCounts() {
+      state.withoutCounts = Array(state.n + 1).fill(0);
+      state.withCounts = Array(state.n + 1).fill(0);
+    }
+
+    function createInitialDisplay() {
+      state.display = {
+        without: {
+          step: 0,
+          current: null,
+          sample: [],
+          whiteCount: 0,
+          bagWhite: state.a,
+          bagBlack: state.b
+        },
+        with: {
+          step: 0,
+          current: null,
+          sample: [],
+          whiteCount: 0,
+          bagWhite: state.a,
+          bagBlack: state.b
+        }
+      };
+    }
+
+    function resetStats() {
+      clearAllTimers();
+      state.running = false;
+      state.paused = false;
+      state.autoRemaining = 0;
+      state.experiments = 0;
+      state.lastRound = null;
+      createCounts();
+      createInitialDisplay();
+      renderAll();
+    }
+
+    function syncParamsFromInputs() {
+      clearAllTimers();
+      state.running = false;
+      state.paused = false;
+      state.autoRemaining = 0;
+
+      const a = clampInt(els.aInput.value, 1, 3000, state.a);
+      const b = clampInt(els.bInput.value, 1, 3000, state.b);
+      let n = clampInt(els.nInput.value, 1, 30, state.n);
+      const total = a + b;
+      if (n > total) {
+        n = Math.min(total, 30);
+        showMessage("已自动修正：不放回抽样要求 n ≤ a+b。");
+      }
+
+      state.a = a;
+      state.b = b;
+      state.n = n;
+      state.speed = els.speedSelect.value;
+      state.showTheory = els.showTheory.checked;
+      state.showExp = els.showExp.checked;
+      state.showDiff = els.showDiff.checked;
+      state.highlightRatio = els.highlightRatio.checked;
+      state.showMiniStats = els.showMiniStats.checked;
+      state.useBatchAuto = els.useBatchAuto.checked;
+      state.sequentialMode = els.sequentialMode.checked;
+      state.histHeight = clampInt(els.histHeightInput.value, 220, 700, state.histHeight);
+
+      els.aInput.value = state.a;
+      els.bInput.value = state.b;
+      els.nInput.value = state.n;
+      els.histHeightInput.value = state.histHeight;
+
+      resetStats();
+    }
+
+    function syncHistHeightOnly() {
+      state.histHeight = clampInt(els.histHeightInput.value, 220, 700, state.histHeight);
+      els.histHeightInput.value = state.histHeight;
+      renderAll();
+    }
+
+    function setParams(a, b, n) {
+      els.aInput.value = a;
+      els.bInput.value = b;
+      els.nInput.value = n;
+      syncParamsFromInputs();
+    }
+
+    function randomizeParams() {
+      const total = Math.floor(12 + Math.random() * 180);
+      const p = [0.2, 0.3, 0.4, 0.5, 0.6][Math.floor(Math.random() * 5)];
+      let a = Math.max(1, Math.round(total * p));
+      let b = Math.max(1, total - a);
+      if (b === 0) b = 1;
+      const n = Math.min(30, Math.max(2, Math.floor(2 + Math.random() * Math.min(10, total - 1))));
+      setParams(a, b, n);
+      showMessage("已随机生成一组参数，可直接开始演示。");
+    }
+
+    function scalePopulation(factor) {
+      let a = state.a * factor;
+      let b = state.b * factor;
+      const cap = 3000;
+      if (a > cap || b > cap) {
+        const scale = Math.min(cap / a, cap / b);
+        a = Math.max(1, Math.floor(a * scale));
+        b = Math.max(1, Math.floor(b * scale));
+        showMessage("已按上限自动缩放，避免参数过大。理论计算仍然有效。");
+      }
+      setParams(a, b, state.n);
+    }
+
+    function chooseColor(probWhite) {
+      return Math.random() < probWhite ? "W" : "B";
+    }
+
+    function countWhite(arr) {
+      return arr.reduce((s, x) => s + (x === "W" ? 1 : 0), 0);
+    }
+
+    function simulateRound() {
+      let bagWhite = state.a;
+      let bagBlack = state.b;
+      const without = [];
+      const withRep = [];
+      const steps = [];
+      const p = state.a / (state.a + state.b);
+
+      for (let i = 1; i <= state.n; i++) {
+        const noReplace = chooseColor(bagWhite / (bagWhite + bagBlack));
+        without.push(noReplace);
+        if (noReplace === "W") bagWhite -= 1;
+        else bagBlack -= 1;
+
+        const withColor = chooseColor(p);
+        withRep.push(withColor);
+
+        steps.push({
+          step: i,
+          withoutCurrent: noReplace,
+          withCurrent: withColor,
+          withoutSample: without.slice(),
+          withSample: withRep.slice(),
+          withoutWhiteCount: countWhite(without),
+          withWhiteCount: countWhite(withRep),
+          withoutBagWhite: bagWhite,
+          withoutBagBlack: bagBlack,
+          withBagWhite: state.a,
+          withBagBlack: state.b
+        });
+      }
+
+      return {
+        steps,
+        withoutTotalWhite: countWhite(without),
+        withTotalWhite: countWhite(withRep),
+        without,
+        withRep
+      };
+    }
+
+    function loadStep(stepData) {
+      state.display.without = {
+        step: stepData.step,
+        current: stepData.withoutCurrent,
+        sample: stepData.withoutSample,
+        whiteCount: stepData.withoutWhiteCount,
+        bagWhite: stepData.withoutBagWhite,
+        bagBlack: stepData.withoutBagBlack
+      };
+      state.display.with = {
+        step: stepData.step,
+        current: stepData.withCurrent,
+        sample: stepData.withSample,
+        whiteCount: stepData.withWhiteCount,
+        bagWhite: stepData.withBagWhite,
+        bagBlack: stepData.withBagBlack
+      };
+    }
+
+    function commitRound(round, options = {}) {
+      const { showFinalStep = true } = options;
+      state.experiments += 1;
+      state.withoutCounts[round.withoutTotalWhite] += 1;
+      state.withCounts[round.withTotalWhite] += 1;
+      state.lastRound = {
+        without: round.withoutTotalWhite,
+        with: round.withTotalWhite,
+        withoutSeq: round.without.slice(),
+        withSeq: round.withRep.slice()
+      };
+      if (showFinalStep) {
+        loadStep(round.steps[round.steps.length - 1]);
+      }
+    }
+
+    function loadRoundSummary(round) {
+      state.display.without = {
+        step: 0,
+        current: null,
+        sample: [],
+        whiteCount: round.withoutTotalWhite,
+        bagWhite: state.a - round.withoutTotalWhite,
+        bagBlack: state.b - (state.n - round.withoutTotalWhite)
+      };
+      state.display.with = {
+        step: 0,
+        current: null,
+        sample: [],
+        whiteCount: round.withTotalWhite,
+        bagWhite: state.a,
+        bagBlack: state.b
+      };
+    }
+
+    function finishSingleRound(round, callback) {
+      commitRound(round);
+      state.running = false;
+      state.paused = false;
+      renderAll();
+      if (callback) callback();
+    }
+
+    function animateRoundSequential(round, callback) {
+      clearAllTimers();
+      state.running = true;
+      state.paused = false;
+      createInitialDisplay();
+      renderAll();
+      let index = 0;
+
+      const nextWith = () => {
+        if (!state.running || state.paused) return;
+        if (index >= round.steps.length) {
+          finishSingleRound(round, callback);
+          return;
+        }
+        const stepData = round.steps[index];
+        state.display.with = {
+          step: stepData.step,
+          current: stepData.withCurrent,
+          sample: stepData.withSample,
+          whiteCount: stepData.withWhiteCount,
+          bagWhite: stepData.withBagWhite,
+          bagBlack: stepData.withBagBlack
+        };
+        renderAll();
+        index += 1;
+        schedule(nextWith, speedDelay());
+      };
+
+      const nextWithout = () => {
+        if (!state.running || state.paused) return;
+        if (index >= round.steps.length) {
+          // 左侧完成，重置索引，启动右侧动画
+          const finalStep = round.steps[round.steps.length - 1];
+          state.display.without = {
+            step: finalStep.step,
+            current: null,
+            sample: finalStep.withoutSample,
+            whiteCount: finalStep.withoutWhiteCount,
+            bagWhite: finalStep.withoutBagWhite,
+            bagBlack: finalStep.withoutBagBlack
+          };
+          state.display.with = {
+            step: 0,
+            current: null,
+            sample: [],
+            whiteCount: 0,
+            bagWhite: state.a,
+            bagBlack: state.b
+          };
+          index = 0;
+          renderAll();
+          schedule(nextWith, speedDelay());
+          return;
+        }
+        const stepData = round.steps[index];
+        state.display.without = {
+          step: stepData.step,
+          current: stepData.withoutCurrent,
+          sample: stepData.withoutSample,
+          whiteCount: stepData.withoutWhiteCount,
+          bagWhite: stepData.withoutBagWhite,
+          bagBlack: stepData.withoutBagBlack
+        };
+        renderAll();
+        index += 1;
+        schedule(nextWithout, speedDelay());
+      };
+
+      schedule(nextWithout, speedDelay());
+    }
+
+    function animateRound(round, callback) {
+      if (state.sequentialMode) {
+        animateRoundSequential(round, callback);
+        return;
+      }
+      clearAllTimers();
+      state.running = true;
+      state.paused = false;
+      createInitialDisplay();
+      renderAll();
+      let index = 0;
+
+      const next = () => {
+        if (!state.running || state.paused) return;
+        if (index >= round.steps.length) {
+          finishSingleRound(round, callback);
+          return;
+        }
+        loadStep(round.steps[index]);
+        renderAll();
+        index += 1;
+        schedule(next, speedDelay());
+      };
+
+      schedule(next, speedDelay());
+    }
+
+    function runSingleDemo() {
+      if (state.running) return;
+      const round = simulateRound();
+      animateRound(round, null);
+    }
+
+    function fastBatchSize() {
+      if (state.autoRemaining > 500) return 40;
+      if (state.autoRemaining > 200) return 20;
+      if (state.autoRemaining > 80) return 8;
+      if (state.autoRemaining > 25) return 3;
+      return 1;
+    }
+
+    function runAuto() {
+      if (state.running) return;
+      state.autoRemaining = clampInt(els.autoBatchSelect.value, 1, 1000, 100);
+      state.running = true;
+      state.paused = false;
+      stepAuto();
+    }
+
+    function batchChunkSize() {
+      if (state.speed === "慢") return 20;
+      if (state.speed === "中") return 60;
+      if (state.speed === "快") return 120;
+      if (state.speed === "极快") return 220;
+      return 60;
+    }
+
+    function stepAuto() {
+      if (!state.running || state.paused) return;
+      if (state.autoRemaining <= 0) {
+        state.running = false;
+        renderAll();
+        return;
+      }
+
+      if (state.useBatchAuto) {
+        const round = simulateRound();
+        commitRound(round, { showFinalStep: false });
+        loadRoundSummary(round);
+        state.autoRemaining -= 1;
+        renderAll();
+        if (state.autoRemaining > 0) {
+          schedule(stepAuto, batchPause());
+        } else {
+          state.running = false;
+          renderAll();
+        }
+        return;
+      }
+
+      const round = simulateRound();
+      animateRound(round, () => {
+        state.autoRemaining -= 1;
+        state.running = true;
+        stepAuto();
+      });
+    }
+
+    function togglePause() {
+      if (state.running) {
+        state.paused = true;
+        state.running = false;
+        clearAllTimers();
+        renderAll();
+      } else if (state.paused && state.autoRemaining > 0) {
+        state.paused = false;
+        state.running = true;
+        stepAuto();
+        renderAll();
+      }
+    }
+
+    function renderBag(container, whiteCount, blackCount, highlightColor) {
+      const total = whiteCount + blackCount;
+      const showCount = Math.min(total, 90);
+      let whiteShown = total === 0 ? 0 : Math.round((whiteCount / total) * showCount);
+      if (whiteCount > 0 && whiteShown === 0) whiteShown = 1;
+      if (whiteShown > showCount) whiteShown = showCount;
+      let blackShown = showCount - whiteShown;
+      if (blackCount > 0 && blackShown === 0 && showCount > whiteShown) blackShown = 1;
+      whiteShown = Math.min(whiteShown, showCount - blackShown);
+
+      const hasWhiteHighlight = highlightColor === "W" && whiteShown > 0;
+      const hasBlackHighlight = highlightColor === "B" && blackShown > 0;
+
+      container.innerHTML = [
+        ...Array.from({ length: whiteShown }, (_, idx) => `<div class="ball white${hasWhiteHighlight && idx === 0 ? " drawn" : ""}"></div>`),
+        ...Array.from({ length: blackShown }, (_, idx) => `<div class="ball black${hasBlackHighlight && idx === 0 ? " drawn" : ""}"></div>`)
+      ].join("");
+      return total > showCount;
+    }
+
+    function renderSample(container, sample, currentStep) {
+      const html = [];
+      for (let i = 0; i < state.n; i++) {
+        const val = sample[i];
+        let cls = "draw-chip pending";
+        let text = i + 1;
+        if (val === "W") {
+          cls = "draw-chip white";
+          text = "";
+        } else if (val === "B") {
+          cls = "draw-chip black";
+          text = "";
+        }
+        if (i === currentStep - 1 && val) cls += " active";
+        html.push(`<div class="${cls}">${text}</div>`);
+      }
+      container.innerHTML = html.join("");
+    }
+
+    function renderCurrentBall(el, current) {
+      if (!current) {
+        el.className = "current-ball idle";
+        el.textContent = "?";
+        return;
+      }
+      el.className = current === "W" ? "current-ball white" : "current-ball black";
+      el.textContent = current === "W" ? "白" : "黑";
+    }
+
+    function fmt(x) {
+      return Number(x).toFixed(4);
+    }
+
+    function getExpProb(counts) {
+      if (!state.experiments) return counts.map(() => 0);
+      return counts.map((x) => x / state.experiments);
+    }
+
+    function logGamma(z) {
+      const p = [
+        676.5203681218851,
+        -1259.1392167224028,
+        771.32342877765313,
+        -176.61502916214059,
+        12.507343278686905,
+        -0.13857109526572012,
+        9.9843695780195716e-6,
+        1.5056327351493116e-7
+      ];
+      if (z < 0.5) {
+        return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z);
+      }
+      z -= 1;
+      let x = 0.99999999999980993;
+      for (let i = 0; i < p.length; i++) x += p[i] / (z + i + 1);
+      const t = z + p.length - 0.5;
+      return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+    }
+
+    function logChoose(n, k) {
+      if (k < 0 || k > n) return -Infinity;
+      return logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1);
+    }
+
+    function normalizeLogProbs(logs) {
+      const finite = logs.filter((x) => Number.isFinite(x));
+      if (!finite.length) return logs.map(() => 0);
+      const maxLog = Math.max(...finite);
+      const vals = logs.map((x) => Number.isFinite(x) ? Math.exp(x - maxLog) : 0);
+      const sum = vals.reduce((a, b) => a + b, 0);
+      return vals.map((x) => x / sum);
+    }
+
+    function theoryHypergeometric() {
+      const logs = [];
+      for (let k = 0; k <= state.n; k++) {
+        if (k > state.a || state.n - k > state.b) {
+          logs.push(-Infinity);
+        } else {
+          logs.push(logChoose(state.a, k) + logChoose(state.b, state.n - k) - logChoose(state.a + state.b, state.n));
+        }
+      }
+      return normalizeLogProbs(logs);
+    }
+
+    function theoryBinomial() {
+      const p = state.a / (state.a + state.b);
+      const q = 1 - p;
+      const logs = [];
+      for (let k = 0; k <= state.n; k++) {
+        let v;
+        if (p === 0) v = (k === 0 ? 0 : -Infinity);
+        else if (q === 0) v = (k === state.n ? 0 : -Infinity);
+        else v = logChoose(state.n, k) + k * Math.log(p) + (state.n - k) * Math.log(q);
+        logs.push(v);
+      }
+      return normalizeLogProbs(logs);
+    }
+
+    function getTheoryBundle() {
+      const hg = theoryHypergeometric();
+      const bin = theoryBinomial();
+      const diff = hg.map((x, i) => Math.abs(x - bin[i]));
+      return { hg, bin, diff };
+    }
+
+    function prepCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(300, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(220, Math.floor(rect.height * dpr));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    const chartTheme = {
+      ink: "#101010",
+      text: "#161616",
+      grid: "#d7dde8",
+      axis: "#232323",
+      expHg: "rgba(58, 112, 255, 0.9)",
+      expBin: "rgba(255, 136, 64, 0.9)",
+      thHg: "rgba(23, 74, 188, 0.86)",
+      thBin: "rgba(210, 108, 28, 0.86)",
+      diff: "#555c67"
+    };
+
+    function drawAxes(ctx, width, height, maxY, labelY) {
+      const pad = { left: 72, right: 28, top: 72, bottom: 58 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+      ctx.strokeStyle = chartTheme.grid;
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i <= 5; i++) {
+        const y = pad.top + (plotH * i) / 5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+
+        const tickVal = maxY * (1 - i / 5);
+        ctx.fillStyle = chartTheme.text;
+        ctx.font = "600 16px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(tickVal.toFixed(2), pad.left - 8, y + 4);
+      }
+      ctx.strokeStyle = chartTheme.axis;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, height - pad.bottom);
+      ctx.lineTo(width - pad.right, height - pad.bottom);
+      ctx.stroke();
+      ctx.fillStyle = chartTheme.ink;
+      ctx.font = "700 18px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("白球个数 k", pad.left + plotW / 2, height - 16);
+      ctx.save();
+      ctx.translate(24, pad.top + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(labelY, 0, 0);
+      ctx.restore();
+      return { pad, plotW, plotH };
+    }
+
+    function toY(value, maxY, pad, plotH) {
+      return pad.top + plotH * (1 - value / maxY);
+    }
+
+    function drawLegend(ctx, items, width) {
+      let x = 18;
+      let y = 28;
+      const rowH = 30;
+      ctx.font = "600 16px sans-serif";
+      ctx.textAlign = "left";
+      items.forEach((item) => {
+        const textW = ctx.measureText(item.label).width;
+        const itemW = 18 + 8 + textW + 20;
+        if (x + itemW > width - 16) {
+          x = 18;
+          y += rowH;
+        }
+
+        ctx.fillStyle = item.color;
+        if (item.type === "line") {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = item.color;
+          ctx.beginPath();
+          ctx.moveTo(x, y - 6);
+          ctx.lineTo(x + 18, y - 6);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(x + 9, y - 6, 3.1, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y - 12, 18, 10);
+        }
+        ctx.fillStyle = chartTheme.ink;
+        ctx.fillText(item.label, x + 26, y - 1);
+        x += itemW;
+      });
+    }
+
+    function drawRoundedBar(ctx, x, y, w, h, r) {
+      if (h <= 0) return;
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x, y + h);
+      ctx.lineTo(x, y + rr);
+      ctx.quadraticCurveTo(x, y, x + rr, y);
+      ctx.lineTo(x + w - rr, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+      ctx.lineTo(x + w, y + h);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawBars(ctx, data, color, borderColor, width, height, pad, plotW, plotH, maxY, seriesIndex, seriesCount) {
+      const groupW = plotW / data.length;
+      const gap = 3;
+      const usable = Math.max(10, groupW * 0.86);
+      const barW = Math.max(4, (usable - gap * (seriesCount - 1)) / seriesCount);
+      for (let i = 0; i < data.length; i++) {
+        const centerX = pad.left + groupW * (i + 0.5);
+        const startX = centerX - usable / 2;
+        const x = startX + seriesIndex * (barW + gap);
+        const h = plotH * (data[i] / maxY);
+        ctx.fillStyle = color;
+        drawRoundedBar(ctx, x, height - pad.bottom - h, barW, h, 6);
+        if (borderColor) {
+          ctx.strokeStyle = borderColor;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x + 0.5, height - pad.bottom - h + 0.5, Math.max(0, barW - 1), Math.max(0, h - 1));
+        }
+      }
+    }
+
+    function drawLine(ctx, data, color, width, pad, plotW, plotH, maxY) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = pad.left + plotW * ((i + 0.5) / data.length);
+        const y = toY(v, maxY, pad, plotH);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      data.forEach((v, i) => {
+        const x = pad.left + plotW * ((i + 0.5) / data.length);
+        const y = toY(v, maxY, pad, plotH);
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(x, y, 4.4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawHistogram() {
+      const { ctx, width, height } = prepCanvas(els.histCanvas);
+      const expHg = getExpProb(state.withoutCounts);
+      const expBin = getExpProb(state.withCounts);
+      const { hg, bin } = getTheoryBundle();
+      const maxY = Math.max(0.12, ...expHg, ...expBin, ...hg, ...bin) * 1.15;
+      const { pad, plotW, plotH } = drawAxes(ctx, width, height, maxY, "概率 / 频率");
+
+      for (let i = 0; i <= state.n; i++) {
+        const centerX = pad.left + plotW * ((i + 0.5) / (state.n + 1));
+        ctx.fillStyle = chartTheme.ink;
+        ctx.font = "600 16px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(String(i), centerX, height - pad.bottom + 22);
+      }
+
+      const series = [];
+      if (state.showExp) {
+        series.push({ label: "不放回实验", color: chartTheme.expHg, border: "rgba(26,74,202,0.9)", data: expHg, type: "bar" });
+        series.push({ label: "放回实验", color: chartTheme.expBin, border: "rgba(177,88,22,0.9)", data: expBin, type: "bar" });
+      }
+      if (state.showTheory) {
+        series.push({ label: "超几何理论值", color: chartTheme.thHg, border: "rgba(13,53,150,0.95)", data: hg, type: "bar" });
+        series.push({ label: "二项理论值", color: chartTheme.thBin, border: "rgba(152,75,18,0.95)", data: bin, type: "bar" });
+      }
+
+      series.forEach((s, idx) => {
+        drawBars(ctx, s.data, s.color, s.border, width, height, pad, plotW, plotH, maxY, idx, series.length);
+      });
+
+      const legend = [];
+      if (state.showExp) {
+        legend.push({ label: "不放回实验", color: chartTheme.expHg, type: "bar" });
+        legend.push({ label: "放回实验", color: chartTheme.expBin, type: "bar" });
+      }
+      if (state.showTheory) {
+        legend.push({ label: "超几何理论值", color: chartTheme.thHg, type: "bar" });
+        legend.push({ label: "二项理论值", color: chartTheme.thBin, type: "bar" });
+      }
+      drawLegend(ctx, legend, width);
+    }
+
+    function drawTheory() {
+      const { ctx, width, height } = prepCanvas(els.theoryCanvas);
+      const { hg, bin } = getTheoryBundle();
+      const maxY = Math.max(0.12, ...hg, ...bin) * 1.15;
+      const { pad, plotW, plotH } = drawAxes(ctx, width, height, maxY, "理论概率");
+      for (let i = 0; i <= state.n; i++) {
+        const x = pad.left + plotW * ((i + 0.5) / (state.n + 1));
+        ctx.fillStyle = chartTheme.ink;
+        ctx.font = "600 16px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(String(i), x, height - pad.bottom + 22);
+      }
+      drawLine(ctx, hg, "#2258d6", width, pad, plotW, plotH, maxY);
+      drawLine(ctx, bin, "#d97221", width, pad, plotW, plotH, maxY);
+      drawLegend(ctx, [
+        { label: "超几何理论值", color: "#2258d6", type: "line" },
+        { label: "二项理论值", color: "#d97221", type: "line" }
+      ], width);
+    }
+
+    function drawDiff() {
+      const { ctx, width, height } = prepCanvas(els.diffCanvas);
+      if (!state.showDiff) {
+        ctx.fillStyle = chartTheme.ink;
+        ctx.font = "600 16px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("已关闭差值图显示", width / 2, height / 2);
+        return;
+      }
+      const { diff } = getTheoryBundle();
+      const maxY = Math.max(0.03, ...diff) * 1.18;
+      const { pad, plotW, plotH } = drawAxes(ctx, width, height, maxY, "|ΔP|");
+      const groupW = plotW / (state.n + 1);
+      const barW = Math.min(34, groupW * 0.55);
+      for (let i = 0; i <= state.n; i++) {
+        const centerX = pad.left + groupW * (i + 0.5);
+        const h = plotH * (diff[i] / maxY);
+        const grad = ctx.createLinearGradient(0, height - pad.bottom - h, 0, height - pad.bottom);
+        grad.addColorStop(0, "rgba(95,105,120,0.92)");
+        grad.addColorStop(1, "rgba(146,156,170,0.55)");
+        ctx.fillStyle = grad;
+        drawRoundedBar(ctx, centerX - barW / 2, height - pad.bottom - h, barW, h, 6);
+        ctx.fillStyle = chartTheme.ink;
+        ctx.font = "600 16px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(String(i), centerX, height - pad.bottom + 22);
+      }
+      drawLegend(ctx, [{ label: "|P_HG - P_Bin|", color: chartTheme.diff, type: "bar" }], width);
+    }
+
+    function ratioClass(ratio) {
+      if (ratio <= 0.08) return { cls: "good", text: "非常接近", hint: "n 相对总体很小，不放回造成的组成变化很弱，两种分布通常已很接近。" };
+      if (ratio <= 0.18) return { cls: "mid", text: "较为接近", hint: "已经可以看出近似趋势，但局部仍可能有可见差异。" };
+      return { cls: "warn", text: "差异较明显", hint: "抽取次数占总体比例不小，不放回对后续概率的影响更明显。" };
+    }
+
+    function renderMetrics(theory) {
+      const ratio = state.n / (state.a + state.b);
+      els.ratioText.textContent = `n / (a+b) = ${ratio.toFixed(4)}`;
+      const rc = ratioClass(ratio);
+      els.ratioMetric.className = `metric ${state.highlightRatio ? rc.cls : ""}`;
+      els.ratioHint.textContent = state.highlightRatio
+        ? rc.hint
+        : "勾选“高亮 n / (a+b) 指标”后，会根据比例自动给出颜色提示。";
+
+      els.judgeMetric.className = `metric ${rc.cls}`;
+      els.judgeText.textContent = rc.text;
+      els.judgeHint.textContent = rc.hint;
+      els.expCount.textContent = String(state.experiments);
+      els.pText.textContent = `p = ${(state.a / (state.a + state.b)).toFixed(4)}`;
+
+      const tv = theory.diff.reduce((a, b) => a + b, 0);
+      const maxDiff = Math.max(...theory.diff);
+      els.tvText.textContent = `Σ|ΔP| = ${fmt(tv)}`;
+      els.maxDiffText.textContent = `max|ΔP| = ${fmt(maxDiff)}`;
+    }
+
+    function renderPanels() {
+      const wd = state.display.without;
+      const wr = state.display.with;
+      renderBag(els.withoutBag, wd.bagWhite, wd.bagBlack, wd.current);
+      renderBag(els.withBag, wr.bagWhite, wr.bagBlack, wr.current);
+
+      renderCurrentBall(els.withoutCurrentBall, wd.current);
+      renderCurrentBall(els.withCurrentBall, wr.current);
+      renderSample(els.withoutSample, wd.sample, wd.step);
+      renderSample(els.withSample, wr.sample, wr.step);
+
+      els.withoutStepText.textContent = `第 ${wd.step} / ${state.n} 次`;
+      els.withStepText.textContent = `第 ${wr.step} / ${state.n} 次`;
+      els.withoutCurrentText.textContent = wd.current ? (wd.current === "W" ? "白球" : "黑球") : "—";
+      els.withCurrentText.textContent = wr.current ? (wr.current === "W" ? "白球" : "黑球") : "—";
+      els.withoutWhiteCount.textContent = String(wd.whiteCount);
+      els.withWhiteCount.textContent = String(wr.whiteCount);
+      els.withoutWhiteRemain.textContent = String(wd.bagWhite);
+      els.withoutBlackRemain.textContent = String(wd.bagBlack);
+      els.withWhiteRemain.textContent = String(state.a);
+      els.withBlackRemain.textContent = String(state.b);
+
+      const miniStatsDisplay = state.showMiniStats ? "grid" : "none";
+      els.withoutStatsGrid.style.display = miniStatsDisplay;
+      els.withStatsGrid.style.display = miniStatsDisplay;
+
+      const panelMinHeight = state.showMiniStats ? "560px" : "auto";
+      els.withoutPanel.style.minHeight = panelMinHeight;
+      els.withPanel.style.minHeight = panelMinHeight;
+    }
+
+    function renderSummary(theory) {
+      const ratio = state.n / (state.a + state.b);
+      const tv = theory.diff.reduce((a, b) => a + b, 0);
+      const judgement = ratioClass(ratio).text;
+      els.observationText.textContent = state.experiments === 0
+        ? "先通过单次演示观察“袋中组成是否变化”，再通过自动实验比较两种分布的频率图。"
+        : `当前已经完成 ${state.experiments} 轮实验。继续增加实验轮数，可以看到实验频率更稳定地贴近理论分布。`;
+
+      els.lastResultText.textContent = state.lastRound
+        ? `最近一轮：不放回得到 ${state.lastRound.without} 个白球，放回得到 ${state.lastRound.with} 个白球。`
+        : "本轮尚未开始。";
+
+      els.mechanismText.textContent = ratio > 0.18
+        ? "当前参数下，不放回每抽一次都会更明显地改变袋中组成，因此后续概率与放回情形差别较大。"
+        : "当前参数下，虽然不放回仍会改变袋中组成，但这种扰动相对较弱，因此两种分布开始靠近。";
+
+      els.ratioExplainText.textContent = `现在 n / (a+b) = ${ratio.toFixed(4)}，对应的理论判断是“${judgement}”。`;
+      els.conclusionText.textContent = tv <= 0.08
+        ? "当前参数下，两种理论分布已经非常接近，可将超几何分布视为二项分布的良好近似。"
+        : tv <= 0.18
+          ? "当前参数下，两种理论分布已有明显接近趋势，但局部仍可观察到差异。"
+          : "当前参数下，两种理论分布差异仍较明显，更适合先强调抽样机制的本质区别。";
+    }
+
+    function renderTable(theory) {
+      const expHg = getExpProb(state.withoutCounts);
+      const expBin = getExpProb(state.withCounts);
+      const rows = [];
+      for (let k = 0; k <= state.n; k++) {
+        rows.push(`
+          <tr>
+            <td>${k}</td>
+            <td>${fmt(theory.hg[k])}</td>
+            <td>${fmt(theory.bin[k])}</td>
+            <td>${fmt(theory.diff[k])}</td>
+            <td>${fmt(expHg[k])}</td>
+            <td>${fmt(expBin[k])}</td>
+          </tr>
+        `);
+      }
+      els.resultBody.innerHTML = rows.join("");
+    }
+
+    function renderButtons() {
+      els.singleBtn.disabled = state.running;
+      els.autoBtn.disabled = state.running;
+      if (state.paused && state.autoRemaining > 0) {
+        els.pauseBtn.textContent = "继续";
+        els.pauseBtn.disabled = false;
+      } else if (state.running && state.autoRemaining > 0) {
+        els.pauseBtn.textContent = "暂停";
+        els.pauseBtn.disabled = false;
+      } else {
+        els.pauseBtn.textContent = "暂停";
+        els.pauseBtn.disabled = true;
+      }
+    }
+
+    function renderAll() {
+      els.histCanvas.style.height = `${state.histHeight}px`;
+      const theory = getTheoryBundle();
+      renderMetrics(theory);
+      renderPanels();
+      renderSummary(theory);
+      renderTable(theory);
+      drawHistogram();
+      drawTheory();
+      drawDiff();
+      renderButtons();
+    }
+
+    function bindEvents() {
+      [els.aInput, els.bInput, els.nInput, els.speedSelect].forEach((el) => {
+        el.addEventListener("change", syncParamsFromInputs);
+      });
+      els.histHeightInput.addEventListener("change", syncHistHeightOnly);
+      [els.showTheory, els.showExp, els.showDiff, els.highlightRatio, els.showMiniStats, els.useBatchAuto, els.sequentialMode].forEach((el) => {
+        el.addEventListener("change", () => {
+          state.showTheory = els.showTheory.checked;
+          state.showExp = els.showExp.checked;
+          state.showDiff = els.showDiff.checked;
+          state.highlightRatio = els.highlightRatio.checked;
+          state.showMiniStats = els.showMiniStats.checked;
+          state.useBatchAuto = els.useBatchAuto.checked;
+          state.sequentialMode = els.sequentialMode.checked;
+          renderAll();
+        });
+      });
+      els.singleBtn.addEventListener("click", runSingleDemo);
+      els.autoBtn.addEventListener("click", runAuto);
+      els.pauseBtn.addEventListener("click", togglePause);
+      els.resetBtn.addEventListener("click", resetStats);
+      els.randomBtn.addEventListener("click", randomizeParams);
+      els.scale10Btn.addEventListener("click", () => scalePopulation(10));
+      els.scale100Btn.addEventListener("click", () => scalePopulation(100));
+      document.querySelectorAll(".preset").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setParams(btn.dataset.a, btn.dataset.b, btn.dataset.n);
+        });
+      });
+      window.addEventListener("resize", renderAll);
+    }
+
+    function init() {
+      createCounts();
+      createInitialDisplay();
+      bindEvents();
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>

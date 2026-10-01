@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>汉诺塔教学小程序</title>
+  <style>
+
+    #comparePanel{
+  display:none;
+}
+    
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --ink:#1f2a44;
+      --muted:#667085;
+      --accent:#4f46e5;
+      --accent-2:#0ea5e9;
+      --good:#16a34a;
+      --warn:#d97706;
+      --bad:#dc2626;
+      --shadow:0 12px 28px rgba(31,42,68,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(79,70,229,.10), transparent 22%),
+        radial-gradient(circle at top right, rgba(14,165,233,.12), transparent 18%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      min-height:100vh;
+    }
+    .app{
+      max-width:1400px;
+      margin:0 auto;
+      padding:14px;
+    }
+    .hero{
+      background:linear-gradient(135deg, rgba(79,70,229,.95), rgba(14,165,233,.92));
+      color:#fff;
+      border-radius:22px;
+      padding:14px 22px;
+      box-shadow:var(--shadow);
+    }
+    .hero h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:.5px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:300px 1fr 350px;
+      gap:16px;
+      margin-top:16px;
+      align-items:start;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid rgba(215,222,234,.7);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{ margin:0; font-size:18px; }
+    .card-head{
+      padding:14px 16px;
+      border-bottom:1px solid #eef2f8;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .card-body{ padding:14px 16px 16px; }
+    .sidebar .card-body{ padding-top:16px; }
+    .control-group{
+      margin-bottom:12px;
+      padding:12px;
+      border:1px solid #edf1f7;
+      border-radius:16px;
+      background:#fafcff;
+    }
+    .control-group h3{
+      margin:0 0 10px;
+      font-size:14px;
+    }
+    label{
+      display:block;
+      font-size:14px;
+      margin-bottom:10px;
+      color:#2a3551;
+    }
+    select,input[type="range"],input[type="number"]{ width:100%; margin-top:6px; }
+    input[type="range"]{ accent-color:var(--accent); }
+    select,input[type="number"]{
+      padding:9px 11px;
+      border-radius:12px;
+      border:1px solid #cfd7e6;
+      background:#fff;
+      font-size:14px;
+    }
+    .inline{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .btn-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+    .mode-row{
+      display:grid;
+      grid-template-columns:48px 1fr;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .mode-row .mode-label{
+      font-size:14px;
+      color:#2a3551;
+      font-weight:600;
+    }
+    .tight-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .small-label{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    button{
+      border:none;
+      background:#eef2ff;
+      color:#2a2f76;
+      padding:10px 12px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.18s ease;
+      box-shadow:0 6px 14px rgba(79,70,229,.07);
+    }
+    button:hover{ transform:translateY(-1px); }
+    button.primary{ background:linear-gradient(135deg, var(--accent), #6366f1); color:#fff; }
+    button.secondary{ background:linear-gradient(135deg, #0ea5e9, #38bdf8); color:#fff; }
+    button.good{ background:linear-gradient(135deg, #16a34a, #22c55e); color:#fff; }
+    button.warn{ background:linear-gradient(135deg, #f59e0b, #fb923c); color:#fff; }
+    button.ghost{
+      background:#f4f7fb;
+      color:#31405f;
+      box-shadow:none;
+      border:1px solid #dbe3ef;
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none !important;
+    }
+    .board-card .card-body{ padding-top:10px; }
+    .status-strip{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .stat{
+      background:#f8fbff;
+      border:1px solid #e5edf9;
+      border-radius:15px;
+      padding:12px;
+    }
+    .stat .k{ font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .stat .v{ font-size:24px; font-weight:700; }
+    .banner{
+      min-height:56px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      background:linear-gradient(180deg, #fff, #f8fbff);
+      border:1px solid #e7ecf5;
+      padding:12px 14px;
+      border-radius:16px;
+      margin-bottom:14px;
+      font-size:15px;
+      line-height:1.5;
+    }
+    .banner b{ color:#19233b; }
+    .board{
+      position:relative;
+      min-height:470px;
+      border-radius:20px;
+      border:1px solid #e7edf7;
+      background:
+        linear-gradient(180deg, rgba(14,165,233,.05), rgba(79,70,229,.04)),
+        linear-gradient(180deg, #ffffff, #fbfdff);
+      overflow:hidden;
+      padding:20px 16px 16px;
+    }
+    .board::after{
+        display: none;
+      content:"";
+      position:absolute;
+      left:24px; right:24px; bottom:60px;
+      height:14px;
+      background:linear-gradient(180deg, #a68b62, #866948);
+      border-radius:999px;
+      box-shadow: inset 0 3px 4px rgba(255,255,255,.22);
+    }
+    .pegs{
+      position:relative;
+      height:390px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:18px;
+      margin-top:6px;
+    }
+    .peg{
+      position:relative;
+      border-radius:18px;
+      padding-top:20px;
+      cursor:pointer;
+      user-select:none;
+      transition:.18s ease;
+      border:2px solid transparent;
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(79,70,229,.02));
+    }
+    .peg:hover{ background:linear-gradient(180deg, rgba(79,70,229,.05), rgba(14,165,233,.03)); }
+    .peg.selected{
+      border-color:rgba(79,70,229,.75);
+      box-shadow: inset 0 0 0 4px rgba(79,70,229,.08);
+    }
+    .peg.legal{
+      border-color:rgba(22,163,74,.55);
+      box-shadow: inset 0 0 0 4px rgba(22,163,74,.08);
+    }
+    .pole{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:72px;
+      width:16px;
+      height:260px;
+      border-radius:999px;
+      background:linear-gradient(180deg, #caa56d, #a77d43);
+      box-shadow: inset 0 2px 3px rgba(255,255,255,.18);
+    }
+    .base-slot{
+      position:absolute;
+      left:22px; right:22px; bottom:74px;
+      height:12px;
+      border-radius:999px;
+      background:rgba(140,120,90,.12);
+    }
+    .peg-name{
+      position:absolute;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      background:#fff;
+      border:1px solid #dbe4f1;
+      border-radius:999px;
+      padding:6px 14px;
+      font-weight:700;
+      font-size:20px;
+      box-shadow:0 6px 16px rgba(31,42,68,.06);
+    }
+    .disc{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      height:26px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:700;
+      font-size:20px;
+      box-shadow:0 10px 18px rgba(31,42,68,.12), inset 0 2px 3px rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.30);
+      transition:opacity .18s ease;
+      will-change: transform, left, bottom, width, opacity;
+    }
+    .disc.final-hidden{ opacity:0; }
+    .flying-disc{
+      position:absolute;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:700;
+      font-size:20px;
+      border-radius:999px;
+      box-shadow:0 18px 34px rgba(31,42,68,.18), inset 0 2px 3px rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.30);
+      z-index:40;
+      pointer-events:none;
+      will-change:transform, top, left;
+    }
+    .board.error-shake{ animation:boardShake .4s ease; }
+    .peg.error-mark{
+      border-color:rgba(220,38,38,.75) !important;
+      box-shadow: inset 0 0 0 5px rgba(220,38,38,.10), 0 0 0 4px rgba(220,38,38,.12);
+      background:linear-gradient(180deg, rgba(254,226,226,.95), rgba(255,255,255,.92));
+    }
+    @keyframes boardShake{
+      0%,100% { transform:translateX(0); }
+      20% { transform:translateX(-6px); }
+      40% { transform:translateX(6px); }
+      60% { transform:translateX(-4px); }
+      80% { transform:translateX(4px); }
+    }
+    .peg-footer{
+      position:absolute;
+      bottom:18px;
+      left:0; right:0;
+      text-align:center;
+      color:#4b5565;
+      font-size:18px;
+      font-weight:600;
+    }
+    .right-panels .panel{
+      border:1px solid #edf1f7;
+      border-radius:16px;
+      padding:14px;
+      background:#fafcff;
+      margin-bottom:12px;
+    }
+    .mini-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .mini{
+      background:#fff;
+      border:1px solid #e6edf7;
+      border-radius:14px;
+      padding:12px;
+    }
+    .mini .key{ color:var(--muted); font-size:12px; margin-bottom:6px; }
+    .mini .val{ font-size:20px; font-weight:700; }
+    .history{
+      max-height:260px;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .history-item{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid #e9eff8;
+      margin-bottom:8px;
+      font-size:14px;
+    }
+    .history-item strong{ color:#23304d; }
+    .tip{
+      padding:12px 14px;
+      border-radius:14px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#9a3412;
+      font-size:14px;
+      line-height:1.6;
+    }
+    .formula{
+      background:#f5f3ff;
+      border:1px solid #ddd6fe;
+      color:#4338ca;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.7;
+    }
+    .legend{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .chip{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid #e4ebf7;
+    }
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      min-width:250px;
+      max-width:380px;
+      background:#fff;
+      border:1px solid #dce6f5;
+      border-left:6px solid var(--accent);
+      box-shadow:var(--shadow);
+      border-radius:18px;
+      padding:12px 14px;
+      z-index:200;
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(10px);
+      transition:.22s ease;
+    }
+    .toast.show{ opacity:1; transform:translateY(0); }
+    .toast.good{ border-left-color:var(--good); }
+    .toast.bad{ border-left-color:var(--bad); }
+    .toast.warn{ border-left-color:var(--warn); }
+    .alert-overlay{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:rgba(15,23,42,.24);
+      backdrop-filter:blur(3px);
+      z-index:260;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .16s ease;
+    }
+    .alert-overlay.show{
+      opacity:1;
+      pointer-events:auto;
+    }
+    .alert-panel{
+      width:min(820px, 92vw);
+      background:linear-gradient(180deg, #fff, #fff8f8);
+      border:2px solid rgba(220,38,38,.22);
+      border-left:12px solid var(--bad);
+      border-radius:28px;
+      box-shadow:0 24px 60px rgba(15,23,42,.28);
+      padding:24px 28px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      transform:scale(.96);
+      transition:transform .16s ease;
+    }
+    .alert-overlay.show .alert-panel{ transform:scale(1); }
+    .alert-icon{
+      width:76px;
+      height:76px;
+      border-radius:22px;
+      background:linear-gradient(135deg, #ef4444, #b91c1c);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
+      flex:0 0 auto;
+      box-shadow:0 16px 30px rgba(220,38,38,.28);
+    }
+    .alert-main{ flex:1; min-width:0; }
+    .alert-title{
+      font-size:28px;
+      font-weight:800;
+      color:#7f1d1d;
+      margin-bottom:6px;
+      letter-spacing:.5px;
+    }
+    .alert-text{
+      font-size:20px;
+      line-height:1.5;
+      color:#1f2937;
+      font-weight:700;
+    }
+    .alert-hint{
+      margin-top:10px;
+      font-size:13px;
+      color:#7c2d12;
+      opacity:.9;
+    }
+    .footer-note{
+      margin-top:12px;
+      color:#667085;
+      font-size:13px;
+      line-height:1.7;
+    }
+    .kbd{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:8px;
+      border:1px solid #d6deec;
+      background:#fff;
+      font-size:12px;
+      font-weight:700;
+    }
+    @media (max-width:1180px){
+      .grid{ grid-template-columns:1fr; }
+    }
+    @media (max-width:760px){
+      .status-strip{ grid-template-columns:1fr 1fr; }
+      .btn-row,.inline,.mini-grid,.tight-row{ grid-template-columns:1fr; }
+      .hero h1{ font-size:24px; }
+      .pegs{ gap:8px; }
+      .mode-row{ grid-template-columns:1fr; gap:6px; }
+      .alert-panel{ padding:18px 16px; gap:12px; }
+      .alert-icon{ width:60px; height:60px; font-size:28px; border-radius:18px; }
+      .alert-title{ font-size:22px; }
+      .alert-text{ font-size:17px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="hero">
+    <h1>汉诺塔教学小程序</h1>
+  </section>
+
+  <section class="grid">
+    <aside class="card sidebar">
+      <div class="card-body">
+        <div class="control-group">
+          <label>圆盘数量：<b id="diskCountLabel">4</b>
+            <input id="diskCount" type="range" min="3" max="8" value="4" />
+          </label>
+
+          <div class="mode-row">
+            <div class="mode-label">模式</div>
+            <select id="gameMode">
+              <option value="practice">练习模式</option>
+              <option value="challenge">挑战模式</option>
+            </select>
+          </div>
+
+          <div class="inline">
+            <label>允许超出最优步数
+              <input id="allowance" type="number" min="0" max="20" value="2" />
+            </label>
+            <label>允许错误次数
+              <input id="maxErrors" type="number" min="1" max="20" value="3" />
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="btn-row">
+            <button class="primary" id="resetBtn">重新开始</button>
+            <button id="undoBtn">撤销一步</button>
+          </div>
+          <div class="btn-row">
+            <button class="secondary" id="hintBtn">提示下一步</button>
+            <button class="ghost" id="rulesBtn">显示规则</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>演示方案
+            <select id="strategy">
+              <option value="optimal">最优方案</option>
+              <option value="second">次快方案</option>
+              <option value="random">随机方案</option>
+            </select>
+          </label>
+
+          <div class="tight-row">
+            <label>自动节奏：<b id="speedLabel">中</b>
+              <input id="speed" type="range" min="1" max="5" value="3" />
+            </label>
+            <label>移动速度：<b id="animSpeedLabel">中</b>
+              <input id="animSpeed" type="range" min="1" max="5" value="3" />
+            </label>
+          </div>
+
+          <div class="btn-row">
+            <button class="good" id="autoBtn">开始自动演示</button>
+            <button class="warn" id="stepBtn">单步播放</button>
+          </div>
+          <div class="btn-row">
+            <button id="pauseBtn">暂停 / 继续</button>
+            <button class="ghost" id="stopBtn">停止演示</button>
+          </div>
+        </div>
+        <!--
+
+        <div class="formula">
+          <b>教学提醒：</b><br/>
+          最少步数公式为 <b>2<sup>n</sup> - 1</b>。<br/>
+          最优思路：先移 <b>n-1</b> 个，再移最大盘，最后再移 <b>n-1</b> 个。
+        </div>
+    -->
+
+        <div class="footer-note">
+          操作方式：先点选起点柱，再点选目标柱。<br/><!--
+          警告弹窗出现后，可<strong>点击屏幕</strong>或按 <span class="kbd">Esc</span> / <span class="kbd">Enter</span> / <span class="kbd">空格</span> 立即关闭。-->
+        </div>
+      </div>
+    </aside>
+
+    <main class="card board-card">
+        <!--
+        <div class="card-head">
+        <h2>操作区</h2>
+        <div class="legend">
+            <span class="chip">紫框：已选起点</span>
+            <span class="chip">绿框：合法目标</span>
+            <span class="chip">底部日志：过程追踪</span>
+        </div>
+        </div>
+        -->
+      <div class="card-body">
+        <div class="status-strip">
+          <div class="stat"><div class="k">当前步数</div><div class="v" id="moveCount">0</div></div>
+          <div class="stat"><div class="k">最优步数</div><div class="v" id="optimalCount">15</div></div>
+          <div class="stat"><div class="k">错误次数</div><div class="v" id="errorCount">0</div></div>
+          <div class="stat"><div class="k">至少还需</div><div class="v" id="remainCount">15</div></div>
+        </div>
+
+        <div class="banner" id="banner">
+          <span>👋</span>
+          <div><b>欢迎使用。</b> 先选中一根柱子，再选目标柱子；也可以直接让程序自动演示。</div>
+        </div>
+
+        <div class="board" id="board">
+          <div class="pegs" id="pegs"></div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="card right-panels">
+      <!--
+      <div class="card-head"><h2>教学辅助</h2><span class="chip">讲解面板</span></div>
+      -->
+
+      <div class="card-body">
+        
+        
+        <div class="panel">
+          <div class="mini-grid">
+            <div class="mini">
+              <div class="key">当前状态编码</div>
+              <div class="val" id="stateCode">0000</div>
+            </div>
+            <div class="mini">
+              <div class="key">挑战步数上限</div>
+              <div class="val" id="limitCount">17</div>
+            </div>
+          </div>
+        </div>
+        
+        
+
+        <div class="formula" style="margin:0 0 10px;font-size:15px;">
+          <b>教学提醒：</b><br/>
+          最少步数公式为 <b>2<sup>n</sup> - 1</b>。<br/>
+          最优思路：先移 <b>n-1</b> 个，再移最大盘，最后再移 <b>n-1</b> 个。
+        </div>
+
+        <div class="panel">
+          <h3 style="margin:0 0 10px;font-size:15px;">即时讲解</h3>
+          <div class="tip" id="teachingTip">
+            若有 <b>n</b> 个盘，目标是把整塔从 A 移到 C。核心思想不是“硬试”，而是把问题拆成三个更小的问题。
+          </div>
+        </div>        
+        
+        <div class="panel"; id="comparePanel" >
+          <h3 style="margin:0 0 10px;font-size:15px;">方案比较</h3>
+          <div class="history" id="compareBox"></div>
+        </div>        
+
+        <div class="panel">
+          <h3 style="margin:0 0 10px;font-size:15px;">操作日志</h3>
+          <div class="history" id="history"></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+</div>
+
+<div class="alert-overlay" id="alertOverlay"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const PEG_NAMES = ['A','B','C'];
+  const DISC_COLORS = ['#6366f1','#0ea5e9','#14b8a6','#22c55e','#f59e0b','#f97316','#ef4444','#ec4899'];
+  const speedMap = {1:1200, 2:850, 3:600, 4:380, 5:220};
+  const animDurationMap = {1:900, 2:700, 3:520, 4:360, 5:240};
+  const speedText = {1:'很慢', 2:'较慢', 3:'中', 4:'较快', 5:'很快'};
+
+  const els = {
+    diskCount: document.getElementById('diskCount'),
+    diskCountLabel: document.getElementById('diskCountLabel'),
+    gameMode: document.getElementById('gameMode'),
+    allowance: document.getElementById('allowance'),
+    maxErrors: document.getElementById('maxErrors'),
+    strategy: document.getElementById('strategy'),
+    speed: document.getElementById('speed'),
+    speedLabel: document.getElementById('speedLabel'),
+    animSpeed: document.getElementById('animSpeed'),
+    animSpeedLabel: document.getElementById('animSpeedLabel'),
+    resetBtn: document.getElementById('resetBtn'),
+    undoBtn: document.getElementById('undoBtn'),
+    hintBtn: document.getElementById('hintBtn'),
+    rulesBtn: document.getElementById('rulesBtn'),
+    autoBtn: document.getElementById('autoBtn'),
+    stepBtn: document.getElementById('stepBtn'),
+    pauseBtn: document.getElementById('pauseBtn'),
+    stopBtn: document.getElementById('stopBtn'),
+    board: document.getElementById('board'),
+    pegs: document.getElementById('pegs'),
+    moveCount: document.getElementById('moveCount'),
+    optimalCount: document.getElementById('optimalCount'),
+    errorCount: document.getElementById('errorCount'),
+    remainCount: document.getElementById('remainCount'),
+    banner: document.getElementById('banner'),
+    teachingTip: document.getElementById('teachingTip'),
+    stateCode: document.getElementById('stateCode'),
+    limitCount: document.getElementById('limitCount'),
+    history: document.getElementById('history'),
+    compareBox: document.getElementById('compareBox'),
+    alertOverlay: document.getElementById('alertOverlay'),
+    toast: document.getElementById('toast')
+  };
+
+  const game = {
+    n:4,
+    positions:[],
+    selectedPeg:null,
+    moveHistory:[],
+    errors:0,
+    mode:'practice',
+    allowance:2,
+    maxErrors:3,
+    autoPlan:[],
+    autoIndex:0,
+    autoTimer:null,
+    autoPaused:false,
+    demoName:'',
+    locked:false,
+    animating:false,
+    hiddenDiskDuringAnimation:null,
+    toastTimer:null,
+    overlayTimer:null,
+  };
+
+  function init(){
+    bindEvents();
+    rebuildGame(true);
+  }
+
+  function bindEvents(){
+    els.diskCount.addEventListener('input', () => {
+      els.diskCountLabel.textContent = els.diskCount.value;
+      rebuildGame(true);
+    });
+    els.gameMode.addEventListener('change', () => rebuildGame(false));
+    els.allowance.addEventListener('input', () => refreshInfo());
+    els.maxErrors.addEventListener('input', () => refreshInfo());
+    els.strategy.addEventListener('change', () => refreshCompareBox());
+    els.speed.addEventListener('input', () => {
+      els.speedLabel.textContent = speedText[els.speed.value];
+      if (game.autoTimer) {
+        pauseAuto(true);
+        resumeAuto();
+      }
+    });
+    els.animSpeed.addEventListener('input', () => {
+      els.animSpeedLabel.textContent = speedText[els.animSpeed.value];
+    });
+    els.speedLabel.textContent = speedText[els.speed.value];
+    els.animSpeedLabel.textContent = speedText[els.animSpeed.value];
+
+    els.resetBtn.addEventListener('click', () => rebuildGame(false));
+    els.undoBtn.addEventListener('click', undoMove);
+    els.hintBtn.addEventListener('click', showHint);
+    els.rulesBtn.addEventListener('click', () => {
+      setBanner('📘', '<b>规则：</b>每次只能移动一个圆盘；大盘不能压在小盘上；目标是把所有圆盘从 A 柱移到 C 柱。');
+      showToast('已显示规则。', 'warn');
+    });
+
+    els.autoBtn.addEventListener('click', startAutoDemo);
+    els.stepBtn.addEventListener('click', playOneAutoStep);
+    els.pauseBtn.addEventListener('click', () => {
+      if (!game.autoPlan.length) return showToast('当前没有正在准备的自动演示。', 'warn');
+      if (game.autoPaused) resumeAuto();
+      else pauseAuto(false);
+    });
+    els.stopBtn.addEventListener('click', stopAuto);
+
+    els.alertOverlay.addEventListener('click', hideAlert);
+    els.alertOverlay.addEventListener('touchstart', hideAlert, {passive:true});
+    document.addEventListener('keydown', (e) => {
+      if (!els.alertOverlay.classList.contains('show')) return;
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ' || e.code === 'Space') {
+        hideAlert();
+      }
+    });
+  }
+
+  function rebuildGame(resetN=false){
+    stopAuto();
+    if (resetN) game.n = Number(els.diskCount.value);
+    game.mode = els.gameMode.value;
+    game.allowance = Math.max(0, Number(els.allowance.value) || 0);
+    game.maxErrors = Math.max(1, Number(els.maxErrors.value) || 3);
+    game.positions = Array(game.n).fill(0);
+    game.selectedPeg = null;
+    game.moveHistory = [];
+    game.errors = 0;
+    game.locked = false;
+    game.animating = false;
+    game.hiddenDiskDuringAnimation = null;
+    hideAlert();
+    setBanner('🧩', '请开始操作：先点选起点柱，再点选目标柱。你也可以直接使用自动演示。');
+    render();
+    refreshCompareBox();
+    showToast('新的汉诺塔任务已就绪。', 'good');
+  }
+
+  function encodeState(positions){
+    let code = 0;
+    let base = 1;
+    for(let i=0;i<positions.length;i++){
+      code += positions[i] * base;
+      base *= 3;
+    }
+    return code;
+  }
+
+  function decodeState(code, n){
+    const arr = [];
+    for(let i=0;i<n;i++){
+      arr.push(code % 3);
+      code = Math.floor(code / 3);
+    }
+    return arr;
+  }
+
+  function topDiskOnPeg(positions, peg){
+    for(let i=0;i<positions.length;i++){
+      if (positions[i] === peg) return i + 1;
+    }
+    return null;
+  }
+
+  function getLegalMoves(positions){
+    const tops = [0,1,2].map(p => topDiskOnPeg(positions, p));
+    const moves = [];
+    for(let from=0; from<3; from++){
+      const disk = tops[from];
+      if (!disk) continue;
+      for(let to=0; to<3; to++){
+        if (to === from) continue;
+        const targetTop = tops[to];
+        if (!targetTop || targetTop > disk){
+          const next = positions.slice();
+          next[disk - 1] = to;
+          moves.push({
+            from, to, disk,
+            next,
+            nextCode: encodeState(next)
+          });
+        }
+      }
+    }
+    return moves;
+  }
+
+  function getPegsFromPositions(positions){
+    const pegs = [[],[],[]];
+    for(let disk = positions.length; disk >= 1; disk--){
+      const peg = positions[disk - 1];
+      pegs[peg].push(disk);
+    }
+    return pegs;
+  }
+
+  function shortestPath(startCode, goalCode, n){
+    if (startCode === goalCode) return {moves:[], distance:0};
+    const total = Math.pow(3, n);
+    const visited = new Uint8Array(total);
+    const prev = new Int32Array(total).fill(-1);
+    const prevMove = new Array(total);
+    const q = new Int32Array(total);
+    let head = 0, tail = 0;
+    q[tail++] = startCode;
+    visited[startCode] = 1;
+
+    while(head < tail){
+      const code = q[head++];
+      const positions = decodeState(code, n);
+      const moves = getLegalMoves(positions);
+      for(const move of moves){
+        const nextCode = move.nextCode;
+        if (visited[nextCode]) continue;
+        visited[nextCode] = 1;
+        prev[nextCode] = code;
+        prevMove[nextCode] = {from:move.from, to:move.to, disk:move.disk};
+        if (nextCode === goalCode){
+          const out = [];
+          let cur = goalCode;
+          while(prev[cur] !== -1){
+            out.push(prevMove[cur]);
+            cur = prev[cur];
+          }
+          out.reverse();
+          return {moves:out, distance:out.length};
+        }
+        q[tail++] = nextCode;
+      }
+    }
+    return {moves:[], distance:Infinity};
+  }
+
+  function secondShortestPath(startCode, goalCode, n){
+    const optimal = shortestPath(startCode, goalCode, n);
+    if (optimal.distance === 0) return {moves:[], distance:0};
+    const startPos = decodeState(startCode, n);
+    const legal = getLegalMoves(startPos);
+    for(const first of legal){
+      const oneToGoal = shortestPath(first.nextCode, goalCode, n);
+      if (oneToGoal.distance !== optimal.distance - 1) {
+        return {moves:[{from:first.from,to:first.to,disk:first.disk}, ...oneToGoal.moves], distance:1 + oneToGoal.distance};
+      }
+    }
+    const first = optimal.moves[0];
+    const temp = startPos.slice();
+    temp[first.disk - 1] = first.to;
+    const back = getLegalMoves(temp).find(m => m.to === first.from && m.disk === first.disk);
+    if (back){
+      const tail = shortestPath(back.nextCode, goalCode, n);
+      return {moves:[first,{from:back.from,to:back.to,disk:back.disk}, ...tail.moves], distance:2 + tail.distance};
+    }
+    return optimal;
+  }
+
+  function randomSolution(startCode, goalCode, n){
+    let current = decodeState(startCode, n);
+    let currentCode = startCode;
+    const out = [];
+    let lastReverse = null;
+    const optimalNow = shortestPath(startCode, goalCode, n).distance;
+    const wanderSteps = Math.min(18, Math.max(4, optimalNow));
+    for(let i=0;i<wanderSteps && currentCode !== goalCode;i++){
+      let legal = getLegalMoves(current);
+      if (lastReverse){
+        const filtered = legal.filter(m => !(m.from === lastReverse.from && m.to === lastReverse.to && m.disk === lastReverse.disk));
+        if (filtered.length) legal = filtered;
+      }
+      legal.sort(() => Math.random() - 0.5);
+      const pick = legal.find(m => shortestPath(m.nextCode, goalCode, n).distance <= optimalNow + 8) || legal[0];
+      if (!pick) break;
+      out.push({from:pick.from, to:pick.to, disk:pick.disk});
+      current = pick.next.slice();
+      currentCode = pick.nextCode;
+      lastReverse = {from:pick.to, to:pick.from, disk:pick.disk};
+      if (Math.random() < 0.18 && i > 1) break;
+    }
+    const tail = shortestPath(currentCode, goalCode, n);
+    return {moves:[...out, ...tail.moves], distance:out.length + tail.distance};
+  }
+
+  function currentCode(){ return encodeState(game.positions); }
+  function goalCode(){ return encodeState(Array(game.n).fill(2)); }
+  function getChallengeLimit(){ return Math.pow(2, game.n) - 1 + game.allowance; }
+
+  function refreshCompareBox(){
+    const start = currentCode();
+    const goal = goalCode();
+    const opt = shortestPath(start, goal, game.n).distance;
+    const second = secondShortestPath(start, goal, game.n).distance;
+    const rand = randomSolution(start, goal, game.n).distance;
+
+    const entries = [
+      ['当前状态到终点：最优', opt, '用于讲解最少步数'],
+      ['当前状态到终点：次快', second, '严格慢于最优，可比较效率'],
+      ['当前状态到终点：随机方案', rand, '合法但通常更慢']
+    ];
+
+
+    els.compareBox.innerHTML = entries.map(([name, count, note]) => `
+      <div class="history-item">
+        <div><strong>${name}</strong><div style="color:#667085;margin-top:4px;">${note}</div></div>
+        <div style="font-weight:800;font-size:18px;">${count}</div>
+      </div>
+    `).join('');
+  }
+
+  function render(){
+    renderBoard();
+    refreshInfo();
+    renderHistory();
+    renderTeachingTip();
+    refreshCompareBox();
+  }
+
+  function refreshInfo(){
+    game.mode = els.gameMode.value;
+    game.allowance = Math.max(0, Number(els.allowance.value) || 0);
+    game.maxErrors = Math.max(1, Number(els.maxErrors.value) || 3);
+    els.moveCount.textContent = game.moveHistory.length;
+    els.optimalCount.textContent = Math.pow(2, game.n) - 1;
+    els.errorCount.textContent = game.errors;
+    els.remainCount.textContent = shortestPath(currentCode(), goalCode(), game.n).distance;
+    els.stateCode.textContent = game.positions.join('');
+    els.limitCount.textContent = getChallengeLimit();
+    els.undoBtn.disabled = game.moveHistory.length === 0 || game.locked || game.animating;
+    els.hintBtn.disabled = game.locked || game.animating;
+  }
+
+  function getDiscEl(disk){ return els.pegs.querySelector(`.disc[data-disk="${disk}"]`); }
+  function getPegEl(pegIndex){ return els.pegs.querySelector(`.peg[data-peg="${pegIndex}"]`); }
+
+  function flashBoardError(pegs=[]){
+    els.board.classList.remove('error-shake');
+    void els.board.offsetWidth;
+    els.board.classList.add('error-shake');
+    setTimeout(() => els.board.classList.remove('error-shake'), 450);
+    pegs.forEach(idx => {
+      const pegEl = getPegEl(idx);
+      if (!pegEl) return;
+      pegEl.classList.add('error-mark');
+      setTimeout(() => pegEl.classList.remove('error-mark'), 850);
+    });
+  }
+
+  function showAlert(text, title='操作不允许', icon='⛔'){
+    clearTimeout(game.overlayTimer);
+    els.alertOverlay.innerHTML = `
+      <div class="alert-panel">
+        <div class="alert-icon">${icon}</div>
+        <div class="alert-main">
+          <div class="alert-title">${title}</div>
+          <div class="alert-text">${text}</div>
+          <div class="alert-hint">点击屏幕任意处，或按 Esc / Enter / 空格 可立即关闭</div>
+        </div>
+      </div>
+    `;
+    els.alertOverlay.classList.add('show');
+    game.overlayTimer = setTimeout(hideAlert, 3950);
+  }
+
+  function hideAlert(){
+    clearTimeout(game.overlayTimer);
+    els.alertOverlay.classList.remove('show');
+  }
+
+  async function animateMove(move){
+    const sourceDisc = getDiscEl(move.disk);
+    if (!sourceDisc) return;
+    const boardRect = els.board.getBoundingClientRect();
+    const sourceRect = sourceDisc.getBoundingClientRect();
+    const flying = sourceDisc.cloneNode(true);
+    flying.classList.remove('final-hidden');
+    flying.classList.add('flying-disc');
+    flying.style.width = sourceRect.width + 'px';
+    flying.style.height = sourceRect.height + 'px';
+    flying.style.left = (sourceRect.left - boardRect.left) + 'px';
+    flying.style.top = (sourceRect.top - boardRect.top) + 'px';
+    flying.style.transform = 'translate(0px, 0px)';
+    els.board.appendChild(flying);
+
+    game.hiddenDiskDuringAnimation = move.disk;
+    render();
+
+    const finalDisc = getDiscEl(move.disk);
+    if (!finalDisc){
+      flying.remove();
+      game.hiddenDiskDuringAnimation = null;
+      return;
+    }
+    const finalRect = finalDisc.getBoundingClientRect();
+    const dx = finalRect.left - sourceRect.left;
+    const dy = finalRect.top - sourceRect.top;
+    const lift = Math.max(92, sourceRect.top - boardRect.top - 18);
+    const duration = animDurationMap[els.animSpeed.value];
+
+    const animation = flying.animate([
+      { transform:'translate(0px, 0px) scale(1)', offset:0 },
+      { transform:`translate(0px, ${-lift}px) scale(1.06)`, offset:0.28 },
+      { transform:`translate(${dx}px, ${-lift}px) scale(1.06)`, offset:0.72 },
+      { transform:`translate(${dx}px, ${dy}px) scale(1)`, offset:1 }
+    ], {
+      duration,
+      easing:'cubic-bezier(.22,.8,.2,1)',
+      fill:'forwards'
+    });
+
+    try{ await animation.finished; }catch(e){}
+    flying.remove();
+    finalDisc.classList.remove('final-hidden');
+    game.hiddenDiskDuringAnimation = null;
+  }
+
+  function renderBoard(){
+    const pegs = getPegsFromPositions(game.positions);
+    const selected = game.selectedPeg;
+    const legalTargets = selected === null ? [] : getLegalMoves(game.positions).filter(m => m.from === selected).map(m => m.to);
+    els.pegs.innerHTML = '';
+    pegs.forEach((stack, pegIndex) => {
+      const peg = document.createElement('div');
+      peg.className = 'peg';
+      peg.dataset.peg = pegIndex;
+      if (selected === pegIndex) peg.classList.add('selected');
+      if (legalTargets.includes(pegIndex)) peg.classList.add('legal');
+      peg.innerHTML = `
+        <div class="peg-name">${PEG_NAMES[pegIndex]}</div>
+        <div class="pole"></div>
+        <div class="base-slot"></div>
+        <div class="peg-footer">${stack.length ? '共有 ' + stack.length + ' 个盘' : '空柱'}</div>
+      `;
+      peg.addEventListener('click', () => onPegClick(pegIndex));
+      stack.forEach((disk, idx) => {
+        const disc = document.createElement('div');
+        disc.className = 'disc';
+        disc.dataset.disk = disk;
+        if (game.hiddenDiskDuringAnimation === disk) disc.classList.add('final-hidden');
+        const width = 58 + (disk - 1) * 24 + Math.max(0, (8 - game.n) * 6);
+        disc.style.width = width + 'px';
+        disc.style.bottom = (76 + idx * 30) + 'px';
+        disc.style.background = `linear-gradient(135deg, ${DISC_COLORS[(disk-1)%DISC_COLORS.length]}, ${shade(DISC_COLORS[(disk-1)%DISC_COLORS.length], -18)})`;
+        disc.textContent = disk;
+        peg.appendChild(disc);
+      });
+      els.pegs.appendChild(peg);
+    });
+  }
+
+  function shade(hex, percent){
+    const num = parseInt(hex.replace('#',''), 16);
+    let r = (num >> 16) + percent;
+    let g = ((num >> 8) & 0x00FF) + percent;
+    let b = (num & 0x0000FF) + percent;
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+    return '#' + (r << 16 | g << 8 | b).toString(16).padStart(6,'0');
+  }
+
+  function onPegClick(pegIndex){
+    if (game.locked || game.animating) return;
+    if (game.autoTimer && !game.autoPaused) return showToast('自动演示进行中，暂停后再手动操作。', 'warn');
+
+    const legal = getLegalMoves(game.positions);
+    if (game.selectedPeg === null){
+      const hasSource = legal.some(m => m.from === pegIndex);
+      if (!hasSource){
+        const sourceTop = topDiskOnPeg(game.positions, pegIndex);
+        if (!sourceTop){
+          feedbackError('这根柱子当前不能作为起点，因为这根柱子是空的。', {pegs:[pegIndex]});
+          return;
+        }
+        const blockers = [0,1,2]
+          .filter(p => p !== pegIndex)
+          .map(p => topDiskOnPeg(game.positions, p))
+          .filter(d => d && d < sourceTop)
+          .sort((a,b) => a - b);
+        let reason = '因为当前没有合法目标柱。';
+        if (blockers.length >= 2) reason = `因为${sourceTop}>${blockers[0]}且${sourceTop}>${blockers[1]}...`;
+        else if (blockers.length === 1) reason = `因为${blockers[0]}<${sourceTop}。`;
+        feedbackError(`这根柱子的顶盘(${sourceTop})当前不能作为起点, ${reason}`, {pegs:[pegIndex]});
+        return;
+      }
+      game.selectedPeg = pegIndex;
+      setBanner('🎯', `<b>已选择起点 ${PEG_NAMES[pegIndex]}。</b> 请再点击一个合法的目标柱。`);
+      renderBoard();
+      return;
+    }
+
+    if (game.selectedPeg === pegIndex){
+      game.selectedPeg = null;
+      setBanner('↩️', '已取消选择。请重新选择起点柱。');
+      renderBoard();
+      return;
+    }
+
+    const move = legal.find(m => m.from === game.selectedPeg && m.to === pegIndex);
+    if (!move){
+      const fromName = PEG_NAMES[game.selectedPeg];
+      const fromPeg = game.selectedPeg;
+      const sourceTop = topDiskOnPeg(game.positions, fromPeg);
+      const targetTop = topDiskOnPeg(game.positions, pegIndex);
+      game.selectedPeg = null;
+      const reason = (targetTop && sourceTop)
+        ? `因为${sourceTop}>${targetTop}...`
+        : '因为目标柱不符合移动规则。';
+      feedbackError(`不能把${fromName}柱的顶盘(${sourceTop})移到${PEG_NAMES[pegIndex]}柱(${targetTop}), ${reason}`, {pegs:[fromPeg, pegIndex]});
+      renderBoard();
+      return;
+    }
+
+    game.selectedPeg = null;
+    doMove(move, 'manual');
+  }
+
+  async function doMove(move, origin='manual'){
+    if (game.animating) return;
+    game.animating = true;
+    const before = game.positions.slice();
+    game.positions[move.disk - 1] = move.to;
+    game.moveHistory.push({ from:move.from, to:move.to, disk:move.disk, origin, before });
+
+    const praise = origin === 'manual'
+      ? `很好，已把第 ${move.disk} 号盘从 ${PEG_NAMES[move.from]} 移到 ${PEG_NAMES[move.to]}。`
+      : `自动演示：第 ${move.disk} 号盘 ${PEG_NAMES[move.from]}→${PEG_NAMES[move.to]}。`;
+
+    setBanner(origin === 'manual' ? '✅' : '🤖', `<b>${praise}</b>`);
+    await animateMove(move);
+    render();
+    game.animating = false;
+    if (checkWin()) return;
+    checkChallengeFailure();
+  }
+
+  function undoMove(){
+    if (!game.moveHistory.length || game.locked || game.animating) return;
+    const last = game.moveHistory.pop();
+    game.positions = last.before.slice();
+    game.selectedPeg = null;
+    setBanner('↩️', `<b>已撤销：</b>第 ${last.disk} 号盘 ${PEG_NAMES[last.to]}→${PEG_NAMES[last.from]}。`);
+    render();
+    showToast('已撤销一步。', 'warn');
+  }
+
+  function showHint(){
+    if (game.locked || game.animating) return;
+    const path = shortestPath(currentCode(), goalCode(), game.n);
+    if (!path.moves.length){
+      showToast('当前已经完成，无需提示。', 'good');
+      return;
+    }
+    const next = path.moves[0];
+    game.selectedPeg = next.from;
+    renderBoard();
+    setBanner('💡', `<b>提示：</b>下一步可尝试把第 ${next.disk} 号盘从 ${PEG_NAMES[next.from]} 移到 ${PEG_NAMES[next.to]}。这样做仍保持最优。`);
+    els.teachingTip.innerHTML = `当前状态下，从这里继续到终点至少还需 <b>${path.distance}</b> 步。最优下一步是 <b>${PEG_NAMES[next.from]}→${PEG_NAMES[next.to]}</b>。`;
+    showToast('已给出下一步提示。', 'good');
+  }
+
+  function renderTeachingTip(){
+    const remain = shortestPath(currentCode(), goalCode(), game.n).distance;
+    const n = game.n;
+    const solved = currentCode() === goalCode();
+    const path = shortestPath(currentCode(), goalCode(), game.n);
+    const next = path.moves[0];
+    if (solved){
+      els.teachingTip.innerHTML = `你已经完成了任务。对于 <b>${n}</b> 个盘，理论最少步数是 <b>${Math.pow(2,n)-1}</b>。可引导学生总结“每增加一个盘，最少步数几乎翻倍”。`;
+      return;
+    }
+    let decomposition = `若把整塔看成“把 ${n} 个盘从 A 移到 C”，最优策略的核心仍是：先转移 <b>n-1</b> 个，再移动最大盘，最后再转移 <b>n-1</b> 个。`;
+    if (next) decomposition += ` 当前最优路径的下一步是 <b>${PEG_NAMES[next.from]}→${PEG_NAMES[next.to]}</b>。`;
+    decomposition += ` 从当前状态继续，至少还需要 <b>${remain}</b> 步。`;
+    els.teachingTip.innerHTML = decomposition;
+  }
+
+  function renderHistory(){
+    if (!game.moveHistory.length){
+      els.history.innerHTML = `<div class="history-item"><div><strong>尚未开始</strong><div style="color:#667085;margin-top:4px;">请手动操作或启动自动演示。</div></div><div>—</div></div>`;
+      return;
+    }
+    els.history.innerHTML = game.moveHistory.slice().reverse().map((item, idx) => `
+      <div class="history-item">
+        <div>
+          <strong>第 ${game.moveHistory.length - idx} 步</strong>
+          <div style="color:#667085;margin-top:4px;">${item.origin === 'manual' ? '手动' : '自动'}：第 ${item.disk} 号盘 ${PEG_NAMES[item.from]}→${PEG_NAMES[item.to]}</div>
+        </div>
+        <div>${item.disk}</div>
+      </div>
+    `).join('');
+  }
+
+  function setBanner(icon, html){
+    els.banner.innerHTML = `<span>${icon}</span><div>${html}</div>`;
+  }
+
+  function showToast(text, type=''){
+    clearTimeout(game.toastTimer);
+    els.toast.className = `toast ${type}`;
+    els.toast.textContent = text;
+    requestAnimationFrame(() => els.toast.classList.add('show'));
+    game.toastTimer = setTimeout(() => els.toast.classList.remove('show'), 1800);
+  }
+
+  function feedbackError(text, options={}){
+    game.errors += 1;
+    setBanner('⚠️', `<b>操作无效：</b> ${text}`);
+    refreshInfo();
+    flashBoardError(options.pegs || []);
+    showAlert(text, '这个动作不符合规则', '⛔');
+    showToast(text, 'bad');
+    checkChallengeFailure();
+  }
+
+  function checkWin(){
+    if (currentCode() !== goalCode()) return false;
+    game.locked = true;
+    stopAuto();
+    const best = Math.pow(2, game.n) - 1;
+    const moves = game.moveHistory.length;
+    const msg = moves === best ? `完美完成！你用了最优步数 ${moves} 步。` : `成功完成！你用了 ${moves} 步，最优是 ${best} 步。`;
+    setBanner('🎉', `<b>${msg}</b>`);
+    els.teachingTip.innerHTML = `任务已完成。现在可以追问：<b>为什么最少一定是 ${best} 步？</b> 这正是递归证明与数学归纳思想的切入点。`;
+    showToast(msg, 'good');
+    return true;
+  }
+
+  function checkChallengeFailure(){
+    if (game.mode !== 'challenge' || game.locked) return false;
+    const limit = getChallengeLimit();
+    if (game.moveHistory.length > limit){
+      game.locked = true;
+      stopAuto();
+      const text = `挑战失败：步数已超过上限 ${limit}。可重开后再尝试更优策略。`;
+      setBanner('❌', `<b>${text}</b>`);
+      showAlert(text, '挑战失败', '❌');
+      showToast(text, 'bad');
+      return true;
+    }
+    if (game.errors > game.maxErrors){
+      game.locked = true;
+      stopAuto();
+      const text = `挑战失败：错误次数已超过 ${game.maxErrors} 次。`;
+      setBanner('❌', `<b>${text}</b>`);
+      showAlert(text, '挑战失败', '❌');
+      showToast(text, 'bad');
+      return true;
+    }
+    return false;
+  }
+
+  function buildAutoPlan(){
+    const start = currentCode();
+    const goal = goalCode();
+    const strategy = els.strategy.value;
+    let path;
+    if (strategy === 'optimal') {
+      path = shortestPath(start, goal, game.n);
+      game.demoName = '最优方案';
+    } else if (strategy === 'second') {
+      path = secondShortestPath(start, goal, game.n);
+      game.demoName = '次快方案';
+    } else {
+      path = randomSolution(start, goal, game.n);
+      game.demoName = '随机方案';
+    }
+    game.autoPlan = path.moves.slice();
+    game.autoIndex = 0;
+    game.autoPaused = false;
+    return path;
+  }
+
+  function startAutoDemo(){
+    if (game.animating) return;
+    if (game.locked && currentCode() === goalCode()){
+      showToast('已经完成，可点击“重新开始”。', 'warn');
+      return;
+    }
+    stopAuto();
+    const path = buildAutoPlan();
+    if (!path.moves.length){
+      showToast('当前状态已经完成，或没有可执行的自动方案。', 'warn');
+      return;
+    }
+    setBanner('🤖', `<b>${game.demoName}</b> 已准备，共 ${path.distance} 步。程序将开始自动播放。`);
+    runAuto();
+  }
+
+  async function playOneAutoStep(){
+    if (game.locked && currentCode() === goalCode()) return;
+    if (!game.autoPlan.length || game.autoIndex >= game.autoPlan.length){
+      const path = buildAutoPlan();
+      if (!path.moves.length){
+        showToast('当前状态已经完成。', 'warn');
+        return;
+      }
+      setBanner('⏭️', `<b>${game.demoName}</b> 已准备。你可以逐步讲解每一步。`);
+    }
+    await executeAutoStep();
+  }
+
+  function runAuto(){
+    if (!game.autoPlan.length || game.autoPaused) return;
+    clearTimeout(game.autoTimer);
+    game.autoTimer = setTimeout(async () => {
+      const ok = await executeAutoStep();
+      if (!ok) return;
+      runAuto();
+    }, speedMap[els.speed.value]);
+  }
+
+  async function executeAutoStep(){
+    if (game.autoIndex >= game.autoPlan.length){
+      stopAuto();
+      return false;
+    }
+    const move = game.autoPlan[game.autoIndex++];
+    await doMove(move, 'auto');
+    if (game.locked) {
+      stopAuto();
+      return false;
+    }
+    if (game.autoIndex >= game.autoPlan.length){
+      stopAuto();
+      return false;
+    }
+    return true;
+  }
+
+  function pauseAuto(silent=false){
+    clearTimeout(game.autoTimer);
+    game.autoTimer = null;
+    game.autoPaused = true;
+    if (!silent){
+      setBanner('⏸️', `<b>自动演示已暂停。</b> 你可以继续播放，也可以切换成手动讲解。`);
+      showToast('自动演示已暂停。', 'warn');
+    }
+  }
+
+  function resumeAuto(){
+    if (!game.autoPlan.length) return;
+    game.autoPaused = false;
+    setBanner('▶️', `<b>继续播放 ${game.demoName}</b>。剩余 ${game.autoPlan.length - game.autoIndex} 步。`);
+    runAuto();
+  }
+
+  function stopAuto(){
+    clearTimeout(game.autoTimer);
+    game.autoTimer = null;
+    game.autoPaused = false;
+    game.autoPlan = [];
+    game.autoIndex = 0;
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

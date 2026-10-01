@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>高尔顿板 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/galton-board.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="galton-board">
+<div class="shell">
+  <div class="topbar">
+    <a href="../../index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>高尔顿板演示</h1>
+    </div>
+
+    <div class="controls-row">
+      <div class="trial-selector">
+        <label>试验次数（小球总数）</label>
+        <div class="trial-btns">
+          <button class="trial-btn" data-n="10">10</button>
+          <button class="trial-btn" data-n="20">20</button>
+          <button class="trial-btn" data-n="50">50</button>
+          <button class="trial-btn" data-n="100">100</button>
+          <button class="trial-btn" data-n="200">200</button>
+          <button class="trial-btn active" data-n="500">500</button>
+          <button class="trial-btn" data-n="1000">1 000</button>
+          <button class="trial-btn" data-n="3000">3 000</button>
+          <button class="trial-btn" data-n="5000">5 000</button>
+          <button class="trial-btn" data-n="10000">10 000</button>
+          <button class="trial-btn" data-n="20000">20 000</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="curve-btn active" id="curveBtn">理论二项曲线</button>
+        <button class="run-btn" id="runBtn">▶ 开始模拟</button>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">🧪</div>
+        <p>点击「开始模拟」观察高尔顿板分布</p>
+      </div>
+      <canvas id="canvas" height="520"></canvas>
+    </div>
+
+    <div class="insight" id="insight">
+      每层独立等概率向左或向右，落点服从二项分布 B(12, 0.5)。次数增加时，频率通常更稳定。
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-box">
+        <div class="stat-label">完成试验</div>
+        <div class="stat-value" id="statProgress">0 / 500</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">峰值槽位</div>
+        <div class="stat-value" id="statPeak">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">层数</div>
+        <div class="stat-value" id="statRows">12</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">槽位数</div>
+        <div class="stat-value" id="statBins">13</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/galton-board.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

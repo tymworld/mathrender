@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>高尔顿板演示</title>
+  <style>
+    :root {
+      --ink: #16202d;
+      --sub: #546170;
+      --line: rgba(22, 32, 45, 0.12);
+      --card: rgba(255, 251, 245, 0.92);
+      --card-strong: #fffdfa;
+      --accent: #245e9d;
+      --accent2: #b25733;
+      --shadow: 0 24px 60px rgba(22, 58, 100, 0.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(92, 150, 210, 0.18), transparent 24%),
+        radial-gradient(circle at left top, rgba(36, 94, 157, 0.12), transparent 20%),
+        linear-gradient(180deg, #eef4fb 0%, #e4edf8 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(240, 248, 255, 0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(22, 58, 100, 0.08);
+    }
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 24px 28px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 6px 0 16px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 46px);
+      letter-spacing: 0.06em;
+      color: var(--accent);
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      padding: 18px 0 10px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .trial-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1 1 760px;
+    }
+    .trial-selector label {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    .trial-btns {
+      display: flex;
+      gap: 4px;
+      flex-wrap: nowrap;
+    }
+    .trial-btn {
+      height: 46px;
+      flex: 0 0 64px;
+      border: 1.5px solid rgba(36, 94, 157, 0.3);
+      border-radius: 12px;
+      background: #f0f6ff;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      padding: 0;
+    }
+    .trial-btn:hover { background: #ddeeff; }
+    .trial-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 8px 20px rgba(36, 94, 157, 0.28);
+    }
+
+    .run-btn {
+      height: 46px;
+      padding: 0 22px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #245e9d 0%, #3a7fc1 100%);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      box-shadow: 0 14px 32px rgba(36, 94, 157, 0.28);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .run-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 40px rgba(36, 94, 157, 0.36);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-self: flex-end;
+      flex-wrap: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .curve-btn {
+      height: 46px;
+      padding: 0 14px;
+      border: 2px solid rgba(178, 87, 51, 0.35);
+      border-radius: 12px;
+      background: #fff8f4;
+      color: #b25733;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .curve-btn.active {
+      background: linear-gradient(135deg, #b25733 0%, #d4805a 100%);
+      color: #fff;
+      border-color: #b25733;
+      box-shadow: 0 8px 20px rgba(178, 87, 51, 0.25);
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .stat-box {
+      flex: 1 1 160px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(36, 94, 157, 0.2);
+      background: linear-gradient(160deg, #f0f7ff 0%, #e4edf9 100%);
+      box-shadow: 0 8px 20px rgba(36, 94, 157, 0.1);
+    }
+    .stat-label {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--sub);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+
+    .chart-wrap {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      position: relative;
+      min-height: 560px;
+    }
+    .chart-wrap canvas {
+      width: 100% !important;
+      display: block;
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--sub);
+      pointer-events: none;
+    }
+    .empty-state .icon {
+      font-size: 56px;
+      opacity: 0.4;
+    }
+    .empty-state p {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0;
+      opacity: 0.6;
+    }
+
+    .insight {
+      margin-top: 14px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(36, 94, 157, 0.08) 0%, rgba(92, 150, 210, 0.1) 100%);
+      border: 1.5px solid rgba(36, 94, 157, 0.2);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1.5;
+    }
+    .insight .hl { color: var(--accent); }
+    .insight .hl2 { color: var(--accent2); }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>高尔顿板演示</h1>
+    </div>
+
+    <div class="controls-row">
+      <div class="trial-selector">
+        <label>试验次数（小球总数）</label>
+        <div class="trial-btns">
+          <button class="trial-btn" data-n="10">10</button>
+          <button class="trial-btn" data-n="20">20</button>
+          <button class="trial-btn" data-n="50">50</button>
+          <button class="trial-btn" data-n="100">100</button>
+          <button class="trial-btn" data-n="200">200</button>
+          <button class="trial-btn active" data-n="500">500</button>
+          <button class="trial-btn" data-n="1000">1 000</button>
+          <button class="trial-btn" data-n="3000">3 000</button>
+          <button class="trial-btn" data-n="5000">5 000</button>
+          <button class="trial-btn" data-n="10000">10 000</button>
+          <button class="trial-btn" data-n="20000">20 000</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="curve-btn active" id="curveBtn">理论二项曲线</button>
+        <button class="run-btn" id="runBtn">▶ 开始模拟</button>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">🧪</div>
+        <p>点击「开始模拟」观察高尔顿板分布</p>
+      </div>
+      <canvas id="canvas" height="520"></canvas>
+    </div>
+
+    <div class="insight" id="insight">
+      试验越多，柱状分布越接近中间高、两边低的钟形规律。
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-box">
+        <div class="stat-label">完成试验</div>
+        <div class="stat-value" id="statProgress">0 / 500</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">峰值槽位</div>
+        <div class="stat-value" id="statPeak">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">层数</div>
+        <div class="stat-value" id="statRows">12</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">槽位数</div>
+        <div class="stat-value" id="statBins">13</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROWS = 12;
+const BINS = ROWS + 1;
+
+let selectedTrials = 500;
+let counts = new Array(BINS).fill(0);
+let completed = 0;
+let animFrame = null;
+let emitted = 0;
+let activeBalls = [];
+let showTheoryCurve = true;
+
+const runBtn = document.getElementById('runBtn');
+const curveBtn = document.getElementById('curveBtn');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const emptyState = document.getElementById('emptyState');
+
+const statProgress = document.getElementById('statProgress');
+const statPeak = document.getElementById('statPeak');
+const statRows = document.getElementById('statRows');
+const statBins = document.getElementById('statBins');
+const insight = document.getElementById('insight');
+
+statRows.textContent = String(ROWS);
+statBins.textContent = String(BINS);
+
+function chooseOneBall() {
+  let right = 0;
+  for (let i = 0; i < ROWS; i++) {
+    if (Math.random() < 0.5) right++;
+  }
+  return right;
+}
+
+function makeBallPath() {
+  const decisions = [];
+  const prefixRights = [0];
+  let rights = 0;
+  for (let i = 0; i < ROWS; i++) {
+    const goRight = Math.random() < 0.5;
+    decisions.push(goRight);
+    if (goRight) rights++;
+    prefixRights.push(rights);
+  }
+  return {
+    t: 0,
+    speed: 0.14 + Math.random() * 0.05,
+    prefixRights,
+    bin: rights
+  };
+}
+
+function comb(n, k) {
+  if (k < 0 || k > n) return 0;
+  k = Math.min(k, n - k);
+  let result = 1;
+  for (let i = 1; i <= k; i++) {
+    result = (result * (n - k + i)) / i;
+  }
+  return result;
+}
+
+function peakBin() {
+  let p = 0;
+  for (let i = 1; i < BINS; i++) {
+    if (counts[i] > counts[p]) p = i;
+  }
+  return p;
+}
+
+function drawScene() {
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.parentElement.clientWidth - 36;
+  const cssH = 520;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const pad = { top: 18, right: 24, bottom: 34, left: 24 };
+  const W = cssW - pad.left - pad.right;
+  const H = cssH - pad.top - pad.bottom;
+  const gap = 24;
+  const boardW = W * 0.55;
+  const histW = W - boardW - gap;
+
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const left = pad.left + 18;
+  const right = pad.left + boardW - 18;
+  const top = pad.top + 36;
+  const bottom = pad.top + H - 56;
+
+  const histLeft = pad.left + boardW + gap;
+  const histRight = pad.left + boardW + gap + histW;
+  const histTop = pad.top + 42;
+  const histBottom = pad.top + H - 42;
+  const histH = histBottom - histTop;
+
+  // Board frame
+  ctx.strokeStyle = 'rgba(36,94,157,0.22)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(left, top - 8);
+  ctx.lineTo(left, bottom + 18);
+  ctx.lineTo(right, bottom + 18);
+  ctx.lineTo(right, top - 8);
+  ctx.stroke();
+
+  // Pegs
+  for (let r = 0; r < ROWS; r++) {
+    const y = top + ((bottom - top) * (r + 1)) / (ROWS + 1);
+    const cols = r + 1;
+    const rowLeft = left + ((right - left) / 2) - (cols - 1) * ((right - left) / (2 * ROWS));
+    const step = (right - left) / ROWS;
+    for (let c = 0; c < cols; c++) {
+      const x = rowLeft + c * step;
+      ctx.fillStyle = 'rgba(36,94,157,0.75)';
+      ctx.beginPath();
+      ctx.arc(x, y, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  const boardSpan = right - left;
+  const binStep = boardSpan / ROWS;
+  const centerX = (left + right) / 2;
+  const rowGap = (bottom - top) / (ROWS + 1);
+
+  // Settled balls as stacked chips in each slot (clean, not jittered)
+  for (let i = 0; i < BINS; i++) {
+    const chipsPerRow = 6;
+    const maxRows = 12;
+    const maxVisible = chipsPerRow * maxRows;
+    const chipCount = Math.min(counts[i], maxVisible);
+    for (let n = 0; n < chipCount; n++) {
+      const col = n % chipsPerRow;
+      const row = Math.floor(n / chipsPerRow);
+      const x = left + i * binStep + (col - (chipsPerRow - 1) / 2) * 2.7;
+      const y = bottom + 14 - row * 4.8;
+      ctx.fillStyle = 'rgba(178,87,51,0.58)';
+      ctx.beginPath();
+      ctx.arc(x, y, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Active falling balls with explicit paths through pegs
+  for (const ball of activeBalls) {
+    const level = Math.max(0, Math.min(ROWS - 1e-6, ball.t));
+    const i0 = Math.floor(level);
+    const i1 = Math.min(ROWS, i0 + 1);
+    const f = level - i0;
+
+    const k0 = ball.prefixRights[i0];
+    const k1 = ball.prefixRights[i1];
+    const x0 = centerX + (2 * k0 - i0) * (binStep / 2);
+    const x1 = centerX + (2 * k1 - i1) * (binStep / 2);
+    const y0 = top - 6 + i0 * rowGap;
+    const y1 = top - 6 + i1 * rowGap;
+
+    const x = x0 + (x1 - x0) * f;
+    const y = y0 + (y1 - y0) * f + Math.sin(f * Math.PI) * 1.4;
+
+    ctx.fillStyle = 'rgba(178,87,51,0.95)';
+    ctx.beginPath();
+    ctx.arc(x, y, 3.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Histogram axes
+  ctx.strokeStyle = 'rgba(22,32,45,0.26)';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(histLeft, histBottom);
+  ctx.lineTo(histRight, histBottom);
+  ctx.moveTo(histLeft, histTop);
+  ctx.lineTo(histLeft, histBottom);
+  ctx.stroke();
+
+  const maxCount = Math.max(1, ...counts);
+  const histBinStep = (histRight - histLeft) / ROWS;
+
+  // Bars
+  for (let i = 0; i < BINS; i++) {
+    const x = histLeft + i * histBinStep - (histBinStep * 0.42);
+    const w = histBinStep * 0.84;
+    const h = (counts[i] / maxCount) * (histH - 10);
+    const y = histBottom - h;
+    const grad = ctx.createLinearGradient(x, y, x, histBottom);
+    grad.addColorStop(0, 'rgba(36,94,157,0.82)');
+    grad.addColorStop(1, 'rgba(36,94,157,0.26)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, [4, 4, 0, 0]);
+    ctx.fill();
+  }
+
+  // Theoretical binomial curve (scaled)
+  if (completed > 0 && showTheoryCurve) {
+    ctx.strokeStyle = '#b25733';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let k = 0; k < BINS; k++) {
+      const prob = comb(ROWS, k) / Math.pow(2, ROWS);
+      const expect = completed * prob;
+      const x = histLeft + k * histBinStep;
+      const y = histBottom - (expect / maxCount) * (histH - 10);
+      if (k === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  // x labels
+  ctx.fillStyle = '#1a2636';
+  ctx.font = 'bold 15px "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  const tickStep = 2;
+  for (let i = 0; i < BINS; i += tickStep) {
+    ctx.fillText(String(i), histLeft + i * histBinStep, histBottom + 22);
+  }
+
+  // section labels
+  ctx.fillStyle = 'rgba(22,32,45,0.58)';
+  ctx.font = 'bold 17px "PingFang SC", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('高尔顿板钉阵', left, top - 14);
+  ctx.fillText('落点分布直方图', histLeft, histTop - 10);
+
+  // legend
+  ctx.fillStyle = 'rgba(36,94,157,0.75)';
+  ctx.fillRect(histRight - 214, histTop - 26, 20, 12);
+  ctx.fillStyle = '#16202d';
+  ctx.font = 'bold 14px "PingFang SC", sans-serif';
+  ctx.fillText('模拟分布', histRight - 188, histTop - 16);
+
+  if (showTheoryCurve) {
+    ctx.strokeStyle = '#b25733';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(histRight - 214, histTop - 2);
+    ctx.lineTo(histRight - 194, histTop - 2);
+    ctx.stroke();
+    ctx.fillStyle = '#16202d';
+    ctx.fillText('理论二项曲线', histRight - 188, histTop + 2);
+  }
+}
+
+function updateStats() {
+  statProgress.textContent = `${completed.toLocaleString('zh-CN')} / ${selectedTrials.toLocaleString('zh-CN')}`;
+  if (completed === 0) {
+    statPeak.textContent = '—';
+    return;
+  }
+  const p = peakBin();
+  statPeak.textContent = `${p} 号槽`;
+}
+
+function finishInsight() {
+  const p = peakBin();
+  const distance = Math.abs(p - ROWS / 2);
+  const level = selectedTrials >= 3000 ? '更稳定' : '仍有波动';
+  const central = distance <= 1.5 ? '非常靠近中间槽' : '与中间槽有偏差';
+  insight.innerHTML = `
+    已完成 <span class="hl">${selectedTrials.toLocaleString('zh-CN')}</span> 次试验，峰值在 <span class="hl2">${p} 号槽</span>。
+    当前分布 <span class="hl">${level}</span>，并且 <span class="hl2">${central}</span>。
+  `;
+}
+
+function stepSimulation() {
+  const spawnPerFrame = Math.max(1, Math.floor(selectedTrials / 900));
+  for (let i = 0; i < spawnPerFrame && emitted < selectedTrials; i++) {
+    activeBalls.push(makeBallPath());
+    emitted++;
+  }
+
+  for (let i = activeBalls.length - 1; i >= 0; i--) {
+    const ball = activeBalls[i];
+    ball.t += ball.speed;
+    if (ball.t >= ROWS) {
+      counts[ball.bin]++;
+      completed++;
+      activeBalls.splice(i, 1);
+    }
+  }
+
+  updateStats();
+  drawScene();
+
+  if (completed < selectedTrials || activeBalls.length > 0 || emitted < selectedTrials) {
+    animFrame = requestAnimationFrame(stepSimulation);
+  } else {
+    animFrame = null;
+    finishInsight();
+    runBtn.disabled = false;
+    runBtn.textContent = '▶ 重新模拟';
+  }
+}
+
+function startSimulation() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  counts = new Array(BINS).fill(0);
+  completed = 0;
+  emitted = 0;
+  activeBalls = [];
+
+  emptyState.style.display = 'none';
+  runBtn.disabled = true;
+  runBtn.textContent = '模拟中...';
+
+  updateStats();
+  drawScene();
+  insight.textContent = '模拟进行中：小球正在不断落入各槽位。';
+  animFrame = requestAnimationFrame(stepSimulation);
+}
+
+document.querySelectorAll('.trial-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.trial-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTrials = parseInt(btn.dataset.n);
+    updateStats();
+    if (!animFrame && completed === 0) {
+      drawScene();
+    }
+  });
+});
+
+runBtn.addEventListener('click', startSimulation);
+
+curveBtn.addEventListener('click', () => {
+  showTheoryCurve = !showTheoryCurve;
+  curveBtn.classList.toggle('active', showTheoryCurve);
+  drawScene();
+});
+
+window.addEventListener('resize', () => {
+  if (!emptyState || emptyState.style.display === 'none') drawScene();
+});
+
+updateStats();
+drawScene();
+</script>
+</body>
+</html>

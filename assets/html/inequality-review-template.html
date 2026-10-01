@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eaf6ff">
+  <title>不等式评价卡 · MathRender</title>
+  <link rel="stylesheet" href="../../assets/css/labs/inequality-review.css">
+  <script defer src="../../assets/js/labs/inequality-review.js"></script>
+</head>
+<body>
+  <div class="upload-backdrop" aria-hidden="true">
+    <svg class="sky-shapes" viewBox="0 0 1600 900" preserveAspectRatio="none"><path d="M0 0h530C405 146 300 39 198 112S68 160 0 204Z" fill="#d4eaff"/><path d="M1110 0h490v171c-91-72-148-85-205-61s-70-39-74-110c-80 92-176 59-211 0Z" fill="#c5e3ff"/><path d="M0 249c105 135 5 216 99 296S220 708 0 699Z" fill="#d5efff"/><path d="M1600 422c-122-6-286 13-340 156s155 151 340 95Z" fill="#d2ecff"/></svg>
+    <svg class="bottom-waves" viewBox="0 0 1600 240" preserveAspectRatio="none"><defs><linearGradient id="uploadWave" x2="1" y2="1"><stop stop-color="#78c7ff"/><stop offset="1" stop-color="#2485ff"/></linearGradient></defs><path d="M0 20c172 39 224 166 470 142s292 59 489 32 398-154 641-115v161H0Z" fill="#afE5ff"/><path d="M0 66c238 11 285 35 499 10s337 15 486 22 369-47 615-18v160H0Z" fill="url(#uploadWave)"/></svg>
+  </div>
+  <header class="topbar">
+    <a class="brand" href="../../index.html#algebra" aria-label="李老师开心课堂 · 返回实验目录"><span class="brand-mark" aria-hidden="true">m<span>✦</span></span><span>李老师开心课堂<small>不等式创意工坊 · 让数学想法发光</small></span></a>
+    <span class="connection-label" id="connection-label" role="status">千问 · 检查配置中</span>
+  </header>
+  <main>
+    <section class="upload-screen" id="upload-screen" aria-labelledby="upload-title">
+      <header class="upload-heading">
+        <h1 id="upload-title">上传你的<span class="title-accent">不等式</span>作品</h1>
+        <p class="lead">拍下手写作品，让 AI 帮你评价！</p>
+        <p class="upload-intro">支持拍照上传，自动识别并从科学性、严谨性、创新性三个维度进行评价。</p>
+        <svg class="paper-plane" viewBox="0 0 150 115" fill="none" aria-hidden="true"><path d="M3 104c39 0 62-44 42-42s-8 34 23 8c13-11 19-21 25-33" stroke="#94caff" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"/><path d="m72 24 71-21-35 56-12-20-15 9Z" fill="#71c5ff" stroke="#4baeff" stroke-width="2" stroke-linejoin="round"/><path d="m82 48 61-45-47 36" fill="#158bff"/><path d="m96 39 47-36-35 56" fill="#9bdcff"/></svg>
+      </header>
+      <div class="upload-layout">
+        <aside class="upload-tips" aria-label="上传说明">
+          <div class="upload-tip tip-camera"><span class="tip-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M7 14h9l4-6h10l4 6h7a3 3 0 0 1 3 3v23H4V17a3 3 0 0 1 3-3Z" fill="currentColor" stroke="none"/><circle cx="24" cy="27" r="9" stroke="white" fill="none"/><circle cx="37" cy="20" r="2" fill="white" stroke="none"/></svg></span><div><h2>拍照上传</h2><p>用手机或相机拍摄<br>你的不等式作品</p></div></div>
+          <div class="upload-tip tip-clear"><span class="tip-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M27 40H9V6h23l7 8v9M31 6v10h8M15 17h10M15 24h9M15 31h5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="8" fill="none"/><path d="m38 38 7 7" stroke-linecap="round"/></svg></span><div><h2>清晰识别</h2><p>拍全推导、证明过程<br>与取等条件及理由</p></div></div>
+        </aside>
+      <div class="upload-panel">
+        <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" hidden>
+        <button class="upload-area" id="upload-button" type="button" aria-label="拍照或上传作品图片">
+          <span id="upload-placeholder">
+            <svg class="paper-art" viewBox="0 0 220 158" fill="none" aria-hidden="true">
+              <defs><linearGradient id="photoBlue" x2="1" y2="1"><stop stop-color="#168bff"/><stop offset="1" stop-color="#436cf4"/></linearGradient><linearGradient id="uploadPurple" x2="1" y2="1"><stop stop-color="#8868ff"/><stop offset="1" stop-color="#6150fa"/></linearGradient></defs>
+              <rect x="39" y="27" width="115" height="119" rx="13" fill="#e6e3ff" transform="rotate(-14 39 27)"/>
+              <rect x="49" y="19" width="112" height="118" rx="13" fill="#cdd6ff" transform="rotate(-9 49 19)"/>
+              <g transform="rotate(8 110 81)"><rect x="53" y="23" width="109" height="119" rx="14" fill="#d3d1f5" opacity=".5"/><rect x="51" y="18" width="109" height="119" rx="14" fill="white" stroke="#c7ccff" stroke-width="2"/><rect x="64" y="33" width="84" height="83" rx="7" fill="#bed8ff"/><circle cx="124" cy="56" r="10" fill="#ffe689"/><path d="m75 101 20-33a6 6 0 0 1 10 0l15 23 8-13a5 5 0 0 1 8 0l11 23Z" fill="url(#photoBlue)"/></g>
+              <circle cx="171" cy="116" r="33" fill="#d9d5ff"/><circle cx="171" cy="111" r="33" fill="url(#uploadPurple)" stroke="#9885ff"/>
+              <path d="M171 124V99m-11 11 11-12 11 12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="m183 39 8-20m0 28 14-8M24 88l-14-9" stroke="#ffd66c" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+            <strong>点击上传图片 <span>或 拖拽到此处</span></strong>
+            <span class="upload-hint">请拍全：不等式、推导证明、取等条件与理由</span>
+          </span>
+          <img id="photo-preview" alt="已上传的手写作品" hidden>
+          <span id="replace-hint" hidden>图片已就绪 · 点击可更换</span>
+        </button>
+        <p id="file-name" class="file-name">JPG、PNG、WebP · 最大 10 MB</p>
+        <button class="generate-button" id="generate-button" type="button" disabled><span class="button-spark" aria-hidden="true">✦</span><b id="generate-label">上传并生成评价卡</b><span id="generate-arrow" aria-hidden="true">→</span></button>
+        <div class="dimension-legend" aria-label="评价维度"><span>● 科学性</span><span>● 严谨性</span><span>● 创新性</span></div>
+      </div>
+        <aside class="upload-inspiration" aria-hidden="true">
+          <p class="inspiration-motto">用不等式<br><span>表达你的思考！</span></p>
+          <div class="example-paper"><span class="paper-star">✦</span><span>|2x − 1| + |x + 2|</span><span>≥ |3x + 1|</span></div>
+          <p class="thought-bubble">数学因思考<br>而精彩！</p>
+        </aside>
+      </div>
+      <p class="privacy-note">点击生成后，照片将发送给千问进行评价。</p>
+      <p id="message" class="message" role="status" hidden></p>
+      <div class="upload-student" aria-hidden="true"><img src="../../assets/images/inequality-review/student-jianping.png" alt=""></div>
+      <img class="upload-landmark" src="../../assets/images/inequality-review/jianping-apple.png" alt="" aria-hidden="true">
+      <footer class="upload-footer"><p>不止于解答，更在于思考！</p><span>探索 ｜ 不止 ｜ 数学 ｜ 更美</span></footer>
+    </section>
+    <section class="result-screen" id="result-screen" aria-labelledby="card-title" hidden>
+      <article class="evaluation-card">
+        <header class="card-heading">
+          <div class="review-emblem" aria-hidden="true">
+            <svg class="review-art" viewBox="0 0 180 156" fill="none">
+              <defs><linearGradient id="reviewPaper" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff8df"/></linearGradient><linearGradient id="reviewStar" x2="1" y2="1"><stop stop-color="#ffe780"/><stop offset="1" stop-color="#ffbf39"/></linearGradient></defs>
+              <path d="m20 99-9 6 10 5m143-24 10 10-13 14M43 14l16 8m74 8 15-6" stroke="#ffda64" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              <g transform="rotate(-10 87 80)"><rect x="28" y="30" width="126" height="113" rx="12" fill="#084faf" opacity=".25"/><rect x="26" y="24" width="126" height="113" rx="12" fill="url(#reviewPaper)"/><path d="M40 43h78M40 59h39m-39 48h24m41 0h28m-92 14h86" stroke="#e5e1df" stroke-width="3" stroke-linecap="round"/><path d="m97 59-33 18 32 16M64 100h34" stroke="#2877fb" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="m130 31 7 13 15 3-11 11 1 16-13-7-14 6 3-16-10-12 16-2Z" fill="url(#reviewStar)" stroke="#ffd569"/></g>
+            </svg>
+            <p class="card-kicker">不等式探究活动<span>活动 02</span></p>
+          </div>
+          <div class="card-identity"><h1 id="card-title" tabindex="-1">你的<span>不等式</span>评价卡</h1><p class="hero-subtitle">让每一个不等式，都闪耀思考的光芒！</p></div>
+          <div class="hero-motto" aria-hidden="true">发现 · 证明 · 创造<br><span>数学因思考而精彩！</span><svg viewBox="0 0 240 24"><path d="M4 20Q115-2 232 9M162 20l62-10"/></svg></div>
+        </header>
+        <div class="review-paper">
+          <div class="work-review">
+            <div class="formula"><span class="section-label"><span aria-hidden="true">✎</span> 上传的不等式</span><p id="formula"></p></div>
+            <div class="formula-aside"><p class="verdict" id="verdict"></p><figure class="original-work"><img id="result-photo" alt="本次上传的手写作品" hidden><figcaption>手写原稿</figcaption></figure></div>
+          </div>
+          <div class="scores" aria-label="三维评价">
+            <section class="score-scientific">
+              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="19" ry="8"/><ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3" fill="currentColor" stroke="none"/></svg></span><h2>科学性<small>结论是否成立</small></h2></div>
+              <p class="score-comment" id="scientific-comment"></p><div class="grade" aria-label="科学性等级"><strong id="scientific-grade">—</strong><span id="scientific-level">等级</span></div><p class="dimension-note" id="scientific-note"></p>
+            </section>
+            <section class="score-rigor">
+              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M25 9H11a3 3 0 0 0-3 3v25a3 3 0 0 0 3 3h25a3 3 0 0 0 3-3V23"/><path d="m16 23 8 8L40 13" stroke-width="4"/></svg></span><h2>严谨性<small>论证是否完整</small></h2></div>
+              <p class="score-comment" id="rigor-comment"></p><div class="grade" aria-label="严谨性等级"><strong id="rigor-grade">—</strong><span id="rigor-level">等级</span></div><p class="dimension-note" id="rigor-note"></p>
+            </section>
+            <section class="score-creativity">
+              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M15 29a13 13 0 1 1 18 0c-3 3-3 5-3 8H18c0-3 0-5-3-8Zm4 12h10m-8 3h6M24 5V1M9 10 6 7m33 3 3-3M5 23H1m42 0h4M21 36V23l3 3 3-3v13"/></svg></span><h2>创新性<small>变化与推广</small></h2></div>
+              <p class="score-comment" id="creativity-comment"></p><div class="grade" aria-label="创新性等级"><strong id="creativity-grade">—</strong><span id="creativity-level">等级</span></div><p class="dimension-note" id="creativity-note"></p>
+            </section>
+          </div>
+          <div class="feedback">
+            <div class="highlight"><h2><span aria-hidden="true">★</span> 值得保留的亮点</h2><p id="highlight"></p></div>
+            <div class="suggestion"><h2><span aria-hidden="true">↗</span> 改进建议</h2><p id="suggestion"></p></div>
+          </div>
+          <footer class="card-footer"><p class="footer-motto">不止于解答，更在于思考！</p><div class="footer-meta"><span>A 优秀 · B 良好 · C 合格 · D 须努力</span><span>千问辅助评价 · 教师可复核</span></div><div class="card-actions"><a class="return-home" href="../../index.html#algebra">返回目录</a><span id="result-state">评价已完成</span><button id="restart-button" type="button">上传下一份 <span aria-hidden="true">↗</span></button></div></footer>
+          <svg class="books-art" viewBox="0 0 192 175" fill="none" aria-hidden="true">
+            <defs><linearGradient id="bookBlue" x2="1" y2="1"><stop stop-color="#4496ff"/><stop offset="1" stop-color="#0749c2"/></linearGradient><linearGradient id="bookOrange" x2="1" y2="1"><stop stop-color="#ffc373"/><stop offset="1" stop-color="#ff8c31"/></linearGradient><linearGradient id="cupBlue" x2="1"><stop stop-color="#80d6ff"/><stop offset="1" stop-color="#368cf3"/></linearGradient></defs>
+            <g transform="rotate(8 150 65)"><path d="M128 21h7v66h-7Z" fill="#ffbe47"/><path d="m128 21 3.5-10 3.5 10" fill="#f3dcaa"/><path d="M145 7h8v78h-8Z" fill="url(#bookBlue)"/><path d="M148 7V2h3v5" fill="#0753c9"/><path d="M162 18h7v67h-7Z" fill="#ff952c"/><path d="m162 18 3.5-10 3.5 10" fill="#f2d59c"/><path d="M159 15h-4v25" stroke="#68bfff" stroke-width="3" stroke-linecap="round"/><path d="M120 58h57l-6 44h-45Z" fill="url(#cupBlue)"/><ellipse cx="149" cy="58" rx="29" ry="5" fill="#abe7ff"/><path d="M126 62h8l4 36h-7Z" fill="#b8efff" opacity=".5"/></g>
+            <g transform="rotate(6 100 143)"><path d="M15 132h175v38H15c-16 0-16-38 0-38Z" fill="url(#bookOrange)"/><path d="M25 140h165v22H25c-8 0-8-22 0-22Z" fill="#fff4dd"/><path d="M30 146h160m-160 6h160m-160 6h160" stroke="#edcfaa"/><path d="M18 132c-12 0-12 38 0 38" stroke="#ffde91" stroke-width="4"/></g>
+            <g transform="rotate(-4 109 121)"><path d="M28 99h162v39H28c-14 0-14-39 0-39Z" fill="url(#bookBlue)"/><path d="M133 106h57v25h-57c-7 0-7-25 0-25Z" fill="#fff9e9"/><path d="M137 113h53m-53 6h53m-53 6h53" stroke="#dce3ea"/><path d="M28 102c-10 0-10 32 0 32" stroke="#72b5ff" stroke-width="3"/><text x="42" y="123" fill="white" font-family="Georgia,serif" font-size="13">Mathematics</text></g>
+            <g transform="rotate(7 139 91)"><path d="M78 75h113v31H78c-11 0-11-31 0-31Z" fill="url(#bookOrange)"/><path d="M84 81h107v18H84c-6 0-6-18 0-18Z" fill="#fff9e9"/><path d="M88 87h102m-102 6h102" stroke="#efdbc1"/></g><path d="m101 45-10-8m10 23-12 2" stroke="#ffd359" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

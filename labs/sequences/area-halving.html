@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>正方形不断取半 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/area-halving.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="area-halving">
+  <header class="topbar"><a class="back" href="../../index.html">← 实验室</a><div class="title">正方形不断取半</div><div class="lesson">05｜面积模型</div><div class="top-actions"><button id="focusBtn">聚焦模式</button><button id="themeBtn">深色</button></div></header>
+  <main class="app"><div class="layout">
+    <aside class="card sidebar"><div class="head"><h2>动画控制</h2><span id="status">已暂停</span></div><div class="body">
+      <div class="stage-number" id="stageNum">0</div><div class="stage-label">第 <span id="stageInline">0</span> 次取半</div>
+      <div class="rule"><b>奇数次：竖着取半</b><br><b>偶数次：横着取半</b><br>每次都只处理当前剩余区域。</div>
+      <div class="range-row"><label><span>演示步数</span><b id="rangeValue">0</b></label><input id="stageRange" type="range" min="0" max="20" value="0" /></div>
+      <div class="controls"><button class="primary" id="playBtn">▶ 播放</button><button class="secondary" id="nextBtn">下一步 →</button><button id="prevBtn">← 上一步</button><button id="resetBtn">↻ 重置</button><div class="zoom-actions"><button class="zoom-control" id="zoomBtn" title="放大并居中显示当前剩余区域">⌕ 放大右下角</button><button class="restore-control" id="restoreViewBtn" title="恢复初始视图">↺ 还原</button></div></div>
+      <div class="speed" aria-label="播放速度"><button data-speed="0.6">0.5×</button><button class="active" data-speed="1">1×</button><button data-speed="1.8">2×</button></div>
+    </div></aside>
+    <section class="card canvas-card"><div class="head"><h2>单位正方形</h2><span>拖动平移 · 滚轮缩放</span></div><div class="body"><div class="canvas-wrap"><canvas id="board" tabindex="0" aria-label="横竖交替取半的正方形动画；可拖动平移，可用滚轮放大缩小"></canvas><div class="caption"><span>当前：<strong id="orientation">横着取半</strong></span><span>蓝色虚线表示下一次切线</span></div></div></div></section>
+    <aside class="card evidence"><div class="head"><h2>数学证据</h2><span>第 n 步</span></div><div class="body">
+      <div class="formula">S<sub>n</sub> = 1 − (1/2)<sup>n</sup></div><div class="formula">R<sub>n</sub> = (1/2)<sup>n</sup></div>
+      <div class="metric"><div><small>已取面积</small><b id="sumValue">0</b><span class="decimal" id="sumDecimal">0.0000</span></div><div><small>剩余面积</small><b id="restValue">1</b><span class="decimal" id="restDecimal">1.0000</span></div></div>
+      <div class="bar" aria-label="已取面积与剩余面积"><div class="sumbar" id="sumbar"></div><div class="restbar"></div></div><div class="axis"><span>0</span><span>总面积 1</span></div>
+      <div class="takeaway"><strong>观察任务</strong><span id="conclusion" class="hidden-conclusion">分割可以无限继续；剩余面积趋近 0，已取面积趋近 1。</span></div><button class="reveal" id="revealBtn">显示结论</button>
+    </div></aside>
+  </div></main>
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/area-halving.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>二项分布与超几何分布 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/ball-distribution.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="ball-distribution">
+  <div class="shell">
+    <div class="topbar">
+      <a href="../../index.html">返回主页</a>
+    </div>
+
+    <section class="hero">
+      <h1>超几何分布与二项分布</h1>
+    </section>
+
+    <section class="panel settings-panel">
+      <div class="mode-tabs" role="tablist" aria-label="设置方式">
+        <button class="mode-tab active" id="directModeBtn" type="button" aria-selected="true">数量设置</button>
+        <button class="mode-tab" id="ratioModeBtn" type="button" aria-selected="false">比例设置</button>
+      </div>
+
+      <div class="control-mode" id="directControls">
+        <div class="controls-grid">
+          <div class="field">
+            <label for="whiteInput">白球数 <span class="value" id="whiteValue">6</span></label>
+            <input id="whiteInput" type="range" min="0" max="2000" step="1" value="6" />
+          </div>
+          <div class="field">
+            <label for="blackInput">黑球数 <span class="value" id="blackValue">4</span></label>
+            <input id="blackInput" type="range" min="0" max="2000" step="1" value="4" />
+          </div>
+          <button class="scale-btn" id="scaleBtn" type="button">规模 ×2</button>
+        </div>
+      </div>
+
+      <div class="control-mode" id="ratioControls" hidden>
+        <div class="controls-grid ratio-grid">
+          <div class="field inline-field">
+            <label for="whiteRatioInput">白球比例</label>
+            <input id="whiteRatioInput" type="number" min="0" max="2000" step="1" value="3" />
+          </div>
+          <div class="field inline-field">
+            <label for="blackRatioInput">黑球比例</label>
+            <input id="blackRatioInput" type="number" min="0" max="2000" step="1" value="2" />
+          </div>
+          <div class="field inline-field">
+            <label for="multiplierInput">倍率</label>
+            <input id="multiplierInput" type="number" min="1" max="666" step="1" value="2" />
+          </div>
+          <div class="field">
+            <div class="computed-counts">
+              <div class="count-box"><span>白球</span><strong id="ratioWhiteCount">6</strong></div>
+              <div class="count-box"><span>黑球</span><strong id="ratioBlackCount">4</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-grid draw-grid">
+        <div class="field">
+          <label for="drawInput">抽取个数 <span class="value" id="drawValue">5</span></label>
+          <input id="drawInput" type="range" min="1" max="30" step="1" value="5" />
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="content-grid">
+        <article class="table-card">
+          <div class="table-title-row">
+            <h2>概率对照表</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>白球个数 k</th>
+                  <th>超几何分布</th>
+                  <th>二项分布</th>
+                  <th>区别 |Δ|</th>
+                </tr>
+              </thead>
+              <tbody id="probabilityBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <h2>柱状图</h2>
+          <div class="chart-shell">
+            <canvas id="chartCanvas" width="1120" height="460"></canvas>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-swatch" style="background:#b25733;"></span>超几何分布</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#245e9d;"></span>二项分布</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="formula-grid">
+        <article class="formula-card">
+          <h2 class="formula-title">不放回抽样 · 超几何分布 · 概率公式</h2>
+          <div class="formula hyper" id="hyperFormula"></div>
+        </article>
+        <article class="formula-card">
+          <h2 class="formula-title">放回抽样 · 二项分布 · 概率公式</h2>
+          <div class="formula binom" id="binomFormula"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="summary-grid">
+        <article class="summary-card">
+          <h2>当前模型</h2>
+          <div class="summary-value" id="whiteRatioValue"></div>
+        </article>
+        <article class="summary-card">
+          <h2>期望白球数</h2>
+          <div class="summary-value" id="expectationValue"></div>
+        </article>
+        <article class="summary-card">
+          <h2>分布接近程度</h2>
+          <div class="summary-value" id="differenceValue"></div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/ball-distribution.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

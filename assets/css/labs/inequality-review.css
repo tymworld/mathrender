@@ -1,0 +1,429 @@
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #142157; background: #f5fbff; font-synthesis: none;
+  --purple: #7057e8; --muted: #6d729e; --line: #dce9fc;
+}
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.6; }
+body:not(.review-mode) { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: clip; background: radial-gradient(ellipse at 50% 35%, #fff 0, #f7fbff 48%, #eaf6ff 100%); }
+button, a { touch-action: manipulation; }
+button { font: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+button:focus-visible, a:focus-visible { outline: 3px solid #8166f8; outline-offset: 5px; }
+h1, h2, p, figure { margin: 0; }
+[hidden] { display: none !important; }
+.upload-backdrop { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+.sky-shapes { width: 100%; height: 100%; opacity: .78; }
+.bottom-waves { position: absolute; bottom: 0; left: 0; width: 100%; height: clamp(170px, 28vh, 280px); }
+.topbar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: clamp(17px, 2.5vh, 28px) 3.5vw 8px; width: 100%; max-width: 1800px; margin: 0 auto; }
+.brand { display: flex; align-items: center; gap: 13px; color: #202152; font-size: clamp(17px, 1.65vw, 24px); font-weight: 750; text-decoration: none; line-height: 1.45; }
+.brand small { display: block; margin-top: 2px; font-size: clamp(10px, 1.03vw, 15px); color: #6e73a0; font-weight: 400; }
+.brand-mark { display: grid; place-items: center; position: relative; width: clamp(43px, 4vw, 60px); aspect-ratio: 1; background: linear-gradient(145deg, #8866ff, #6038f3); color: #fff; border-radius: 17px; font: italic bold clamp(30px, 3vw, 43px)/1 Georgia, serif; box-shadow: 0 5px 0 #d2caff, inset 0 1px 2px #bdb0ff; }
+.brand-mark>span { position: absolute; right: -8px; top: -12px; color: #ffcd43; font: 31px/1 sans-serif; }
+.connection-label { font-size: clamp(12px, 1.12vw, 16px); color: #3e538a; background: #ffffffbc; border: 1px solid #fff; border-radius: 99px; padding: 7px 19px; white-space: nowrap; }
+body:not(.review-mode) main { position: relative; display: flex; flex: 1; padding: 0 3.1vw; }
+.upload-screen { position: relative; isolation: isolate; width: 100%; max-width: 1650px; margin: auto; text-align: center; padding: 0 0 14px; }
+.upload-heading { position: relative; z-index: 1; margin: 0 auto clamp(16px, 2.3vh, 26px); }
+.upload-screen h1 { display: inline-block; position: relative; font-size: clamp(38px, 4.75vw, 78px); color: #081563; line-height: 1.25; letter-spacing: -1px; font-weight: 900; text-shadow: 0 3px #fff; }
+.upload-screen h1::before { content: ""; position: absolute; left: -29px; top: -7px; width: 30px; height: 50px; background: linear-gradient(#ffd44d 0 0) 14px 0/8px 22px no-repeat, linear-gradient(#ffd44d 0 0) 0 31px/20px 7px no-repeat; transform: rotate(-25deg); }
+.title-accent { display: inline-block; color: #2051de; background: linear-gradient(155deg, #ffe47e 0, #ffe363 55%, #ffca25 100%); border-radius: 7px; padding: 0 3px 2px; margin: 0 2px; line-height: 1.04; box-shadow: inset 0 3px 0 #fff0b4, 0 1px 0 #f6c824; text-shadow: 0 2px 0 #ffeeb0; }
+.lead { display: table; position: relative; margin: 10px auto 0; padding: 0 6px 4px; color: #12195e; font: clamp(24px, 2.4vw, 38px)/1.35 "Kaiti SC", "STKaiti", "KaiTi", serif; letter-spacing: 2px; }
+.lead::after { content: ""; position: absolute; right: 6px; bottom: 0; width: 36%; height: 3px; border-radius: 50%; background: #388cff; transform: rotate(-2deg); }
+.upload-intro { margin-top: 12px; font-size: clamp(13px, 1.25vw, 19px); color: #68739a; }
+.paper-plane { position: absolute; width: clamp(80px, 8vw, 140px); right: 15.5%; top: -23px; transform: translateX(100%); }
+.upload-layout { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(440px, 2.65fr) minmax(170px, 1fr); gap: clamp(18px, 2vw, 34px); align-items: start; }
+.upload-tips { display: grid; gap: clamp(12px, 2vh, 22px); padding-top: 3px; text-align: left; transform: translateY(-56px); }
+.upload-tip { display: flex; align-items: center; gap: clamp(10px, 1vw, 17px); padding: 12px 8px; border-radius: 27px; background: linear-gradient(110deg, #e8f3ffcb, #eef4ff80); }
+.tip-icon { flex-shrink: 0; display: grid; place-items: center; width: clamp(51px, 5.25vw, 83px); aspect-ratio: 1; border-radius: 50%; border: 2px solid #fff; background: linear-gradient(140deg, #d4eaff, #acd0ff); color: #0061eb; box-shadow: 0 0 0 5px #ffffff75; }
+.tip-icon svg { width: 59%; height: 59%; stroke: currentColor; stroke-width: 3; }
+.upload-tip h2 { color: #0650d7; font-size: clamp(17px, 1.5vw, 24px); font-weight: 750; line-height: 1.3; margin-bottom: 5px; }
+.upload-tip p { color: #54648c; font-size: clamp(11px, 1.02vw, 16px); line-height: 1.6; white-space: nowrap; }
+.tip-clear .tip-icon { background: linear-gradient(140deg, #ffe9ca, #ffce91); color: #ff821c; }
+.tip-clear h2 { color: #c15312; }
+.upload-panel { position: relative; z-index: 2; min-width: 0; padding: clamp(18px, 1.6vw, 27px); border: 1px solid #dce7ff; border-radius: 28px; background: #ffffffed; box-shadow: 0 14px 44px #3683d80c, inset 0 1px #fff; }
+.upload-area { width: 100%; height: clamp(205px, 29vh, 330px); border: 2px dashed #9a81ff; border-radius: 17px; background: linear-gradient(130deg, #f8f7ff, #f4f3ff); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; overflow: hidden; padding: 15px; color: #32228d; transition: background .2s, border-color .2s; }
+.upload-area:hover, .upload-area.dragging { background: #eceaff; border-color: #7355f5; }
+#upload-placeholder { width: 100%; }
+.paper-art { display: block; width: clamp(145px, 14vw, 220px); height: clamp(102px, 15.5vh, 169px); margin: 0 auto 10px; filter: drop-shadow(0 5px 3px #6962c310); }
+.upload-area strong { display: block; font-size: clamp(18px, 1.5vw, 24px); font-weight: 700; }
+.upload-hint { display: block; color: #70739e; font-size: clamp(11px, .95vw, 14px); margin-top: 7px; }
+#photo-preview { max-width: 100%; max-height: calc(100% - 28px); object-fit: contain; border-radius: 9px; }
+#replace-hint { font-size: 13px; color: #595989; }
+.file-name { font-size: 12px; color: #73769d; margin: 9px 0 13px; overflow-wrap: anywhere; }
+.generate-button { width: 90%; margin: auto; background: linear-gradient(120deg, #758aff, #795cf2); border: 1px solid #929fff; border-radius: 15px; color: white; padding: 10px 22px; font-size: clamp(18px, 1.5vw, 23px); min-height: 55px; display: flex; justify-content: center; align-items: center; gap: 12px; box-shadow: 0 4px 0 #e0e4ff, 0 4px 11px #596cec20, inset 0 2px 1px #ffffff30; transition: transform .2s, filter .2s; }
+.generate-button:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-2px); }
+.generate-button:disabled { background: linear-gradient(115deg, #889cfb, #8c83ff); border-color: #adb7ff; color: #ffffffed; }
+.generate-button[aria-busy="true"] { background: #7057e8; }
+#generate-label { font-weight: 650; }
+.button-spark { color: #ffdf64; font-size: 28px; margin-right: auto; line-height: 1; }
+#generate-arrow { margin-left: auto; font-size: 30px; line-height: 1; }
+.generate-button[aria-busy="true"] .button-spark { animation: twinkle 1.8s linear infinite; margin: 0; }
+.dimension-legend { display: flex; justify-content: center; gap: clamp(23px, 2.6vw, 44px); font-size: 13px; font-weight: 600; margin-top: 16px; }
+.dimension-legend span:nth-child(1) { color: #4f60d7; }
+.dimension-legend span:nth-child(2) { color: #238c73; }
+.dimension-legend span:nth-child(3) { color: #db680f; }
+.upload-inspiration { position: relative; padding-top: 24px; pointer-events: none; }
+.inspiration-motto { color: #197bff; font: clamp(23px, 2.1vw, 34px)/1.45 "Kaiti SC", "STKaiti", "KaiTi", serif; transform: rotate(-9deg); margin-top: -83px; margin-bottom: 49px; }
+.inspiration-motto span { margin-left: 14px; white-space: nowrap; }
+.inspiration-motto::after { content: ""; display: block; width: 75%; height: 4px; background: #3d9dff; transform: rotate(-5deg); border-radius: 50%; margin: 5px 0 0 auto; }
+.example-paper { position: relative; display: grid; gap: 5px; transform: rotate(-8deg); padding: 25px 10px; border-radius: 15px; background: #fff; color: #5589ff; font: italic clamp(19px, 1.8vw, 29px)/1.6 "Kaiti SC", "STKaiti", "KaiTi", serif; box-shadow: -10px 14px 0 #abd3ff55, 0 10px 18px #569feb18; white-space: nowrap; }
+.paper-star { position: absolute; right: -3px; top: -25px; color: #ffdc62; font: 51px/1 sans-serif; text-shadow: 0 2px #ffca4e; }
+.thought-bubble { position: relative; display: table; padding: 14px 25px; margin: 35px auto 0 0; border-radius: 42% 35% 40% 38%; color: #7c3904; background: linear-gradient(120deg, #fff0ae, #ffe17b); border: 1px solid #fff9db; font: clamp(23px, 2vw, 32px)/1.4 "Kaiti SC", "STKaiti", "KaiTi", serif; transform: rotate(-9deg); }
+.thought-bubble::after { content: ""; position: absolute; bottom: -14px; left: 25%; border-top: 22px solid #ffe79b; border-left: 14px solid transparent; }
+.upload-student { position: absolute; z-index: -1; bottom: -16px; left: -3.4vw; width: clamp(175px, 19vw, 280px); height: clamp(230px, 40vh, 365px); pointer-events: none; }
+.upload-student img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left bottom; }
+.upload-landmark { position: absolute; z-index: -1; right: -3.1vw; bottom: -15px; width: clamp(180px, 19vw, 315px); pointer-events: none; }
+.privacy-note { position: relative; display: table; color: #53698c; font-size: 11px; margin: 10px auto 0; padding: 2px 11px; border-radius: 99px; background: #eff7ffeb; }
+.message { position: relative; z-index: 3; max-width: 630px; margin: 12px auto 0; font-size: 14px; color: #925f28; background: #fff1d9; border: 1px solid #ffe3b3; border-radius: 12px; padding: 10px 16px; }
+.upload-footer { display: flex; justify-content: space-between; align-items: center; gap: 22px; width: 57%; min-height: 55px; margin: 12px auto 0; color: white; text-shadow: 0 1px 2px #328beb55; }
+.upload-footer p { position: relative; font: clamp(19px, 1.8vw, 28px)/1.6 "Kaiti SC", "STKaiti", "KaiTi", serif; letter-spacing: 1px; white-space: nowrap; transform: rotate(-4deg); }
+.upload-footer p::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 3px; background: #ffdc51; transform: rotate(-2deg); border-radius: 50%; }
+.upload-footer>span { font-size: clamp(10px, 1vw, 15px); white-space: nowrap; letter-spacing: 2px; }
+.review-mode .upload-backdrop { display: none; }
+/* Short desktop windows keep the upload action in view, with comfortable text. */
+@media (min-width: 1001px) and (max-height: 760px) {
+  .topbar { padding-top: 15px; padding-bottom: 8px; }
+  .brand { font-size: 18px; }
+  .brand-mark { width: 44px; font-size: 32px; }
+  .brand small { font-size: 11px; }
+  .upload-screen h1 { font-size: clamp(42px, 4.3vw, 65px); }
+  .lead { margin-top: 5px; font-size: 28px; }
+  .upload-intro { margin-top: 8px; font-size: 14px; }
+  .upload-heading { margin-bottom: 16px; }
+  .upload-panel { padding: 17px 19px 15px; }
+  .upload-tip { padding: 10px 8px; border-radius: 22px; }
+  .tip-icon { width: 55px; }
+  .upload-tip h2 { font-size: 19px; }
+  .upload-tip p { font-size: 12px; }
+  .upload-tips { gap: 12px; }
+  .upload-area { height: clamp(188px, 29vh, 218px); }
+  .paper-art { width: 150px; height: 108px; margin-bottom: 6px; }
+  .upload-area strong { font-size: 19px; }
+  .upload-hint { margin-top: 5px; font-size: 12px; }
+  .generate-button { min-height: 51px; padding: 8px 18px; font-size: 20px; }
+  .dimension-legend { margin-top: 13px; }
+  .file-name { margin: 7px 0 10px; }
+  .upload-student { width: min(21vw, 230px); }
+  .upload-landmark { width: min(19vw, 200px); }
+  .upload-footer { min-height: 43px; margin-top: 8px; }
+  .inspiration-motto { font-size: 25px; margin-top: -79px; margin-bottom: 43px; }
+  .upload-inspiration { padding-top: 14px; }
+  .example-paper { padding: 20px 9px; font-size: 23px; }
+  .thought-bubble { font-size: 23px; padding: 10px 18px; margin-top: 18px; }
+}
+@media (min-width: 1001px) and (max-height: 650px) {
+  .topbar { padding-top: 9px; padding-bottom: 5px; }
+  .brand-mark { width: 37px; font-size: 28px; border-radius: 13px; }
+  .upload-screen { padding-bottom: 8px; }
+  .upload-screen h1 { font-size: 49px; }
+  .lead { font-size: 24px; margin-top: 4px; }
+  .upload-intro { font-size: 13px; margin-top: 7px; }
+  .upload-heading { margin-bottom: 13px; }
+  .upload-panel { padding: 14px 18px 12px; }
+  .upload-area { height: 164px; }
+  .paper-art { height: 86px; width: 125px; margin-bottom: 3px; }
+  .upload-area strong { font-size: 18px; }
+  .upload-hint { font-size: 11px; }
+  .file-name { margin: 5px 0 7px; font-size: 11px; }
+  .generate-button { min-height: 47px; font-size: 19px; }
+  .dimension-legend { margin-top: 11px; font-size: 12px; }
+  .upload-tip { padding: 7px 8px; }
+  .upload-tip h2 { font-size: 17px; margin-bottom: 4px; }
+  .upload-tip p { font-size: 11px; line-height: 1.5; }
+  .tip-icon { width: 47px; }
+  .upload-tips { gap: 10px; transform: translateY(-40px); }
+  .upload-student { width: 188px; }
+  .upload-landmark { width: 188px; }
+  .inspiration-motto { font-size: 22px; margin-top: -67px; margin-bottom: 36px; }
+  .example-paper { padding: 16px 9px; font-size: 21px; }
+  .thought-bubble { font-size: 22px; padding: 9px 20px; margin-top: 22px; }
+  .upload-footer { min-height: 40px; margin-top: 5px; }
+  .upload-footer p { font-size: 23px; }
+  .privacy-note { margin-top: 8px; }
+}
+@media (max-width: 1000px) {
+  .upload-layout { grid-template-columns: minmax(0, 650px); justify-content: center; }
+  .upload-tips, .upload-inspiration, .paper-plane { display: none; }
+  .upload-heading { margin-top: 20px; }
+  .upload-screen h1 { font-size: clamp(34px, 5.7vw, 56px); }
+  .upload-intro { max-width: 570px; margin: 12px auto 0; font-size: 14px; }
+  .lead { font-size: 29px; }
+  .upload-panel { padding: 22px; }
+  .upload-area { height: 250px; }
+  .paper-art { width: 182px; height: 132px; }
+  .upload-area strong { font-size: 22px; }
+  .upload-hint { font-size: 12px; }
+  .generate-button { min-height: 57px; font-size: 21px; }
+  .upload-student, .upload-landmark { display: none; }
+  .upload-footer { width: 90%; min-height: 55px; margin-top: 28px; }
+  .upload-footer p { font-size: 22px; }
+  .upload-footer>span { font-size: 12px; }
+}
+@media (max-width: 600px) {
+  .topbar { padding: 20px 19px 10px; gap: 8px; }
+  .brand { font-size: 16px; gap: 10px; }
+  .brand small { font-size: 9px; }
+  .brand-mark { width: 37px; font-size: 27px; border-radius: 12px; }
+  .brand-mark>span { font-size: 23px; right: -7px; top: -8px; }
+  .connection-label { padding: 5px 9px; font-size: 10px; }
+  body:not(.review-mode) main { padding: 0 18px; }
+  .upload-screen { padding-bottom: 13px; }
+  .upload-heading { margin-top: 23px; margin-bottom: 22px; }
+  .upload-screen h1 { font-size: clamp(29px, 7.7vw, 44px); letter-spacing: -1px; }
+  .upload-screen h1::before { left: -13px; width: 17px; height: 31px; background-size: 5px 13px, 12px 4px; background-position: 9px 0, 0 22px; }
+  .title-accent { padding: 0 1px 2px; margin: 0 1px; }
+  .lead { margin-top: 14px; font-size: 22px; letter-spacing: .4px; }
+  .upload-intro { max-width: 310px; margin-top: 13px; font-size: 12px; line-height: 1.7; }
+  .upload-panel { border-radius: 24px; padding: 17px 15px 18px; }
+  .upload-area { height: 258px; padding: 15px 8px; }
+  .paper-art { width: 178px; height: 129px; margin-bottom: 14px; }
+  .upload-area strong { font-size: 20px; }
+  .upload-area strong>span { display: block; margin-top: 2px; font-size: 14px; font-weight: 400; color: #70639f; }
+  .upload-hint { font-size: 10px; margin-top: 11px; }
+  .file-name { margin: 10px 0 14px; font-size: 11px; }
+  .generate-button { width: 100%; font-size: 19px; min-height: 55px; padding: 9px 15px; }
+  .dimension-legend { gap: 24px; font-size: 12px; margin-top: 17px; }
+  .privacy-note { margin-top: 12px; font-size: 10px; }
+  .upload-footer { width: 100%; justify-content: center; min-height: 64px; margin-top: 26px; }
+  .upload-footer p { font-size: 24px; }
+  .upload-footer>span { display: none; }
+  .bottom-waves { height: 150px; }
+}
+/* Bright classroom poster, based on the teacher's reference card. */
+body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradient(162deg, #0874f0 0, #0849b3 20%, #1688ff 43%, #7ddaff 72%, #c6f5ff 100%); }
+.review-mode::before { content: ""; position: fixed; z-index: -1; inset: 0; display: block; opacity: 1; background: radial-gradient(ellipse 26% 24% at 0 0, #6bc8ff99 0 72%, transparent 73%), radial-gradient(ellipse 22% 40% at 108% 9%, #47beff77 0 70%, transparent 71%), radial-gradient(ellipse 45% 22% at 5% 48%, #2eabff77 0 70%, transparent 71%); }
+.review-mode .page-doodles, .review-mode .topbar { display: none; }
+.review-mode main { height: 100dvh; padding: 10px 22px 16px; }
+.result-screen { width: 100%; max-width: 1460px; height: 100%; margin: auto; display: flex; align-items: center; }
+.result-screen[data-overflow="true"] { align-items: flex-start; }
+.evaluation-card { width: 100%; color: #111b34; position: relative; }
+.card-heading { display: grid; grid-template-columns: 145px minmax(0, 1fr) 255px; align-items: center; gap: 20px; padding: 0 12px 16px; position: relative; }
+.review-emblem { position: relative; height: 119px; align-self: end; z-index: 2; }
+.review-art { display: block; position: absolute; width: 164px; height: 142px; top: -15px; left: -5px; filter: drop-shadow(0 3px 5px #00368936); }
+.card-kicker { position: absolute; bottom: -18px; left: 2px; min-width: 144px; padding: 7px 12px; background: linear-gradient(140deg, #fff3ba, #ffdc82); box-shadow: 0 4px 7px #244f9530; border-radius: 21px; color: #80450d; font: 17px/1.3 "Kaiti SC", "STKaiti", "KaiTi", serif; text-align: center; transform: rotate(-7deg); }
+.card-kicker span { display: block; margin-top: 2px; font-family: inherit; font-size: 18px; letter-spacing: 2px; }
+.card-title-row, .card-identity { min-width: 0; }
+.card-identity h1 { font-size: clamp(30px, 3.5vw, 48px); font-weight: 650; line-height: 1.25; letter-spacing: .5px; white-space: nowrap; color: white; text-shadow: 0 2px 8px #06459b35; outline: none; }
+.card-identity h1>span { color: #ffdd3c; }
+.hero-subtitle { margin-top: 8px; color: #f4faff; font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: 1px; }
+.hero-motto { justify-self: end; color: #fff; font: 23px/1.5 "Kaiti SC", "STKaiti", "KaiTi", serif; transform: rotate(-5deg); letter-spacing: 2px; position: relative; padding-bottom: 12px; }
+.hero-motto span { margin-left: 19px; white-space: nowrap; }
+.hero-motto svg { position: absolute; left: 0; bottom: -6px; width: 100%; height: 25px; fill: none; stroke: #ffd552; stroke-width: 4; stroke-linecap: round; }
+.review-paper { position: relative; border: 2px solid #fff; border-radius: 29px; padding: 22px 21px 13px; background: linear-gradient(130deg, #fff 65%, #f9feff); box-shadow: 0 10px 23px #0074ca24, inset 0 0 0 1px #d5efff; }
+.work-review { position: relative; display: flex; gap: 22px; align-items: center; padding: 28px 23px 16px 33px; margin-bottom: 10px; background: linear-gradient(110deg, #ecf8ff, #e7f5ff); border-radius: 18px; min-height: 98px; }
+.formula { flex: 1; min-width: 0; }
+.section-label { position: absolute; left: 74px; top: -11px; display: inline-flex; align-items: center; gap: 8px; padding: 3px 18px; border: 1px solid #69acff; border-radius: 99px; background: linear-gradient(130deg, #2376ff, #418cff); box-shadow: 0 3px 6px #1873ec24; font-size: 16px; line-height: 1.5; font-weight: 500; color: white; transform: rotate(-2deg); }
+.section-label>span { color: #ffe08e; font-size: 22px; line-height: 1; }
+.formula>p { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; font-size: calc(var(--review-font) * 1.2); font-weight: 500; line-height: 1.65; color: #202d49; text-align: center; }
+.formula::before { content: ""; position: absolute; left: 10px; top: 45%; width: 12px; height: 29px; border-top: 5px solid #ffd055; border-bottom: 5px solid #ffd055; transform: rotate(-25deg); }
+.formula-aside { width: 230px; flex-shrink: 0; display: flex; gap: 9px; align-items: center; }
+.verdict { flex: 1; min-width: 0; color: #426ba0; font-size: calc(var(--review-font) * .75); line-height: 1.65; }
+.original-work { flex-shrink: 0; width: 42px; text-align: center; transform: rotate(4deg); }
+.original-work img { display: block; width: 100%; height: 34px; border: 2px solid white; border-radius: 4px; object-fit: contain; background: #f6f2e9; box-shadow: 0 2px 4px #235eae1a; }
+.original-work figcaption { font-size: 8px; color: #6482a8; margin-top: 3px; }
+.scores { display: grid; gap: 8px; }
+.scores>section { display: grid; grid-template-columns: calc(var(--review-font) * 5.1 + 82px) minmax(0, 1fr) 85px 145px; gap: 20px; align-items: center; padding: 15px 18px; border: 1px solid var(--edge); border-radius: 18px; background: linear-gradient(115deg, var(--wash), var(--wash-end)); --accent: #16158c; --note: #7950d9; --wash: #f0efff; --wash-end: #f5f3ff; --edge: #e4e2ff; --icon: #e1d9ff; --badge: #d8d4ff; }
+.scores>.score-rigor { --accent: #085b3d; --note: #268951; --wash: #eaf8ee; --wash-end: #f0faf1; --edge: #e3f3e5; --icon: #c8efd6; --badge: #d2ead4; }
+.scores>.score-creativity { --accent: #ae5004; --note: #e87c1a; --wash: #fff4df; --wash-end: #fff7e9; --edge: #fff0d8; --icon: #ffdfae; --badge: #ffe0b6; }
+.score-heading { display: flex; align-items: center; gap: 13px; padding-right: 12px; border-right: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+.dimension-icon { display: grid; place-items: center; flex-shrink: 0; width: 62px; height: 62px; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(140deg, #fff7, var(--icon)); color: var(--accent); box-shadow: 0 1px 5px #fff5; }
+.dimension-icon svg { width: 42px; height: 42px; fill: none; stroke: currentColor; stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+.score-creativity .dimension-icon { color: #f17b10; }
+.score-heading h2 { font-size: calc(var(--review-font) * 1.08); font-weight: 600; line-height: 1.45; color: var(--accent); white-space: nowrap; }
+.score-heading h2 small { display: block; margin-top: 6px; color: #414d6e; font-size: calc(var(--review-font) * .82); font-weight: 400; }
+.score-comment { font-size: var(--review-font); font-weight: 400; line-height: 1.7; letter-spacing: .15px; color: #283449; }
+.grade { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 85px; min-height: 81px; padding: 8px 5px 10px; border: 1px solid var(--badge); border-radius: 15px; background: #fff; box-shadow: 0 2px 5px #24395c08; color: var(--accent); }
+.grade strong { font: 400 clamp(36px, calc(var(--review-font) * 2), 48px)/1.1 Georgia, "Times New Roman", serif; }
+.grade>span { font-size: calc(var(--review-font) * .65); line-height: 1.35; margin-top: 2px; }
+.grade.pending strong { font-family: inherit; font-size: calc(var(--review-font) * .85); line-height: 1.5; }
+.dimension-note { position: relative; color: var(--note); font: calc(var(--review-font) * .75)/1.7 "Kaiti SC", "STKaiti", "KaiTi", serif; white-space: pre-line; text-align: center; transform: rotate(-3deg); padding: 0 0 8px; }
+.dimension-note::after { content: ""; position: absolute; left: 16%; right: 3%; bottom: 1px; height: 3px; border-radius: 50%; background: currentColor; transform: rotate(-5deg); opacity: .6; }
+.feedback { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 9px; padding-right: 62px; }
+.feedback>div { padding: 14px 18px 16px; border-radius: 17px; background: #edf7ff; }
+.feedback>.suggestion { background: #fff1f4; }
+.feedback h2 { display: flex; align-items: center; gap: 10px; color: #073aaf; font-size: calc(var(--review-font) * .92); line-height: 1.5; font-weight: 600; margin-bottom: 7px; }
+.feedback h2 span { display: inline-grid; place-items: center; width: 31px; height: 31px; flex-shrink: 0; border-radius: 50%; color: #0844cc; background: #d8eaff; font-size: 22px; }
+.feedback p { padding-left: 41px; font-size: var(--review-font); line-height: 1.7; letter-spacing: .15px; color: #283449; }
+.suggestion h2 { color: #ba1544; }
+.suggestion h2 span { background: #ffdae7; color: #c21f50; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 10px 98px 0 23px; line-height: 1.35; }
+.footer-motto { color: #1574e9; font: 18px/1.4 "Kaiti SC", "STKaiti", "KaiTi", serif; transform: rotate(-3deg); border-bottom: 2px solid #6dd3ff; white-space: nowrap; }
+.footer-meta { display: flex; flex-direction: column; gap: 2px; color: #63718d; font-size: 11px; text-align: center; }
+.card-actions { display: flex; align-items: center; gap: 10px; }
+#result-state { font-size: 9px; color: #7784a1; white-space: nowrap; }
+#restart-button { font-size: 12px; font-weight: 500; color: #2269c5; background: #edf6ff; border: 1px solid #d7e9ff; padding: 6px 10px; border-radius: 9px; white-space: nowrap; }
+#restart-button span { padding-left: 7px; }
+.return-home { font-size: 12px; color: #526e96; text-decoration: none; white-space: nowrap; }
+.return-home:hover { color: #175fbf; text-decoration: underline; }
+#result-state { display: none; }
+#restart-button:hover { background: #dceeff; }
+.books-art { position: absolute; width: 142px; height: 130px; bottom: -8px; right: -18px; pointer-events: none; filter: drop-shadow(0 5px 3px #0868bd20); }
+.formula p, .feedback p, .score-comment, .verdict { white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; }
+.upload-area:disabled { opacity: .7; }
+@keyframes twinkle { 50% { transform: rotate(90deg); opacity: .5; } }
+@media (max-height: 780px) and (min-width: 761px) {
+  .review-mode main { padding-top: 6px; padding-bottom: 10px; }
+  .card-heading { grid-template-columns: 122px minmax(0, 1fr) 230px; gap: 17px; padding-bottom: 8px; }
+  .review-emblem { height: 78px; }
+  .review-art { width: 126px; height: 108px; top: -17px; }
+  .card-kicker { min-width: 122px; font-size: 13px; padding: 5px 10px; border-radius: 17px; bottom: -15px; }
+  .card-kicker span { font-size: 15px; }
+  .card-identity h1 { font-size: clamp(29px, 3.4vw, 44px); }
+  .hero-subtitle { font-size: 15px; margin-top: 5px; }
+  .hero-motto { font-size: 19px; }
+  .review-paper { padding: 18px 17px 9px; }
+  .work-review { min-height: 76px; padding-top: 21px; padding-bottom: 12px; margin-bottom: 8px; }
+  .formula-aside { width: 215px; }
+  .verdict { font-size: calc(var(--review-font) * .8); }
+  .original-work { display: none; }
+  .scores { gap: 7px; }
+  .scores>section { padding: 10px 16px; grid-template-columns: calc(var(--review-font) * 5.1 + 70px) minmax(0, 1fr) 76px 145px; gap: 17px; }
+  .dimension-icon { width: 55px; height: 55px; }
+  .dimension-icon svg { width: 37px; height: 37px; }
+  .grade { width: 76px; min-height: 66px; padding: 6px 5px; }
+  .grade strong { font-size: calc(var(--review-font) * 2); }
+  .grade>span { font-size: calc(var(--review-font) * .68); }
+  .feedback>div { padding: 11px 16px; }
+  .feedback h2 span { width: 27px; height: 27px; font-size: 20px; }
+  .feedback p { padding-left: 37px; line-height: 1.5; }
+  .card-footer { padding-top: 6px; }
+  .footer-motto { font-size: 16px; }
+}
+@media (max-width: 1050px) and (min-width: 761px) {
+  .card-heading { grid-template-columns: 115px minmax(0, 1fr); }
+  .hero-motto { display: none; }
+  .scores>section { grid-template-columns: calc(var(--review-font) * 5.1 + 60px) minmax(0, 1fr) 70px; gap: 16px; }
+  .dimension-note { display: none; }
+  .dimension-icon { width: 45px; height: 45px; }
+  .dimension-icon svg { width: 32px; height: 32px; }
+  .score-heading { gap: 9px; }
+  .grade { width: 70px; }
+  .formula-aside { width: 145px; }
+  .original-work { display: none; }
+  .footer-motto { font-size: 15px; }
+  #result-state { display: none; }
+}
+@media (max-width: 760px) {
+  .review-mode main { height: 100dvh; padding: 9px 10px 12px; }
+  .card-heading { grid-template-columns: 49px minmax(0, 1fr); gap: 9px; padding: 0 2px 10px; }
+  .review-emblem { height: 55px; align-self: center; }
+  .review-art { width: 60px; height: 53px; top: -2px; left: -8px; }
+  .card-kicker, .hero-motto { display: none; }
+  .card-identity h1 { font-size: clamp(23px, 5.8vw, 35px); letter-spacing: 0; text-shadow: 0 2px 6px #06408f30; }
+  .hero-subtitle { font-size: 11px; letter-spacing: .5px; margin-top: 5px; white-space: nowrap; }
+  .review-paper { padding: 17px 9px 10px; border-radius: 22px; }
+  .work-review { display: block; padding: 20px 10px 9px; min-height: 0; border-radius: 13px; margin-bottom: 7px; }
+  .section-label { left: 17px; top: -11px; font-size: 11px; padding: 2px 12px; gap: 5px; }
+  .section-label>span { font-size: 17px; }
+  .formula::before { display: none; }
+  .formula>p { font-size: calc(var(--review-font) * 1.15); }
+  .formula-aside { width: 100%; margin-top: 6px; gap: 8px; }
+  .verdict { transform: none; font: calc(var(--review-font) * .8)/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+  .original-work { width: 30px; }
+  .original-work img { height: 22px; }
+  .original-work figcaption { display: none; }
+  .scores { gap: 6px; }
+  .scores>section { grid-template-columns: minmax(0, 1fr) 46px; gap: 6px 9px; padding: 8px 10px; border-radius: 13px; }
+  .score-heading { grid-area: 1 / 1; border: 0; gap: 8px; padding: 0; }
+  .dimension-icon { width: 32px; height: 32px; }
+  .dimension-icon svg { width: 23px; height: 23px; stroke-width: 2.5; }
+  .score-heading h2 { display: flex; align-items: baseline; gap: 9px; font-size: calc(var(--review-font) * 1.1); }
+  .score-heading h2 small { font-size: calc(var(--review-font) * .85); margin: 0; }
+  .grade { grid-area: 1 / 2; width: 46px; min-height: 40px; border-radius: 9px; padding: 3px; }
+  .grade strong { font-size: calc(var(--review-font) * 1.7); }
+  .grade>span { font-size: 8px; margin: 0; }
+  .grade.pending strong { font-size: 10px; }
+  .dimension-note { display: none; }
+  .score-comment { grid-area: 2 / 1 / 3 / 3; line-height: 1.55; }
+  .feedback { grid-template-columns: 1fr; gap: 6px; margin-top: 7px; padding-right: 0; }
+  .feedback>div { padding: 7px 10px; border-radius: 12px; }
+  .feedback h2 { font-size: calc(var(--review-font) * .9); gap: 7px; margin-bottom: 3px; }
+  .feedback h2 span { width: 23px; height: 23px; font-size: 17px; }
+  .feedback p { padding-left: 0; font-size: var(--review-font); line-height: 1.5; }
+  .card-footer { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 8px 3px 0; }
+  .footer-motto { font-size: 13px; justify-self: start; }
+  .footer-meta { grid-area: 2 / 1 / 3 / 3; flex-direction: row; justify-content: space-between; font-size: 7px; }
+  #result-state { display: none; }
+  #restart-button { font-size: 9px; padding: 5px 7px; border-radius: 7px; }
+  #restart-button span { padding-left: 3px; }
+  .books-art { display: none; }
+}
+/* Reclaim decorative space before reducing the size of mathematical feedback. */
+@media (min-width: 761px) {
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-heading { grid-template-columns: 98px minmax(0, 1fr) 220px; gap: 15px; padding-bottom: 8px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .review-emblem { height: 65px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .review-art { width: 106px; height: 92px; top: -16px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-kicker { min-width: 104px; font-size: 11px; padding: 4px 8px; bottom: -12px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-kicker span { font-size: 13px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-identity h1 { font-size: clamp(29px, 3.2vw, 42px); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .hero-subtitle { font-size: 14px; line-height: 1.5; margin-top: 5px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .hero-motto { font-size: 17px; line-height: 1.4; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .review-paper { padding: 16px 15px 9px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .work-review { min-height: 0; padding: 21px 21px 12px 28px; margin-bottom: 7px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .formula>p { font-size: calc(var(--review-font) * 1.2); line-height: 1.55; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .formula-aside { width: 230px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .verdict { font-size: calc(var(--review-font) * .82); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .original-work { display: none; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .scores { gap: 6px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .scores>section { grid-template-columns: calc(var(--review-font) * 5.1 + 60px) minmax(0, 1fr) 70px 130px; gap: 14px; padding: 10px 15px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .score-heading { gap: 9px; padding-right: 9px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .dimension-icon { width: 44px; height: 44px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .dimension-icon svg { width: 32px; height: 32px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .score-heading h2 { font-size: calc(var(--review-font) * 1.1); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .score-comment { line-height: 1.65; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade { width: 70px; min-height: 0; padding: 7px 5px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade strong { font-size: clamp(34px, calc(var(--review-font) * 1.75), 46px); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade.pending strong { font-size: calc(var(--review-font) * .75); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade>span { font-size: calc(var(--review-font) * .68); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .dimension-note { font-size: clamp(15px, calc(var(--review-font) * .78), 19px); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback { margin-top: 7px; padding-right: 40px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback>div { padding: 11px 16px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback h2 { font-size: calc(var(--review-font) * .92); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback h2 span { width: 25px; height: 25px; font-size: 19px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback p { padding-left: 0; line-height: 1.65; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-footer { padding: 6px 88px 0 8px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .footer-motto { font-size: 16px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .books-art { width: 110px; height: 102px; }
+  .evaluation-card[data-density="minimal"] .card-heading { grid-template-columns: 77px minmax(0, 1fr); padding-bottom: 7px; }
+  .evaluation-card[data-density="minimal"] .review-emblem { height: 49px; }
+  .evaluation-card[data-density="minimal"] .review-art { width: 83px; height: 74px; top: -13px; }
+  .evaluation-card[data-density="minimal"] .card-kicker { min-width: 79px; font-size: 9px; padding: 3px 5px; bottom: -9px; }
+  .evaluation-card[data-density="minimal"] .card-kicker span { font-size: 11px; }
+  .evaluation-card[data-density="minimal"] .card-identity h1 { font-size: 34px; }
+  .evaluation-card[data-density="minimal"] .hero-subtitle,
+  .evaluation-card[data-density="minimal"] .hero-motto,
+  .evaluation-card[data-density="minimal"] .dimension-note { display: none; }
+  .evaluation-card[data-density="minimal"] .scores>section { grid-template-columns: calc(var(--review-font) * 5.1 + 60px) minmax(0, 1fr) 70px; }
+}
+@media (min-width: 761px) and (max-width: 1050px) {
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-heading { grid-template-columns: 90px minmax(0, 1fr); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .scores>section { grid-template-columns: calc(var(--review-font) * 5.1 + 60px) minmax(0, 1fr) 70px; }
+}
+@media (max-width: 760px) {
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .card-heading { padding-bottom: 7px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .review-emblem { height: 43px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .scores>section { padding: 8px 11px; gap: 6px 8px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .score-comment { line-height: 1.45; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade { min-height: 34px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade strong { font-size: calc(var(--review-font) * 1.5); }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .grade.pending strong { font-size: 10px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback>div { padding: 8px 11px; }
+  .evaluation-card:is([data-density="compact"], [data-density="minimal"]) .feedback p { line-height: 1.45; }
+  .evaluation-card[data-density="minimal"] .hero-subtitle,
+  .evaluation-card[data-density="minimal"] .original-work,
+  .evaluation-card[data-density="minimal"] .footer-motto { display: none; }
+  .evaluation-card[data-density="minimal"] .card-actions { grid-area: 1 / 2; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+@media print {
+  @page { size: A4 landscape; margin: 8mm; }
+  .topbar, .return-home, #restart-button, #result-state, .upload-screen, .page-doodles { display: none !important; }
+  body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body::before { display: none; }
+  .review-mode main { padding: 0; height: auto; }
+  .evaluation-card { height: auto; --review-font: 18px; box-shadow: none; }
+  .card-heading { background: #0b60cb; border-radius: 20px; padding-top: 8px; }
+  .review-paper { box-shadow: none; }
+  .books-art { display: none; }
+  .scores { grid-template-columns: 1fr; }
+}

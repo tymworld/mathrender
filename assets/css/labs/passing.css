@@ -1,0 +1,563 @@
+:root{
+      --bg:#f5f7fc;
+      --card:#ffffff;
+      --ink:#1f2a44;
+      --muted:#6b7280;
+      --line:#d8dfeb;
+      --accent:#4f46e5;
+      --accent2:#0ea5e9;
+      --good:#16a34a;
+      --warn:#d97706;
+      --bad:#dc2626;
+      --soft:#eef3ff;
+      --shadow:0 12px 30px rgba(31,42,68,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(79,70,229,.08), transparent 22%),
+        radial-gradient(circle at top right, rgba(14,165,233,.10), transparent 18%),
+        linear-gradient(180deg, #fbfcff 0%, var(--bg) 100%);
+    }
+    .app{max-width:1420px;margin:0 auto;padding:16px;}
+    .hero{
+      background:linear-gradient(135deg, rgba(79,70,229,.96), rgba(14,165,233,.92));
+      color:#fff;border-radius:22px;padding:18px 22px;box-shadow:var(--shadow);
+      display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;
+    }
+    .hero h1{margin:0;font-size:29px;line-height:1.15;}
+    .hero-tag{padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.26);font-weight:700}
+    .layout{display:grid;grid-template-columns:320px 1fr 360px;gap:16px;margin-top:16px;align-items:start;}
+    .card{background:var(--card);border:1px solid rgba(216,223,235,.85);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .card-head{padding:15px 16px;border-bottom:1px solid #eef2f8;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .card-head h2{margin:0;font-size:18px;}
+    .card-body{padding:15px 16px 16px;}
+    .panel{padding:13px;border:1px solid #edf1f7;border-radius:16px;background:#fafcff;margin-bottom:12px;}
+    .panel h3{margin:0 0 10px;font-size:15px;}
+    label{display:block;font-size:14px;color:#2a3551;margin-bottom:10px;}
+    select,input[type="range"],input[type="number"]{width:100%;margin-top:6px;}
+    input[type="range"]{accent-color:var(--accent);}
+    select,input[type="number"]{padding:10px 12px;border-radius:12px;border:1px solid #cfd7e6;background:#fff;font-size:14px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+    button{
+      border:none;background:#eef2ff;color:#2a2f76;padding:11px 14px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;transition:.18s ease;box-shadow:0 6px 14px rgba(79,70,229,.07);
+    }
+    button:hover{transform:translateY(-1px);}
+    button.primary{background:linear-gradient(135deg, var(--accent), #6366f1);color:#fff;}
+    button.secondary{background:linear-gradient(135deg, #0ea5e9, #38bdf8);color:#fff;}
+    button.good{background:linear-gradient(135deg, #16a34a, #22c55e);color:#fff;}
+    button.warn{background:linear-gradient(135deg, #f59e0b, #fb923c);color:#fff;}
+    button.ghost{background:#f4f7fb;color:#31405f;box-shadow:none;border:1px solid #dbe3ef;}
+    button:disabled{opacity:.55;cursor:not-allowed;transform:none!important;}
+    .stats{display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:12px;}
+    .stat{background:#f8fbff;border:1px solid #e5edf9;border-radius:15px;padding:12px;}
+    .stat .k{font-size:12px;color:var(--muted);margin-bottom:6px;}
+    .stat .v{font-size:24px;font-weight:800;}
+    .banner{min-height:60px;display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#fff,#f8fbff);border:1px solid #e7ecf5;padding:12px 14px;border-radius:16px;margin-bottom:14px;font-size:15px;line-height:1.55;}
+    .banner b{color:#19233b;}
+    .arena{position:relative;min-height:470px;border-radius:22px;border:1px solid #e7edf7;background:linear-gradient(180deg, rgba(14,165,233,.05), rgba(79,70,229,.04)), linear-gradient(180deg, #ffffff, #fbfdff);overflow:hidden;padding:16px;}
+    .arena-inner{position:relative;height:410px;}
+    .player{
+      position:absolute;width:140px;min-height:92px;border-radius:22px;padding:14px 12px;border:2px solid transparent;background:#fff;box-shadow:0 10px 24px rgba(31,42,68,.08);cursor:pointer;transition:.2s ease;text-align:center;user-select:none;
+    }
+    .player:hover{transform:translateY(-2px);}
+    .player.current{border-color:rgba(79,70,229,.7);box-shadow:0 0 0 6px rgba(79,70,229,.10), 0 10px 24px rgba(31,42,68,.08);}
+    .player.legal{border-color:rgba(22,163,74,.62);box-shadow:0 0 0 6px rgba(22,163,74,.09), 0 10px 24px rgba(31,42,68,.08);}
+    .player.invalid{border-color:rgba(220,38,38,.68);box-shadow:0 0 0 6px rgba(220,38,38,.09), 0 10px 24px rgba(31,42,68,.08);}
+    .player.zh{top:24px;left:50%;transform:translateX(-50%);}
+    .player.yi{bottom:26px;left:42px;}
+    .player.bing{bottom:26px;right:42px;}
+    .player-name{font-size:26px;font-weight:900;margin-bottom:4px;}
+    .player-sub{font-size:13px;color:var(--muted);}
+    .player-status{margin-top:10px;font-size:13px;font-weight:700;color:#334155;}
+    .ball{
+      position:absolute;width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:24px;background:linear-gradient(135deg,#fb7185,#f43f5e);box-shadow:0 14px 28px rgba(244,63,94,.25);color:#fff;border:2px solid rgba(255,255,255,.75);transition:left .55s cubic-bezier(.22,.8,.2,1), top .55s cubic-bezier(.22,.8,.2,1), transform .18s ease;z-index:15;
+    }
+    .ball.moving{transform:scale(1.08);}
+    .pass-track{position:absolute;inset:0;pointer-events:none;}
+    .pass-line{position:absolute;height:3px;background:linear-gradient(90deg, rgba(79,70,229,.20), rgba(14,165,233,.28));border-radius:999px;transform-origin:left center;}
+    .route-list,.log-list,.formula-box{max-height:280px;overflow:auto;padding-right:4px;}
+    .route-item,.log-item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #e9eff8;margin-bottom:8px;font-size:14px;}
+    .route-item.good{border-color:#b7ebc2;background:#f4fff6;}
+    .route-item.bad{border-color:#f3d0d0;background:#fff7f7;}
+    .chip{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #e3e9f5;background:#fff;font-size:12px;font-weight:700;}
+    .formula{background:#f5f3ff;border:1px solid #ddd6fe;color:#4338ca;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.75;}
+    .formula-box .step{padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #e9eff8;margin-bottom:8px;font-size:14px;line-height:1.7;}
+    .exact{background:#eefaf2;border:1px solid #c6ebd0;color:#166534;padding:12px 14px;border-radius:14px;font-size:15px;line-height:1.7;}
+    .hidden-answer{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;}
+    .toast{
+      position:fixed;right:18px;bottom:18px;min-width:260px;max-width:400px;background:#fff;border:1px solid #dce6f5;border-left:6px solid var(--accent);box-shadow:var(--shadow);border-radius:18px;padding:13px 15px;z-index:200;opacity:0;pointer-events:none;transform:translateY(10px);transition:.22s ease;
+    }
+    .toast.show{opacity:1;transform:translateY(0);}
+    .toast.good{border-left-color:var(--good);} .toast.bad{border-left-color:var(--bad);} .toast.warn{border-left-color:var(--warn);}
+    .overlay{position:fixed;inset:0;background:rgba(15,23,42,.26);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;z-index:260;opacity:0;pointer-events:none;transition:opacity .16s ease;}
+    .overlay.show{opacity:1;pointer-events:auto;}
+    .overlay-card{width:min(760px,92vw);background:#fff;border-left:12px solid var(--accent);border-radius:28px;box-shadow:0 24px 60px rgba(15,23,42,.25);padding:28px 30px;display:flex;gap:18px;align-items:center;}
+    .overlay-icon{width:82px;height:82px;border-radius:24px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;flex:0 0 auto;}
+    .overlay-title{font-size:30px;font-weight:900;margin-bottom:8px;}
+    .overlay-text{font-size:22px;line-height:1.5;font-weight:800;}
+    .footer-note{font-size:13px;line-height:1.7;color:var(--muted);margin-top:8px;}
+    @media (max-width:1200px){.layout{grid-template-columns:1fr;}}
+    @media (max-width:760px){
+      .stats{grid-template-columns:1fr 1fr;}
+      .row,.btn-row{grid-template-columns:1fr;}
+      .hero h1{font-size:24px;}
+      .player{width:118px;min-height:82px;}
+      .player-name{font-size:22px;}
+      .player.zh{top:18px;}
+      .player.yi{left:10px;bottom:18px;}
+      .player.bing{right:10px;bottom:18px;}
+      .overlay-card{padding:18px 16px;}
+      .overlay-title{font-size:22px;}
+      .overlay-text{font-size:17px;}
+    }
+    .home-nav-bar{
+      position:sticky;top:0;z-index:999;
+      display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;
+      padding:10px 16px;
+      background:rgba(255,255,255,.88);
+      border-bottom:1px solid rgba(148,163,184,.35);
+      backdrop-filter:blur(6px);
+    }
+    .home-nav-link{
+      text-decoration:none;
+      color:#1d4ed8;
+      font-weight:800;
+      font-size:14px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#edf3ff;
+      border:1px solid #c7d8ff;
+    }
+    .home-nav-meta{font-size:13px;color:#334155;font-weight:650;}
+    .theme-toggle{
+      border:1px solid #c7d8ff;
+      background:#edf3ff;
+      color:#1d4ed8;
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      cursor:pointer;
+    }
+
+    body[data-theme="dark"]{
+      --bg:#0b1325;
+      --card:#111b2f;
+      --ink:#e9f0ff;
+      --muted:#b2bfd8;
+      --line:#2d3c58;
+      --soft:#192642;
+      --shadow:0 12px 30px rgba(0,0,0,.32);
+      background:
+        radial-gradient(circle at top left, rgba(99,102,241,.22), transparent 32%),
+        radial-gradient(circle at top right, rgba(14,165,233,.22), transparent 28%),
+        linear-gradient(180deg, #0a1020 0%, var(--bg) 100%);
+    }
+    body[data-theme="dark"] .home-nav-bar{
+      background:rgba(10,16,35,.78);
+      border-bottom-color:rgba(122,167,255,.35);
+    }
+    body[data-theme="dark"] .home-nav-link{
+      color:#dce9ff;
+      background:rgba(122,167,255,.18);
+      border-color:rgba(122,167,255,.45);
+    }
+    body[data-theme="dark"] .home-nav-meta{ color:#c3d4fb; }
+    body[data-theme="dark"] .theme-toggle{
+      color:#dce9ff;
+      background:#1a2a48;
+      border-color:#3f5b86;
+    }
+    body[data-theme="dark"] .card,
+    body[data-theme="dark"] .panel,
+    body[data-theme="dark"] .player,
+    body[data-theme="dark"] .route-item,
+    body[data-theme="dark"] .log-item,
+    body[data-theme="dark"] .chip,
+    body[data-theme="dark"] .formula-box .step,
+    body[data-theme="dark"] .toast,
+    body[data-theme="dark"] .overlay-card{
+      background:#111b2f;
+      border-color:#2d3c58;
+      color:var(--ink);
+    }
+    body[data-theme="dark"] .card-head,
+    body[data-theme="dark"] .stat,
+    body[data-theme="dark"] .banner,
+    body[data-theme="dark"] .arena{
+      background:#16233c;
+      border-color:#2d3c58;
+      color:var(--ink);
+    }
+    body[data-theme="dark"] label,
+    body[data-theme="dark"] .player-status,
+    body[data-theme="dark"] .player-sub,
+    body[data-theme="dark"] .stat .k,
+    body[data-theme="dark"] .footer-note{
+      color:#d6e3ff;
+    }
+    body[data-theme="dark"] .banner b{
+      color:#f4f8ff;
+    }
+    body[data-theme="dark"] .formula{
+      color:#d8e2ff;
+      background:#1a2440;
+      border-color:#3d4e77;
+    }
+    body[data-theme="dark"] .exact{
+      color:#ddffe9;
+      background:#143429;
+      border-color:#2f7656;
+    }
+    body[data-theme="dark"] .hidden-answer{
+      color:#ffe7cc;
+      background:#3a2718;
+      border-color:#8a5a33;
+    }
+    body[data-theme="dark"] select,
+    body[data-theme="dark"] input[type="number"]{
+      background:#0f172a;
+      border-color:#344867;
+      color:var(--ink);
+    }
+    body[data-theme="dark"] button.ghost{
+      background:#16233c;
+      color:#d7e5ff;
+      border-color:#344867;
+    }
+
+
+  /* 传球场景：使用页面专属样式，避免被旧版统一主题覆盖。 */
+  body.classroom[data-lab-page="pass-probability"] .arena{
+    min-height:480px;
+    padding:14px;
+    border:1px solid #cbdced !important;
+    border-radius:24px !important;
+    background:
+      radial-gradient(circle at 50% 54%,rgba(255,255,255,.92) 0 4%,transparent 4.5%),
+      linear-gradient(145deg,rgba(255,255,255,.68),rgba(255,255,255,.15)),
+      linear-gradient(135deg,#e9f7f4 0%,#dbeefa 54%,#e9ecfb 100%) !important;
+    box-shadow:
+      inset 0 0 0 5px rgba(255,255,255,.56),
+      inset 0 0 52px rgba(35,100,170,.08);
+    isolation:isolate;
+  }
+  body.classroom[data-lab-page="pass-probability"] .arena::before{
+    content:"";
+    position:absolute;
+    inset:14px;
+    z-index:0;
+    border:2px solid rgba(35,100,170,.13);
+    border-radius:17px;
+    pointer-events:none;
+  }
+  body.classroom[data-lab-page="pass-probability"] .arena-inner{
+    height:430px;
+  }
+  .court-lines{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    border-radius:16px;
+    pointer-events:none;
+  }
+  .court-lines::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:164px;
+    height:164px;
+    border:2px solid rgba(35,100,170,.10);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+  }
+  .court-lines::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:0;
+    bottom:0;
+    border-left:2px dashed rgba(35,100,170,.08);
+  }
+  body.classroom[data-lab-page="pass-probability"] .pass-track{
+    z-index:1;
+  }
+  body.classroom[data-lab-page="pass-probability"] .pass-line{
+    height:4px;
+    opacity:.72;
+    border:1px solid rgba(255,255,255,.82);
+    background:repeating-linear-gradient(
+      90deg,
+      rgba(35,100,170,.35) 0 12px,
+      rgba(15,138,112,.12) 12px 20px
+    );
+    box-shadow:0 2px 7px rgba(35,100,170,.12);
+  }
+  body.classroom[data-lab-page="pass-probability"] .player{
+    --jersey:#2364aa;
+    --jersey-dark:#174c85;
+    --player-glow:rgba(35,100,170,.15);
+    z-index:5;
+    width:154px;
+    min-height:172px;
+    padding:9px 10px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    color:#17243a !important;
+    border:2px solid rgba(255,255,255,.92) !important;
+    border-radius:28px !important;
+    background:rgba(255,255,255,.86) !important;
+    box-shadow:
+      0 14px 28px rgba(22,50,79,.12),
+      inset 0 0 0 1px rgba(35,100,170,.08) !important;
+    backdrop-filter:blur(7px);
+    transform:none;
+    translate:none;
+    transition:translate .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.legal:hover{
+    transform:none;
+    translate:0 -4px;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.zh{
+    top:7px;
+    left:calc(50% - 77px);
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.yi{
+    bottom:7px;
+    left:clamp(4px,7%,48px);
+    --jersey:#0f8a70;
+    --jersey-dark:#0a6755;
+    --player-glow:rgba(15,138,112,.16);
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.bing{
+    right:clamp(4px,7%,48px);
+    bottom:7px;
+    --jersey:#c54b68;
+    --jersey-dark:#98364f;
+    --player-glow:rgba(197,75,104,.16);
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.current{
+    border-color:#2364aa !important;
+    background:rgba(244,249,255,.96) !important;
+    box-shadow:
+      0 0 0 6px rgba(35,100,170,.13),
+      0 18px 34px rgba(22,50,79,.18) !important;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.current::before{
+    content:"持球中";
+    position:absolute;
+    top:-12px;
+    left:50%;
+    z-index:8;
+    padding:4px 10px;
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.2;
+    white-space:nowrap;
+    border:2px solid #fff;
+    border-radius:999px;
+    background:#2364aa;
+    transform:translateX(-50%);
+    box-shadow:0 5px 12px rgba(35,100,170,.24);
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.legal{
+    border-color:rgba(15,138,112,.72) !important;
+    box-shadow:
+      0 0 0 5px rgba(15,138,112,.10),
+      0 14px 28px rgba(22,50,79,.12) !important;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.legal:hover{
+    border-color:#0f8a70 !important;
+    background:#f5fffb !important;
+    box-shadow:
+      0 0 0 7px rgba(15,138,112,.13),
+      0 18px 34px rgba(22,50,79,.16) !important;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.invalid{
+    border-color:#dc2626 !important;
+    animation:playerShake .32s ease;
+  }
+  @keyframes playerShake{
+    0%,100%{transform:translateX(0)}
+    30%{transform:translateX(-7px)}
+    70%{transform:translateX(7px)}
+  }
+  .player-figure{
+    position:relative;
+    width:82px;
+    height:94px;
+    flex:0 0 auto;
+    filter:drop-shadow(0 8px 8px var(--player-glow));
+  }
+  .player-figure svg{
+    display:block;
+    width:100%;
+    height:100%;
+    overflow:visible;
+  }
+  .player-name-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-top:-1px;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player-name{
+    width:28px;
+    height:28px;
+    margin:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:17px;
+    font-weight:900;
+    line-height:1;
+    border:2px solid rgba(255,255,255,.9);
+    border-radius:50%;
+    background:var(--jersey);
+    box-shadow:0 3px 9px var(--player-glow);
+  }
+  .player-role{
+    color:#27364f;
+    font-size:14px;
+    font-weight:850;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player-sub{
+    display:none;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player-status{
+    min-width:82px;
+    margin-top:6px;
+    padding:3px 9px;
+    color:#5d6a7f;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.4;
+    border:1px solid #dce5ef;
+    border-radius:999px;
+    background:#f5f8fb;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.current .player-status{
+    color:#174c85;
+    border-color:#bfd6ed;
+    background:#e9f3ff;
+  }
+  body.classroom[data-lab-page="pass-probability"] .player.legal .player-status{
+    color:#08705a;
+    border-color:#b9e0d4;
+    background:#eaf8f3;
+  }
+  .ball-anchor{
+    position:absolute;
+    top:73px;
+    right:6px;
+    width:2px;
+    height:2px;
+    pointer-events:none;
+  }
+  .player.bing .ball-anchor{
+    right:auto;
+    left:6px;
+  }
+  body.classroom[data-lab-page="pass-probability"] .ball{
+    z-index:20;
+    width:48px;
+    height:48px;
+    padding:0;
+    overflow:visible;
+    color:transparent;
+    border:0;
+    background:transparent;
+    box-shadow:none;
+    filter:drop-shadow(0 10px 8px rgba(126,60,15,.27));
+  }
+  body.classroom[data-lab-page="pass-probability"] .ball svg{
+    width:100%;
+    height:100%;
+    display:block;
+    filter:drop-shadow(0 1px 0 rgba(255,255,255,.46));
+    transition:transform .2s ease;
+  }
+  body.classroom[data-lab-page="pass-probability"] .ball.moving{
+    transform:scale(1.12);
+  }
+  body.classroom[data-lab-page="pass-probability"] .ball.moving svg{
+    animation:ballSpin .55s linear infinite;
+  }
+  @keyframes ballSpin{to{transform:rotate(360deg)}}
+
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .arena{
+    border-color:#294d68 !important;
+    background:
+      radial-gradient(circle at 50% 54%,rgba(28,59,78,.9) 0 4%,transparent 4.5%),
+      linear-gradient(145deg,rgba(22,52,71,.78),rgba(9,27,43,.28)),
+      linear-gradient(135deg,#12382f 0%,#15334c 54%,#242c52 100%) !important;
+    box-shadow:
+      inset 0 0 0 5px rgba(255,255,255,.035),
+      inset 0 0 52px rgba(0,0,0,.24);
+  }
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .arena::before{
+    border-color:rgba(165,211,235,.16);
+  }
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .player{
+    color:#edf5ff !important;
+    border-color:rgba(128,164,194,.48) !important;
+    background:rgba(17,32,54,.88) !important;
+    box-shadow:0 14px 30px rgba(0,0,0,.26) !important;
+  }
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .player.current{
+    border-color:#65a9ef !important;
+    background:rgba(20,44,72,.96) !important;
+    box-shadow:0 0 0 6px rgba(69,145,220,.17),0 18px 34px rgba(0,0,0,.3) !important;
+  }
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .player-role{
+    color:#edf5ff;
+  }
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .player-status{
+    color:#c1d0e0;
+    border-color:#38506b;
+    background:#172942;
+  }
+  body.classroom[data-theme="dark"][data-lab-page="pass-probability"] .player.legal .player-status{
+    color:#99ead3;
+    border-color:#28755f;
+    background:#123b31;
+  }
+
+  @media (max-width:760px){
+    body.classroom[data-lab-page="pass-probability"] .arena{
+      min-height:454px;
+      padding:10px;
+    }
+    body.classroom[data-lab-page="pass-probability"] .arena-inner{
+      height:420px;
+    }
+    body.classroom[data-lab-page="pass-probability"] .arena::before{
+      inset:10px;
+    }
+    body.classroom[data-lab-page="pass-probability"] .player{
+      width:126px;
+      min-height:158px;
+      padding:8px 7px;
+    }
+    body.classroom[data-lab-page="pass-probability"] .player.zh{
+      left:calc(50% - 63px);
+    }
+    body.classroom[data-lab-page="pass-probability"] .player.yi{left:3px}
+    body.classroom[data-lab-page="pass-probability"] .player.bing{right:3px}
+    .player-figure{width:72px;height:84px}
+    .ball-anchor{top:66px;right:3px}
+    .player.bing .ball-anchor{left:3px}
+  }

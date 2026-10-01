@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>测量误差直方图 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/measurement-errors.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="measurement-errors">
+<div class="shell">
+  <div class="topbar">
+    <a href="../../index.html">← 返回主页</a>
+    <div class="topbar-actions">
+      <div class="toggle-group" id="toggleGroup">
+        <button class="toggle-btn active" id="toggleMean">均值位置</button>
+        <button class="toggle-btn active" id="toggleCenter">理论中心</button>
+        <button class="toggle-btn active" id="toggleFit">拟合曲线</button>
+      </div>
+      <label class="sigma-box">测量偏差程度
+        <input type="range" id="sigmaQuick" min="0.05" max="0.30" step="0.01" value="0.10" />
+        <span id="sigmaQuickVal">0.10 cm</span>
+      </label>
+      <button id="regenBtn">生成测量数据</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>测量误差概率分布直方图</h1>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>抽样设置</h2>
+
+        <div class="slider-group">
+          <label>考虑的班级数 <span class="v" id="groupCountVal">10 班</span></label>
+          <input type="range" id="groupCount" min="1" max="20" step="1" value="10" />
+        </div>
+
+        <div class="slider-group">
+          <label>每班考虑的测量数 <span class="v" id="measureCountVal">50 次</span></label>
+          <input type="range" id="measureCount" min="10" max="100" step="1" value="50" />
+        </div>
+
+        <div class="slider-group">
+          <label>组距 <span class="v" id="binWidthVal">0.02 cm</span></label>
+          <input type="range" id="binWidth" min="0.01" max="0.10" step="0.01" value="0.02" />
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">样本总数</div>
+            <div class="val" id="sampleN">500</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本均值</div>
+            <div class="val" id="sampleMean">0.000</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本标准差</div>
+            <div class="val" id="sampleSd">0.000</div>
+          </div>
+          <div class="stat">
+            <div class="k">分组个数</div>
+            <div class="val" id="binCount">20</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart">
+        <h2>零中心误差直方图</h2>
+        <div class="legend">
+          <span><i style="background: rgba(37, 103, 168, 0.78)"></i>频率密度柱形</span>
+          <span><i style="background: rgba(200, 109, 45, 0.82)"></i>样本均值位置</span>
+          <span><i style="background: rgba(15, 138, 112, 0.82)"></i>理论中心 x = 0 cm</span>
+          <span><i style="background: rgba(160, 82, 45, 0.88)"></i>正态分布拟合曲线</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="chart" height="460"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-panel">
+      <div class="summary-grid">
+        <div class="data-chip" id="dataChip"></div>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+
+    <div class="data-panel full-width-card">
+      <h3>20 个班级原始误差数据</h3>
+      <p>表中显示全部原始数据，包含当前已纳入统计的班级与测量值。被纳入当前样本的班级和测量序号会被标记出来。</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>班级</th>
+              <th>是否纳入</th>
+              <th>班均值/cm</th>
+              <th>班级sigma/cm</th>
+              <th>1-10</th>
+              <th>11-20</th>
+              <th>21-30</th>
+              <th>31-40</th>
+              <th>41-50</th>
+              <th>51-60</th>
+              <th>61-70</th>
+              <th>71-80</th>
+              <th>81-90</th>
+              <th>91-100</th>
+            </tr>
+          </thead>
+          <tbody id="rawDataBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/measurement-errors.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

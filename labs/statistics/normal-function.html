@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>正态函数与参数 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/normal-function.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="normal-function">
+<div class="shell">
+  <div class="topbar">
+    <a href="../../index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>正态函数与参数</h1>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>参数滑块</h2>
+
+        <div class="slider-group">
+          <label>均值 μ <span class="v" id="muVal">0.00</span></label>
+          <input type="range" id="mu" min="-4" max="4" step="0.01" value="0" />
+        </div>
+
+        <div class="slider-group">
+          <label>标准差 σ <span class="v" id="sigmaVal">1.00</span></label>
+          <input type="range" id="sigma" min="0.2" max="3" step="0.01" value="1" />
+        </div>
+
+        <div class="slider-group">
+          <label>振幅 A <span class="v" id="ampVal">1.00</span></label>
+          <input type="range" id="amp" min="0.2" max="2.5" step="0.01" value="1" />
+        </div>
+
+        <div class="slider-group">
+          <label>横轴范围 L <span class="v" id="rangeVal">5.0</span></label>
+          <input type="range" id="xRange" min="3" max="10" step="0.1" value="5" />
+        </div>
+
+        <div class="formula" id="formulaText"></div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">峰值位置</div>
+            <div class="val" id="peakX">x = 0</div>
+          </div>
+          <div class="stat">
+            <div class="k">峰值大小</div>
+            <div class="val" id="peakY">0.0000</div>
+          </div>
+          <div class="stat">
+            <div class="k">拐点</div>
+            <div class="val" id="inflect">μ ± σ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart">
+        <h2>函数图像</h2>
+        <div class="canvas-wrap">
+          <canvas id="chart" height="450"></canvas>
+        </div>
+        <div class="tip" id="tipText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/normal-function.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

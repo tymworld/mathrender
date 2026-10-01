@@ -1,0 +1,486 @@
+{
+  "checkedOn": "2026-09-30",
+  "primaryInteractions": [
+    {
+      "path": "sequences/geometric-limits",
+      "heading": "等比数列的极限",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "sequences/area-halving",
+      "heading": "正方形不断取半",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "sequences/segment-halving",
+      "heading": "线段不断取半",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "sequences/fibonacci-puzzle",
+      "heading": "斐波那契正方形拼图",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "sequences/fibonacci-spiral",
+      "heading": "斐波那契螺旋生长",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "sequences/iteration",
+      "heading": "迭代序列与蛛网图",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "sequences/hanoi",
+      "heading": "汉诺塔与递归",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "probability/ball-draw",
+      "heading": "抽球实验室",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "probability/passing",
+      "heading": "传球概率模型",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "probability/pascal-triangle",
+      "heading": "杨辉三角与二项式",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "probability/ball-distribution",
+      "heading": "二项分布与超几何分布",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "probability/sampling-comparison",
+      "heading": "放回与不放回对照实验",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "statistics/normal-sampling",
+      "heading": "正态分布随机实验",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "statistics/exam-scores",
+      "heading": "考试成绩与正态模型",
+      "overflow": 0,
+      "tools": 5,
+      "errors": []
+    },
+    {
+      "path": "statistics/score-histogram",
+      "heading": "班级成绩直方图",
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "path": "statistics/measurement-errors",
+      "heading": "测量误差直方图",
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "path": "statistics/galton-board",
+      "heading": "高尔顿板",
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "path": "statistics/normal-function",
+      "heading": "正态函数与参数",
+      "overflow": 0,
+      "errors": []
+    },
+    {
+      "path": "algebra/triangle-inequality",
+      "heading": "三角不等式探究",
+      "overflow": 0,
+      "errors": []
+    }
+  ],
+  "mobileDark390": [
+    {
+      "path": "sequences/geometric-limits",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "sequences/area-halving",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "sequences/segment-halving",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "sequences/fibonacci-puzzle",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "sequences/fibonacci-spiral",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "sequences/iteration",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "sequences/hanoi",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "probability/ball-draw",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "probability/passing",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "probability/pascal-triangle",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "probability/ball-distribution",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "probability/sampling-comparison",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "statistics/normal-sampling",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "statistics/exam-scores",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "statistics/score-histogram",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "statistics/measurement-errors",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "statistics/galton-board",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "statistics/normal-function",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    },
+    {
+      "path": "algebra/triangle-inequality",
+      "buttons": [],
+      "overflow": 0,
+      "theme": "dark"
+    }
+  ],
+  "largeLight1366": [
+    {
+      "path": "sequences/geometric-limits",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "sequences/area-halving",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "sequences/segment-halving",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "sequences/fibonacci-puzzle",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "sequences/fibonacci-spiral",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "sequences/iteration",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "sequences/hanoi",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "probability/ball-draw",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "probability/passing",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "probability/pascal-triangle",
+      "large": true,
+      "overflow": 0,
+      "theme": "white",
+      "errors": []
+    },
+    {
+      "path": "probability/ball-distribution",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "probability/sampling-comparison",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "statistics/normal-sampling",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "statistics/exam-scores",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "statistics/score-histogram",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "statistics/measurement-errors",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "statistics/galton-board",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "statistics/normal-function",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    },
+    {
+      "path": "algebra/triangle-inequality",
+      "large": true,
+      "overflow": 0,
+      "theme": "light",
+      "errors": []
+    }
+  ],
+  "legacyRedirects": [
+    {
+      "from": "ball-lab.html",
+      "to": "http://127.0.0.1:8765/labs/probability/ball-draw.html"
+    },
+    {
+      "from": "balllab-draw-lab.html",
+      "to": "http://127.0.0.1:8765/labs/probability/ball-draw.html"
+    },
+    {
+      "from": "class-score-histogram-lab.html",
+      "to": "http://127.0.0.1:8765/labs/statistics/score-histogram.html"
+    },
+    {
+      "from": "distribution-comparison.html",
+      "to": "http://127.0.0.1:8765/labs/probability/sampling-comparison.html"
+    },
+    {
+      "from": "distribution-lab.html",
+      "to": "http://127.0.0.1:8765/labs/probability/ball-distribution.html"
+    },
+    {
+      "from": "exam-normal-lab.html",
+      "to": "http://127.0.0.1:8765/labs/statistics/exam-scores.html"
+    },
+    {
+      "from": "fibonacci-spiral-animation.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/fibonacci-spiral.html"
+    },
+    {
+      "from": "fibonacci-square-puzzle.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/fibonacci-puzzle.html"
+    },
+    {
+      "from": "galton-board-lab.html",
+      "to": "http://127.0.0.1:8765/labs/statistics/galton-board.html"
+    },
+    {
+      "from": "geometric-limit-lab.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/geometric-limits.html"
+    },
+    {
+      "from": "hanoi-tower.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/hanoi.html"
+    },
+    {
+      "from": "iteration-sequence-lab.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/iteration.html"
+    },
+    {
+      "from": "measurement-error-histogram-lab.html",
+      "to": "http://127.0.0.1:8765/labs/statistics/measurement-errors.html"
+    },
+    {
+      "from": "normal-distribution-lab.html",
+      "to": "http://127.0.0.1:8765/labs/statistics/normal-sampling.html"
+    },
+    {
+      "from": "normal-function-lab.html",
+      "to": "http://127.0.0.1:8765/labs/statistics/normal-function.html"
+    },
+    {
+      "from": "pascal-lab.html",
+      "to": "http://127.0.0.1:8765/labs/probability/pascal-triangle.html"
+    },
+    {
+      "from": "pascal-triangle.html",
+      "to": "http://127.0.0.1:8765/labs/probability/pascal-triangle.html"
+    },
+    {
+      "from": "pass-probability.html",
+      "to": "http://127.0.0.1:8765/labs/probability/passing.html"
+    },
+    {
+      "from": "passing-model.html",
+      "to": "http://127.0.0.1:8765/labs/probability/passing.html"
+    },
+    {
+      "from": "square-halving-animation.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/area-halving.html"
+    },
+    {
+      "from": "stick-halving-animation.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/segment-halving.html"
+    },
+    {
+      "from": "tower-of-hanoi.html",
+      "to": "http://127.0.0.1:8765/labs/sequences/hanoi.html"
+    },
+    {
+      "from": "triangle-inequality-lab.html",
+      "to": "http://127.0.0.1:8765/labs/algebra/triangle-inequality.html"
+    }
+  ],
+  "search": {
+    "probabilityBinomialMatches": 3,
+    "emptyResultsRecovered": 19
+  },
+  "presentation": {
+    "pascalDockAdvancedRows": true,
+    "directoryOpened": true
+  }
+}

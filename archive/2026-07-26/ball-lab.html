@@ -1,0 +1,1597 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>抽球实验室 | Ball Lab</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --ink:#1f2a37;
+      --muted:#6b7280;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .10);
+      --border: rgba(15,23,42,.08);
+      --base-font: 15px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC",
+                   "Noto Sans CJK SC","Microsoft YaHei", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 50% -10%, #e9f2ff, var(--bg));
+      color:var(--ink);
+      font-size: var(--base-font);
+    }
+    .wrap{ max-width: 1240px; margin: 26px auto; padding: 0 18px 30px; }
+    .header{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:14px; }
+    .title{ font-size: 24px; font-weight: 950; letter-spacing:.2px; }
+    .subtitle{ font-size: 14.5px; color: var(--muted); margin-top:8px; line-height:1.45; font-weight: 750; }
+
+    .panel{
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      border: 1px solid var(--border);
+    }
+
+    .stageRow{
+      display:grid;
+      grid-template-columns: 1fr 410px;
+      gap: 0;
+      height: 560px;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.95), rgba(255,255,255,.88)),
+        radial-gradient(900px 300px at 50% 10%, rgba(59,130,246,.12), transparent 60%);
+    }
+
+    .stage{
+      position:relative;
+      height:100%;
+      border-right: 1px solid var(--border);
+      overflow:hidden;
+    }
+    canvas{ width:100%; height:100%; display:block; }
+
+    .sidebar{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      background: rgba(255,255,255,.65);
+      backdrop-filter: blur(8px);
+      min-height: 0;
+      overflow: hidden;
+    }
+    .sideHead{
+      flex: 0 0 auto;
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .sideTitle{
+      font-weight: 950;
+      font-size: 16px;
+      letter-spacing:.2px;
+      user-select:none;
+      white-space: nowrap;
+    }
+    .sideActions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+    .miniBtn{
+      border: 1px solid var(--border);
+      background:#fff;
+      color:#111827;
+      padding: 7px 10px;
+      border-radius: 11px;
+      font-weight: 850;
+      cursor:pointer;
+      font-size: 12px;
+      transition: transform .12s ease, filter .12s ease, opacity .12s ease;
+      white-space:nowrap;
+    }
+    .miniBtn:hover{ filter: brightness(1.02); }
+    .miniBtn:active{ transform: translateY(1px); }
+    .miniBtn.on{
+      background:#111827;
+      color:#fff;
+      border-color: rgba(17,24,39,.35);
+    }
+    .miniBtn.disabled{
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .records{
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 12px 14px 16px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+    }
+    .records::-webkit-scrollbar{ width: 10px; }
+    .records::-webkit-scrollbar-thumb{
+      background: rgba(15,23,42,.18);
+      border-radius: 999px;
+      border: 3px solid rgba(255,255,255,.85);
+    }
+    .records::-webkit-scrollbar-track{ background: transparent; }
+
+    .groupBadge{
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      color: #ffffff;
+      font-weight: 950;
+      font-size: 12.5px;
+      box-shadow: 0 4px 10px rgba(22,163,74,.35);
+      white-space: nowrap;
+    }
+
+
+    /* ✅ 分组标题（按成分分组时显示） */
+    .groupHeader{
+      margin: 10px 0 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(37,99,235,.08);
+      border: 1px solid rgba(37,99,235,.18);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .groupTitle{
+      font-weight: 950;
+      color:#1f2a37;
+      font-size: 13.5px;
+      letter-spacing:.2px;
+      white-space:nowrap;
+    }
+    .groupHint{
+      font-size: 12.5px;
+      color: rgba(31,42,55,.65);
+      font-weight: 850;
+      white-space:nowrap;
+    }
+
+    .recordRow{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.92);
+      border-radius: 14px;
+      box-shadow: 0 10px 18px rgba(15,23,42,.05);
+      margin-bottom: 10px;
+    }
+    .recordMeta{
+      font-size: 13.5px;
+      color: var(--muted);
+      white-space:nowrap;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+    .recordBalls{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow:hidden;
+    }
+    .dot{
+      width: 18px; height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.18);
+      box-shadow: 0 7px 11px rgba(15,23,42,.12);
+      flex: 0 0 auto;
+
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 11.5px;
+      font-weight: 950;
+      line-height: 1;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 1px 2px rgba(0,0,0,.35);
+      user-select:none;
+    }
+    .recordRight{
+      font-size: 13px;
+      color: var(--muted);
+      white-space:nowrap;
+      flex: 0 0 auto;
+      font-weight: 900;
+    }
+
+    .empty{
+      padding: 14px 12px;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.45;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.75);
+      font-weight: 700;
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,.94);
+      align-items:start;
+    }
+
+    .form{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      min-width: 0;
+    }
+    .field label{
+      font-size: 12.5px;
+      color: var(--muted);
+      user-select:none;
+      font-weight: 850;
+    }
+    input[type="number"], input[type="text"], select{
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(15,23,42,.12);
+      outline:none;
+      font-size: 14px;
+      background:#fff;
+    }
+    input[type="text"]{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .btns{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:stretch;
+      min-width: 230px;
+    }
+    button.big{
+      appearance:none;
+      border:0;
+      padding: 12px 14px;
+      border-radius: 13px;
+      font-weight: 950;
+      cursor:pointer;
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(37,99,235,.25);
+      transition: transform .12s ease, filter .12s ease, opacity .12s ease;
+      font-size: 14px;
+    }
+    button.big:hover{ filter: brightness(1.05); }
+    button.big:active{ transform: translateY(1px) scale(.99); }
+    button.big:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+    .ghost{
+      background: #111827 !important;
+      box-shadow: 0 10px 18px rgba(17,24,39,.18) !important;
+    }
+    .enum{
+      background: #16a34a !important;
+      box-shadow: 0 10px 18px rgba(22,163,74,.22) !important;
+    }
+    .enumStop{
+      background: #b91c1c !important;
+      box-shadow: 0 10px 18px rgba(185,28,28,.20) !important;
+    }
+
+    .msg{
+      grid-column: 1 / -1;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: 2px;
+      font-weight: 750;
+    }
+
+    @media (max-width: 1100px){
+      .stageRow{ grid-template-columns: 1fr; height: auto; }
+      .stage{ height: 560px; border-right: 0; border-bottom: 1px solid var(--border); }
+      .sidebar{ height: 360px; }
+      .controls{ grid-template-columns: 1fr; }
+      .btns{ min-width: 0; flex-direction:row; flex-wrap:wrap; }
+      .form{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .home-nav-bar{
+      position:sticky;top:0;z-index:999;
+      display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;
+      padding:10px 16px;
+      background:rgba(255,255,255,.88);
+      border-bottom:1px solid rgba(148,163,184,.35);
+      backdrop-filter:blur(6px);
+    }
+    .home-nav-link{
+      text-decoration:none;
+      color:#1d4ed8;
+      font-weight:800;
+      font-size:14px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#edf3ff;
+      border:1px solid #c7d8ff;
+    }
+    .home-nav-meta{font-size:13px;color:#334155;font-weight:650;}
+    .theme-toggle{
+      border:1px solid #c7d8ff;
+      background:#edf3ff;
+      color:#1d4ed8;
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      cursor:pointer;
+    }
+    body[data-theme="dark"]{
+      --bg:#0b1325;
+      --card:#111b2f;
+      --ink:#e9f0ff;
+      --muted:#b2bfd8;
+      --border: rgba(122,167,255,.25);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      background: radial-gradient(1200px 600px at 50% -10%, #1a2b4d, var(--bg));
+    }
+    body[data-theme="dark"] .home-nav-bar{
+      background:rgba(10,16,35,.78);
+      border-bottom-color:rgba(122,167,255,.35);
+    }
+    body[data-theme="dark"] .home-nav-link{
+      color:#dce9ff;
+      background:rgba(122,167,255,.18);
+      border-color:rgba(122,167,255,.45);
+    }
+    body[data-theme="dark"] .home-nav-meta{ color:#c3d4fb; }
+    body[data-theme="dark"] .theme-toggle{
+      color:#dce9ff;
+      background:#1a2a48;
+      border-color:#3f5b86;
+    }
+    body[data-theme="dark"] .stageRow{
+      background:
+        linear-gradient(to bottom, rgba(13,19,37,.95), rgba(13,19,37,.9)),
+        radial-gradient(900px 300px at 50% 10%, rgba(59,130,246,.24), transparent 60%);
+    }
+    body[data-theme="dark"] .sidebar,
+    body[data-theme="dark"] .recordRow,
+    body[data-theme="dark"] .controls,
+    body[data-theme="dark"] input[type="number"],
+    body[data-theme="dark"] input[type="text"],
+    body[data-theme="dark"] select,
+    body[data-theme="dark"] .empty{
+      background:#111b2f;
+      color:var(--ink);
+      border-color:#2d3c58;
+    }
+    body[data-theme="dark"] .miniBtn{
+      background:#16233c;
+      color:#d7e5ff;
+      border-color:#344867;
+    }
+    body[data-theme="dark"] .miniBtn.on{
+      background:#dce9ff;
+      color:#10203a;
+      border-color:#dce9ff;
+    }
+    body[data-theme="dark"] .subtitle,
+    body[data-theme="dark"] .field label,
+    body[data-theme="dark"] .msg,
+    body[data-theme="dark"] .recordMeta,
+    body[data-theme="dark"] .recordRight,
+    body[data-theme="dark"] .groupHint{
+      color:#d3e0fb;
+    }
+    body[data-theme="dark"] .groupTitle,
+    body[data-theme="dark"] .sideTitle{
+      color:#f2f7ff;
+    }
+    body[data-theme="dark"] .groupHeader{
+      background:#1a2844;
+      border-color:#35527f;
+    }
+  </style>
+</head>
+<body>
+<div class="home-nav-bar">
+  <a class="home-nav-link" href="index.html">← 返回主页 Home</a>
+  <div class="home-nav-meta">高中数学教学实验室 · 开心课堂荣誉出品 MathRender.com · © 2026</div>
+  <button id="themeToggle" class="theme-toggle" type="button">切换深色</button>
+</div>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <div class="title">BallLab 抽球实验室</div>
+      <div class="subtitle">沪教版高中数学·概率初步(续) - 二项式定理</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="stageRow">
+      <div class="stage">
+        <canvas id="cv"></canvas>
+      </div>
+
+      <aside class="sidebar">
+        <div class="sideHead">
+          <div class="sideTitle">抽取记录</div>
+          <div class="sideActions">
+            <button class="miniBtn on" id="toggleBagBalls">袋内球：开</button>
+            <button class="miniBtn" id="toggleNoRepeat">放回不重复：关</button>
+            <button class="miniBtn" id="clearRecords">清空</button>
+          </div>
+        </div>
+
+        <div class="records" id="records">
+          <div class="empty" id="emptyTip">
+            暂无记录。点击“抽取一次”后会按行记录（可滚动）。<br/>
+            想要“自动枚举”，请切换为“放回抽样”并开启“放回不重复”。
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="controls">
+      <div class="form">
+        <div class="field">
+          <label>袋子数量 N</label>
+          <input id="numBags" type="number" min="1" max="10" value="3" />
+        </div>
+        <div class="field">
+          <label>每袋球数 M</label>
+          <input id="ballsPerBag" type="number" min="1" max="12" value="2" />
+        </div>
+        <div class="field" style="grid-column: span 2;">
+          <label>球颜色列表（逗号分隔；每袋相同）</label>
+          <input id="colors" type="text" value="#ef4444,#f59e0b,#3b82f6" />
+        </div>
+
+        <div class="field">
+          <label>抽样方式</label>
+          <select id="mode">
+            <option value="with" selected>放回抽样</option>
+            <option value="without">不放回抽样</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>随机种子（可选）</label>
+          <input id="seed" type="number" placeholder="留空=每次不同" />
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label>枚举顺序（放回不重复）</label>
+          <select id="enumOrder">
+            <option value="lex" selected>字典序（规律枚举）</option>
+            <option value="comp">按成分分组（相同成分连在一起）</option>
+            <option value="random">随机顺序（不重复）</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>自动枚举速度</label>
+          <select id="enumSpeed">
+            <option value="fast">快</option>
+            <option value="mid" selected>中</option>
+            <option value="slow">慢</option>
+          </select>
+        </div>
+
+        <div class="msg" id="msg">提示：开启“放回不重复”后可使用“自动枚举”。</div>
+      </div>
+
+      <div class="btns">
+        <button id="apply" class="big ghost">应用参数 / 重置袋子</button>
+        <button id="draw" class="big">抽取一次</button>
+        <button id="autoEnum" class="big enum" disabled>自动枚举</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // RNG (optional)
+  function mulberry32(seed){
+    let a = seed >>> 0;
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+  }
+
+  // Helpers
+  function hslColor(h, s=80, l=52){ return `hsl(${Math.round(h)%360} ${s}% ${l}%)`; }
+  function normalizeColorToken(s){ return String(s || "").trim().toLowerCase(); }
+
+  function uniqPreserve(arr){
+    const seen = new Set(); const out = [];
+    for (const x of arr){
+      const k = normalizeColorToken(x);
+      if (k && !seen.has(k)){ seen.add(k); out.push(String(x).trim()); }
+    }
+    return out;
+  }
+  function clampInt(x, lo, hi, fallback){
+    const n = Number(x);
+    if (!Number.isFinite(n)) return fallback;
+    return Math.max(lo, Math.min(hi, Math.floor(n)));
+  }
+
+  // index -> label: 0->a ... 25->z, 26->aa...
+  function indexToLabel(idx){
+    idx = Math.max(0, Math.floor(idx));
+    let s = "";
+    while (true){
+      s = String.fromCharCode(97 + (idx % 26)) + s;
+      idx = Math.floor(idx / 26) - 1;
+      if (idx < 0) break;
+    }
+    return s;
+  }
+  function buildColorToLabelMap(template){
+    const map = new Map();
+    template.forEach((c, i) => map.set(normalizeColorToken(c), indexToLabel(i)));
+    return map;
+  }
+
+  // ✅ 成分分组：colors -> groupKey / display title
+  function groupKeyFromColors(resultColors){
+    const M = state.bagTemplate.length;
+    const counts = new Array(M).fill(0);
+
+    for (const c of resultColors){
+      const key = normalizeColorToken(c);
+      let idx = -1;
+      for (let i=0;i<M;i++){
+        if (normalizeColorToken(state.bagTemplate[i]) === key){ idx = i; break; }
+      }
+      if (idx >= 0) counts[idx] += 1;
+    }
+    return counts.join(",");
+  }
+  function groupTitleFromKey(groupKey){
+    const counts = groupKey.split(",").map(Number);
+    const parts = [];
+    for (let i=0;i<counts.length;i++){
+      if (counts[i] > 0){
+        parts.push(`${counts[i]}${indexToLabel(i)}`);
+      }
+    }
+    return parts.length ? parts.join(", ") : "（未知成分）";
+  }
+
+  function countArrangementsFromGroupKey(groupKey){
+    // groupKey: "0,1,2,0,..."  counts sum = N
+    const counts = groupKey.split(",").map(x => Math.max(0, Number(x) || 0));
+    const N = counts.reduce((a,b)=>a+b, 0);
+
+    // N <= 10 (你界面限制)，用普通整数就足够；也可用 BigInt 更保险
+    function fact(n){
+      let r = 1;
+      for (let i=2;i<=n;i++) r *= i;
+      return r;
+    }
+
+    let denom = 1;
+    for (const c of counts) denom *= fact(c);
+    return Math.round(fact(N) / denom);
+  }
+
+
+  // High contrast palette
+  const HIGH_CONTRAST_PALETTE = [
+    "#ef4444", "#f59e0b", "#3b82f6", "#22c55e", "#a855f7", "#06b6d4",
+    "#ec4899", "#84cc16", "#f97316", "#14b8a6", "#8b5cf6", "#0ea5e9",
+    "#e11d48", "#facc15", "#1d4ed8", "#16a34a", "#7c3aed", "#0891b2"
+  ];
+
+  function genDistinctColorsAvoid(existingColors, k){
+    const existing = new Set(existingColors.map(normalizeColorToken));
+    const out = [];
+
+    for (const c of HIGH_CONTRAST_PALETTE){
+      if (out.length >= k) break;
+      const key = normalizeColorToken(c);
+      if (!existing.has(key)){
+        out.push(c);
+        existing.add(key);
+      }
+    }
+
+    let i = 0;
+    const golden = 137.50776405;
+    while (out.length < k && i < 800){
+      const c = hslColor(30 + i*golden, 82, 52);
+      const key = normalizeColorToken(c);
+      if (!existing.has(key)){
+        out.push(c);
+        existing.add(key);
+      }
+      i += 1;
+    }
+    return out;
+  }
+
+  // Canvas
+  const themeToggle = document.getElementById("themeToggle");
+  const canvas = document.getElementById("cv");
+  const ctx = canvas.getContext("2d");
+  let W=0, H=0, DPR=1;
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    W = Math.floor(r.width * DPR);
+    H = Math.floor(r.height * DPR);
+    canvas.width = W;
+    canvas.height = H;
+  }
+  window.addEventListener("resize", () => { resize(); drawStatic(); });
+
+  // Easing
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeInOutCubic = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+  const easeOutBack = (t, s=1.7) => 1 + (s+1)*Math.pow(t-1,3) + s*Math.pow(t-1,2);
+
+  // UI refs
+  const elNumBags = document.getElementById("numBags");
+  const elBallsPerBag = document.getElementById("ballsPerBag");
+  const elColors = document.getElementById("colors");
+  const elMode = document.getElementById("mode");
+  const elSeed = document.getElementById("seed");
+  const elMsg = document.getElementById("msg");
+  const elEnumOrder = document.getElementById("enumOrder");
+  const elEnumSpeed = document.getElementById("enumSpeed");
+
+  const btnApply = document.getElementById("apply");
+  const btnDraw = document.getElementById("draw");
+  const btnAutoEnum = document.getElementById("autoEnum");
+
+  const recordsEl = document.getElementById("records");
+  const emptyTipEl = document.getElementById("emptyTip");
+  const btnClearRecords = document.getElementById("clearRecords");
+  const btnToggleBagBalls = document.getElementById("toggleBagBalls");
+  const btnToggleNoRepeat = document.getElementById("toggleNoRepeat");
+
+  function setMsg(text, warn=false){
+    elMsg.textContent = text;
+    elMsg.style.color = warn ? "#b91c1c" : "var(--muted)";
+  }
+
+  // Config & state
+  const CFG = {
+    shakeTime: 0.30,
+    popTime: 0.32,
+    fallTime: 0.62,
+    settleTime: 0.22,
+
+    showBallsInBag: true,
+
+    drawBallR: 22,
+    bagBallR: 13,
+
+    enumLimit: 50000, // guardrail
+
+    // ✅ 字体缩放：袋内更大；抽出的大球稍大
+    labelScaleInBag: 1.95,
+    labelScaleDrawn: 1.85,
+  };
+
+  let state = {
+    numBags: 3,
+    ballsPerBag: 2,
+    colors: ["#ef4444","#f59e0b","#3b82f6"],
+    mode: "with",
+    rng: Math.random,
+
+    bagContents: [],
+    bagTemplate: [],
+
+    // color -> label
+    colorLabelMap: new Map(),
+
+    noRepeatWithReplacement: false,
+
+    // Auto enumeration
+    autoEnumRunning: false,
+    enumIndex: 0,
+    enumTotal: 0,
+    enumOrder: "lex",          // "lex" | "comp" | "random"
+    randomEnumOrder: null,     // array of indices (shuffled)
+    compEnumOrder: null,       // array of indices (composition-grouped)
+    enumTimer: null,
+
+    // ✅ 分组显示状态（右侧记录）
+    lastGroupKey: null,
+    groupCounts: null,         // Map(groupKey -> count)
+
+    lastResult: null,
+    anim: null,
+  };
+
+  function getEnumDelayMs(){
+    const v = elEnumSpeed.value;
+    if (v === "fast") return 70;
+    if (v === "slow") return 320;
+    return 150;
+  }
+
+  // Records
+  let recordCount = 0;
+
+  function appendGroupHeaderIfNeeded(resultColors){
+    const shouldGroup = (state.mode==="with" && state.noRepeatWithReplacement && state.enumOrder==="comp");
+    if (!shouldGroup){
+      state.lastGroupKey = null;
+      return;
+    }
+
+    const gk = groupKeyFromColors(resultColors);
+    if (state.lastGroupKey === gk) return;
+
+    state.lastGroupKey = gk;
+
+    const header = document.createElement("div");
+    header.className = "groupHeader";
+
+    const left = document.createElement("div");
+    left.className = "groupTitle";
+    left.textContent = `成分：${groupTitleFromKey(gk)}`;
+
+    const right = document.createElement("div");
+    right.className = "groupHint";
+    const cnt = state.groupCounts?.get(gk);
+    const ways = (cnt != null) ? cnt : countArrangementsFromGroupKey(gk);
+    right.innerHTML = `<span class="groupBadge">共 ${ways} 种</span>`;
+
+
+
+    header.appendChild(left);
+    header.appendChild(right);
+    recordsEl.appendChild(header);
+  }
+
+  function addRecordRow(resultColors){
+    recordCount += 1;
+    if (emptyTipEl) emptyTipEl.style.display = "none";
+
+    // ✅ 分组头（仅 comp 枚举时）
+    appendGroupHeaderIfNeeded(resultColors);
+
+    const row = document.createElement("div");
+    row.className = "recordRow";
+
+    const meta = document.createElement("div");
+    meta.className = "recordMeta";
+    meta.textContent = `#${recordCount}`;
+
+    const balls = document.createElement("div");
+    balls.className = "recordBalls";
+    resultColors.forEach((c, idx) => {
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.background = c;
+
+      const lab = state.colorLabelMap.get(normalizeColorToken(c)) || "";
+      dot.textContent = lab;
+
+      dot.title = `袋 ${idx+1}: ${lab ? (lab + " / ") : ""}${c}`;
+      balls.appendChild(dot);
+    });
+
+    const right = document.createElement("div");
+    right.className = "recordRight";
+    const extra = (state.mode==="with" && state.noRepeatWithReplacement) ? "·不重复" : "";
+    right.textContent = `${state.mode==="with"?"放回":"不放回"}${extra}`;
+
+    row.appendChild(meta);
+    row.appendChild(balls);
+    row.appendChild(right);
+
+    recordsEl.appendChild(row);
+    recordsEl.scrollTop = recordsEl.scrollHeight;
+  }
+
+  function clearRecords(){
+    [...recordsEl.querySelectorAll(".recordRow, .groupHeader")].forEach(n => n.remove());
+    recordCount = 0;
+    if (emptyTipEl) emptyTipEl.style.display = "block";
+    recordsEl.scrollTop = 0;
+
+    // ✅ reset grouping state
+    state.lastGroupKey = null;
+    state.groupCounts = null;
+  }
+  btnClearRecords.addEventListener("click", clearRecords);
+
+  // Toggles
+  function updateToggleBtn(){
+    btnToggleBagBalls.classList.toggle("on", CFG.showBallsInBag);
+    btnToggleBagBalls.textContent = `袋内球：${CFG.showBallsInBag ? "开" : "关"}`;
+  }
+  btnToggleBagBalls.addEventListener("click", () => {
+    CFG.showBallsInBag = !CFG.showBallsInBag;
+    updateToggleBtn();
+    drawStatic();
+  });
+
+  function stopAutoEnum(silent=false){
+    if (state.enumTimer){
+      clearTimeout(state.enumTimer);
+      state.enumTimer = null;
+    }
+    if (state.autoEnumRunning){
+      state.autoEnumRunning = false;
+      updateAutoEnumAvailability();
+      if (!silent) setMsg("已停止自动枚举。");
+    }
+  }
+
+  function setNoRepeatEnabled(enabled){
+    state.noRepeatWithReplacement = !!enabled;
+    btnToggleNoRepeat.classList.toggle("on", state.noRepeatWithReplacement);
+    btnToggleNoRepeat.textContent = `放回不重复：${state.noRepeatWithReplacement ? "开" : "关"}`;
+
+    if (!state.noRepeatWithReplacement) stopAutoEnum(true);
+
+    prepareEnumPlan();
+    updateAutoEnumAvailability();
+  }
+
+  function updateNoRepeatBtnAvailability(){
+    const active = (state.mode === "with");
+    btnToggleNoRepeat.classList.toggle("disabled", !active);
+    btnToggleNoRepeat.disabled = !active;
+    if (!active) setNoRepeatEnabled(false);
+  }
+
+  btnToggleNoRepeat.addEventListener("click", () => {
+    if (btnToggleNoRepeat.disabled) return;
+    setNoRepeatEnabled(!state.noRepeatWithReplacement);
+    if (state.noRepeatWithReplacement){
+      setMsg(`放回不重复已开启：可用“自动枚举”。`);
+    } else {
+      setMsg(`放回不重复已关闭。`);
+    }
+  });
+
+  // Layout
+  function layout(){
+    const padX = 85 * DPR;
+    const topY = 150 * DPR;
+    const bagW = 160 * DPR;
+    const bagH = 220 * DPR;
+
+    const n = state.numBags;
+    const gap = (n === 1) ? 0 : (W - padX*2) / (n - 1);
+
+    const bags = [];
+    for (let i=0;i<n;i++){
+      const x = (n === 1) ? W/2 : padX + gap*i;
+      bags.push({ cx:x, cy:topY, w:bagW, h:bagH, _i:i });
+    }
+
+    const slotY = 430 * DPR;
+    const slotGap = Math.min(245*DPR, n === 1 ? 0 : gap);
+    const startX = W/2 - slotGap*(n-1)/2;
+    const slots = [];
+    for (let i=0;i<n;i++) slots.push({ x: startX + slotGap*i, y: slotY });
+    return { bags, slots };
+  }
+
+  // Draw primitives
+  function drawBg(){
+    ctx.save();
+    ctx.fillStyle = "rgba(37,99,235,.06)";
+    ctx.beginPath(); ctx.arc(W*0.12, H*0.18, 90*DPR, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W*0.88, H*0.20, 110*DPR, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function drawSlots(slots){
+    ctx.save();
+    ctx.strokeStyle = "rgba(15,23,42,.12)";
+    ctx.lineWidth = 2*DPR;
+    for (const s of slots){
+      ctx.beginPath();
+      ctx.roundRect(s.x - 46*DPR, s.y - 34*DPR, 92*DPR, 68*DPR, 18*DPR);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ✅ drawBall with label + fontScale
+  function drawBall(x, y, r, color, label=null, fontScale=1){
+    ctx.save();
+    // shadow
+    ctx.beginPath();
+    ctx.ellipse(x + 8*DPR, y + 12*DPR, r*1.12, r*0.58, 0, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(15,23,42,.14)";
+    ctx.fill();
+
+    // ball
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.25)";
+    ctx.lineWidth = 2*DPR;
+    ctx.stroke();
+
+    // highlight
+    ctx.beginPath();
+    ctx.arc(x - r*0.35, y - r*0.35, r*0.30, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.fill();
+
+    // label auto
+    const key = normalizeColorToken(color);
+    const txt = (label != null) ? String(label) : (state.colorLabelMap?.get(key) || "");
+    if (txt){
+      // luminance check for hex
+      let textColor = "rgba(255,255,255,.92)";
+      if (typeof color === "string" && color.startsWith("#") && color.length === 7){
+        const rr = parseInt(color.slice(1,3),16);
+        const gg = parseInt(color.slice(3,5),16);
+        const bb = parseInt(color.slice(5,7),16);
+        const lum = (0.2126*rr + 0.7152*gg + 0.0722*bb) / 255;
+        textColor = lum > 0.65 ? "rgba(17,24,39,.92)" : "rgba(255,255,255,.92)";
+      }
+
+      const px = Math.max(12, r*0.95) * fontScale / DPR;
+      ctx.font = `950 ${px}px ui-sans-serif, system-ui`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // outline
+      ctx.lineWidth = 4*DPR;
+      ctx.strokeStyle = "rgba(15,23,42,.35)";
+      ctx.strokeText(txt, x, y + 0.5*DPR);
+
+      ctx.fillStyle = textColor;
+      ctx.fillText(txt, x, y + 0.5*DPR);
+    }
+
+    ctx.restore();
+  }
+
+  // Mini balls in bag
+  function drawMiniBallsInBag(bag, colors){
+    if (!CFG.showBallsInBag) return;
+    if (!colors || colors.length === 0) return;
+
+    const {cx, cy, w, h} = bag;
+
+    const innerTopY = cy + h*0.11;
+    const innerBotY = cy + h*0.46;
+
+    const innerLeft  = cx - w*0.31;
+    const innerRight = cx + w*0.31;
+
+    const maxCols = 3;
+
+    const r = CFG.bagBallR * DPR;
+    const gapX = (innerRight - innerLeft) / Math.max(1, (maxCols - 1));
+    const gapY = 36 * DPR;
+
+    let x = innerLeft, y = innerTopY;
+    let col = 0;
+
+    const maxRows = Math.max(1, Math.floor((innerBotY - innerTopY) / gapY) + 1);
+    const shownMax = maxRows * maxCols;
+
+    for (let i=0;i<Math.min(colors.length, shownMax);i++){
+      // ✅ 袋内球字母更大
+      drawBall(x, y, r, colors[i], null, CFG.labelScaleInBag);
+      col += 1;
+      if (col >= maxCols){
+        col = 0;
+        x = innerLeft;
+        y += gapY;
+      } else {
+        x += gapX;
+      }
+    }
+
+    const remain = colors.length - shownMax;
+    if (remain > 0){
+      ctx.save();
+      ctx.font = `${13*DPR}px ui-sans-serif, system-ui`;
+      ctx.fillStyle = "rgba(15,23,42,.75)";
+      ctx.textAlign = "right";
+      ctx.fillText(`+${remain}`, innerRight + 18*DPR, innerBotY + 10*DPR);
+      ctx.restore();
+    }
+  }
+
+  // drawBag: sky-blue theme
+  function drawBag(bag, shake=0){
+    const {cx, cy, w, h} = bag;
+    const dx = Math.sin(shake*18) * 7 * DPR;
+    const rot = Math.sin(shake*18) * 0.06;
+
+    ctx.save();
+    ctx.translate(cx + dx, cy);
+    ctx.rotate(rot);
+
+    const topW = w * 0.74;
+    const botW = w;
+    const topY = -h*0.45;
+    const botY =  h*0.45;
+
+    // shadow
+    ctx.beginPath();
+    ctx.moveTo(-botW/2+6*DPR, botY+12*DPR);
+    ctx.lineTo( botW/2+6*DPR, botY+12*DPR);
+    ctx.lineTo( topW/2+10*DPR, topY+12*DPR);
+    ctx.lineTo(-topW/2+10*DPR, topY+12*DPR);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(15,23,42,.08)";
+    ctx.fill();
+
+    const g = ctx.createLinearGradient(0, topY, 0, botY);
+    g.addColorStop(0, "#a7f3ff");
+    g.addColorStop(1, "#38bdf8");
+
+    ctx.beginPath();
+    ctx.moveTo(-botW/2, botY);
+    ctx.lineTo( botW/2, botY);
+    ctx.lineTo( topW/2, topY);
+    ctx.lineTo(-topW/2, topY);
+    ctx.closePath();
+    ctx.fillStyle = g;
+    ctx.strokeStyle = "rgba(0,0,0,.28)";
+    ctx.lineWidth = 2*DPR;
+    ctx.fill(); ctx.stroke();
+
+    // mouth
+    ctx.beginPath();
+    ctx.moveTo(-topW/2, topY);
+    ctx.lineTo( topW/2, topY);
+    ctx.strokeStyle = "rgba(66,36,22,.75)";
+    ctx.lineWidth = 6*DPR;
+    ctx.lineCap = "round";
+    ctx.stroke();
+
+    // highlight
+    ctx.beginPath();
+    ctx.moveTo(-botW*0.22, botY*0.72);
+    ctx.quadraticCurveTo(-botW*0.30, 0, -topW*0.18, topY*0.55);
+    ctx.strokeStyle = "rgba(255,255,255,.20)";
+    ctx.lineWidth = 4.5*DPR;
+    ctx.stroke();
+
+    // remain text (without replacement)
+    if (state.mode === "without"){
+      ctx.save();
+      ctx.rotate(-rot);
+      ctx.font = `${13*DPR}px ui-sans-serif, system-ui`;
+      ctx.fillStyle = "rgba(15,23,42,.72)";
+      ctx.textAlign = "center";
+      const remain = state.bagContents?.[bag._i]?.length ?? state.ballsPerBag;
+      ctx.fillText(`剩余 ${remain}`, 0, botY + 40*DPR);
+      ctx.restore();
+    }
+
+    ctx.restore();
+
+    const inside = (state.mode === "without") ? (state.bagContents[bag._i] || []) : (state.bagTemplate || []);
+    drawMiniBallsInBag(bag, inside);
+  }
+
+  // Build template colors (per-bag)
+  function buildTemplateColors(userColors, M){
+    const uniq = uniqPreserve(userColors);
+    if (uniq.length < M){
+      const need = M - uniq.length;
+      const extra = genDistinctColorsAvoid(uniq, need);
+      return { template: uniq.concat(extra), autoAdded: need };
+    }
+    return { template: uniq.slice(0, M), autoAdded: 0 };
+  }
+
+  // Lex expansion: treat index as base-M number -> N digits (bag1..bagN)
+  function enumTupleFromIndex(index){
+    const M = state.bagTemplate.length;
+    const N = state.numBags;
+    const idxs = new Array(N).fill(0);
+    let x = index;
+    for (let pos = N - 1; pos >= 0; pos--){
+      idxs[pos] = x % M;
+      x = Math.floor(x / M);
+    }
+    return idxs;
+  }
+
+  // Enumeration plan (lex OR comp OR random)
+  function prepareEnumPlan(){
+    const v = elEnumOrder.value;
+    state.enumOrder = (v === "random") ? "random" : (v === "comp" ? "comp" : "lex");
+    state.enumIndex = 0;
+    state.randomEnumOrder = null;
+    state.compEnumOrder = null;
+    state.groupCounts = null;
+    state.lastGroupKey = null;
+
+    if (!(state.mode === "with" && state.noRepeatWithReplacement)){
+      state.enumTotal = 0;
+      return;
+    }
+
+    const M = state.bagTemplate.length;
+    const N = state.numBags;
+    const total = Math.pow(M, N);
+    state.enumTotal = total;
+
+    if (total > CFG.enumLimit){
+      setMsg(`组合总数 ${total} 过大（>${CFG.enumLimit}），为避免卡顿请减少袋子/球数。`, true);
+      return;
+    }
+
+    // 1) Random order
+    if (state.enumOrder === "random"){
+      state.randomEnumOrder = Array.from({length: total}, (_, i) => i);
+      for (let i = total - 1; i > 0; i--){
+        const j = Math.floor(state.rng() * (i + 1));
+        [state.randomEnumOrder[i], state.randomEnumOrder[j]] =
+        [state.randomEnumOrder[j], state.randomEnumOrder[i]];
+      }
+      return;
+    }
+
+    // 2) Composition grouped order
+    if (state.enumOrder === "comp"){
+      const groups = new Map(); // countsKey -> indices[]
+      for (let idx = 0; idx < total; idx++){
+        const digits = enumTupleFromIndex(idx);
+        const counts = new Array(M).fill(0);
+        for (const d of digits) counts[d]++;
+
+        const key = counts.join(",");
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(idx);
+      }
+
+      // ✅ 记录每个成分组的大小（用于右侧标题显示）
+      state.groupCounts = new Map();
+      for (const [k, arr] of groups.entries()){
+        state.groupCounts.set(k, arr.length);
+      }
+
+      // within group: lex (by index)
+      for (const arr of groups.values()){
+        arr.sort((a,b) => a-b);
+      }
+
+      // between groups: prefer more of first color, then second...
+      const keys = Array.from(groups.keys());
+      keys.sort((ka, kb) => {
+        const A = ka.split(",").map(Number);
+        const B = kb.split(",").map(Number);
+        for (let i=0;i<Math.min(A.length, B.length);i++){
+          if (A[i] !== B[i]) return B[i] - A[i]; // desc
+        }
+        return 0;
+      });
+
+      const order = [];
+      for (const k of keys) order.push(...groups.get(k));
+      state.compEnumOrder = order;
+      return;
+    }
+
+    // 3) Lex: no table needed
+  }
+
+  function nextEnumColors(){
+    if (!(state.mode === "with" && state.noRepeatWithReplacement)) return null;
+    if (state.enumIndex >= state.enumTotal) return null;
+
+    let index;
+    if (state.enumOrder === "random"){
+      index = state.randomEnumOrder[state.enumIndex];
+    } else if (state.enumOrder === "comp"){
+      index = state.compEnumOrder[state.enumIndex];
+    } else {
+      index = state.enumIndex; // lex
+    }
+
+    state.enumIndex += 1;
+    const idxs = enumTupleFromIndex(index);
+    return idxs.map(i => state.bagTemplate[i]);
+  }
+
+  // Reset bags
+  function resetBags(){
+    stopAutoEnum(true);
+
+    const n = state.numBags;
+    const M = state.ballsPerBag;
+    const { template, autoAdded } = buildTemplateColors(state.colors, M);
+    state.bagTemplate = template;
+
+    // build label map
+    state.colorLabelMap = buildColorToLabelMap(state.bagTemplate);
+
+    state.bagContents = Array.from({length:n}, () => template.slice());
+    state.lastResult = null;
+    state.anim = null;
+
+    prepareEnumPlan();
+    updateAutoEnumAvailability();
+
+    if (autoAdded > 0){
+      setMsg(`颜色不足：已自动补足 ${autoAdded} 种颜色（保证每袋 ${M} 个颜色尽量不同）。`);
+    } else {
+      const extra = (state.mode === "with" && state.noRepeatWithReplacement && state.enumTotal > 0)
+        ? `（组合总数=${state.enumTotal}，${state.enumOrder==="lex"?"字典序":(state.enumOrder==="comp"?"按成分":"随机")}枚举）` : "";
+      setMsg(`已重置。${extra}`);
+    }
+
+    drawStatic();
+  }
+
+  // Sampling
+  function pickOneFromBag(bagIdx){
+    const rng = state.rng;
+    if (state.mode === "with"){
+      const template = state.bagTemplate || [];
+      if (!template.length) return null;
+      return { color: template[Math.floor(rng() * template.length)] };
+    } else {
+      const arr = state.bagContents[bagIdx];
+      if (!arr || arr.length === 0) return null;
+      const j = Math.floor(rng() * arr.length);
+      const color = arr[j];
+      arr.splice(j, 1);
+      return { color };
+    }
+  }
+
+  // Static draw
+  function drawStatic(){
+    const {bags, slots} = layout();
+    ctx.clearRect(0,0,W,H);
+    drawBg();
+    drawSlots(slots);
+    bags.forEach(b => drawBag(b, 0));
+
+    if (state.lastResult){
+      const r = CFG.drawBallR * DPR;
+      state.lastResult.forEach((res, i) =>
+        // ✅ 抽出的大球字母稍大
+        drawBall(slots[i].x, slots[i].y, r, res.color, null, CFG.labelScaleDrawn)
+      );
+    }
+  }
+
+  // Animation utils
+  function interp(a,b,t){ return { x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t }; }
+  function getBallPos(item, t){
+    const t0 = CFG.shakeTime, t1 = CFG.popTime, t2 = CFG.fallTime, t3 = CFG.settleTime;
+    const total = t0+t1+t2+t3;
+    const tt = t*total;
+
+    if (tt <= t0) return { hidden:true };
+    if (tt <= t0+t1){
+      const u = (tt - t0)/t1;
+      const k = easeOutBack(u, 1.6);
+      return { hidden:false, p: interp(item.start, item.pop, Math.min(1,k)) };
+    }
+    if (tt <= t0+t1+t2){
+      const u = (tt - t0 - t1)/t2;
+      const k = easeOutCubic(u);
+      return { hidden:false, p: interp(item.pop, item.end, k) };
+    }
+    const u = (tt - t0 - t1 - t2)/t3;
+    const k = easeOutCubic(Math.min(1,u));
+    const bounce = Math.sin((1-k)*Math.PI) * 16*DPR * (1-k);
+    return { hidden:false, p: { x:item.end.x, y:item.end.y - bounce } };
+  }
+
+  // Auto enum availability
+  function canAutoEnum(){
+    if (!(state.mode === "with" && state.noRepeatWithReplacement)) return false;
+    if (!Number.isFinite(state.enumTotal) || state.enumTotal <= 0) return false;
+    if (state.enumTotal > CFG.enumLimit) return false;
+    return true;
+  }
+
+  function updateAutoEnumAvailability(){
+    const ok = canAutoEnum();
+    btnAutoEnum.disabled = !ok;
+    btnAutoEnum.classList.toggle("enum", !state.autoEnumRunning);
+    btnAutoEnum.classList.toggle("enumStop", state.autoEnumRunning);
+    btnAutoEnum.textContent = state.autoEnumRunning ? "停止自动枚举" : "自动枚举";
+  }
+
+  function scheduleNextAutoEnum(){
+    if (!state.autoEnumRunning) return;
+
+    if (!canAutoEnum()){
+      stopAutoEnum(true);
+      setMsg("无法继续自动枚举：请确认“放回抽样 + 放回不重复”且组合数量不过大。", true);
+      return;
+    }
+
+    if (state.enumIndex >= state.enumTotal){
+      stopAutoEnum(true);
+      setMsg(`自动枚举完成：共 ${state.enumTotal} 种组合已全部枚举。`);
+      return;
+    }
+
+    const delay = getEnumDelayMs();
+    state.enumTimer = setTimeout(() => {
+      if (!state.autoEnumRunning) return;
+      startDraw(true);
+    }, delay);
+  }
+
+  // Start draw (normal or enum)
+  function startDraw(fromEnum=false){
+    if (state.anim) return;
+
+    if (state.mode === "without"){
+      for (let i=0;i<state.numBags;i++){
+        if (!state.bagContents[i] || state.bagContents[i].length === 0){
+          setMsg(`第 ${i+1} 个袋子已抽空：请重置或改为放回抽样。`, true);
+          stopAutoEnum(true);
+          return;
+        }
+      }
+    }
+
+    btnDraw.disabled = true;
+    btnApply.disabled = true;
+    if (!fromEnum) setMsg("正在抽取…");
+
+    const {bags, slots} = layout();
+    const ballR = CFG.drawBallR * DPR;
+
+    let pickedColors = null;
+
+    if (state.mode === "with" && state.noRepeatWithReplacement){
+      pickedColors = nextEnumColors();
+      if (!pickedColors){
+        btnDraw.disabled = false;
+        btnApply.disabled = false;
+        if (fromEnum){
+          stopAutoEnum(true);
+          setMsg(`自动枚举完成：共 ${state.enumTotal} 种组合。`);
+        } else {
+          setMsg("放回不重复：所有组合已枚举完。请重置或关闭不重复。", true);
+        }
+        return;
+      }
+    } else {
+      pickedColors = [];
+      for (let i=0;i<state.numBags;i++){
+        const picked = pickOneFromBag(i);
+        if (!picked){
+          setMsg(`第 ${i+1} 个袋子没有可抽取的小球。`, true);
+          btnDraw.disabled = false;
+          btnApply.disabled = false;
+          stopAutoEnum(true);
+          return;
+        }
+        pickedColors.push(picked.color);
+      }
+    }
+
+    const results = pickedColors.map(c => ({color:c}));
+    const items = bags.map((bag, i) => {
+      const mouthY = bag.cy - bag.h*0.45;
+      const start = { x: bag.cx, y: mouthY + 22*DPR };
+      const pop   = { x: bag.cx, y: mouthY - 44*DPR };
+      const end   = { x: slots[i].x, y: slots[i].y };
+      return { color: results[i].color, r: ballR, start, pop, end };
+    });
+
+    state.lastResult = results;
+    state.anim = { startTs: performance.now(), items, fromEnum };
+    requestAnimationFrame(tick);
+  }
+
+  function tick(ts){
+    const {bags, slots} = layout();
+    ctx.clearRect(0,0,W,H);
+    drawBg();
+    drawSlots(slots);
+
+    const t0 = CFG.shakeTime, t1 = CFG.popTime, t2 = CFG.fallTime, t3 = CFG.settleTime;
+    const total = t0+t1+t2+t3;
+
+    const t = Math.min(1, (ts - state.anim.startTs)/(total*1000));
+    const tt = t*total;
+    const shake = (tt <= t0) ? easeInOutCubic(Math.min(1, tt/t0)) : 0;
+
+    bags.forEach(b => drawBag(b, shake));
+    state.anim.items.forEach(item => {
+      const s = getBallPos(item, t);
+      if (!s.hidden) drawBall(s.p.x, s.p.y, item.r, item.color, null, CFG.labelScaleDrawn);
+    });
+
+    if (t >= 1){
+      addRecordRow(state.lastResult.map(x => x.color));
+      const fromEnum = state.anim.fromEnum;
+
+      state.anim = null;
+      btnDraw.disabled = false;
+      btnApply.disabled = false;
+
+      if (state.mode === "with" && state.noRepeatWithReplacement){
+        const left = Math.max(0, state.enumTotal - state.enumIndex);
+        if (!fromEnum){
+          setMsg(`抽取完成（放回不重复）。剩余组合：${left}。`);
+        } else {
+          setMsg(`自动枚举中… 已完成 ${state.enumIndex}/${state.enumTotal}（剩余 ${left}）`);
+        }
+      } else {
+        if (!fromEnum) setMsg("抽取完成。");
+      }
+
+      drawStatic();
+
+      if (fromEnum) scheduleNextAutoEnum();
+      return;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Apply params
+  function applyParams(){
+    const n = clampInt(elNumBags.value, 1, 10, 3);
+    const m = clampInt(elBallsPerBag.value, 1, 12, 2);
+
+    let colors = uniqPreserve(elColors.value.split(",").map(x => x.trim()).filter(Boolean));
+    if (colors.length === 0){
+      setMsg("颜色列表为空：请至少输入一个颜色。", true);
+      return;
+    }
+
+    state.numBags = n;
+    state.ballsPerBag = m;
+    state.colors = colors;
+    state.mode = elMode.value === "without" ? "without" : "with";
+
+    const seedStr = String(elSeed.value).trim();
+    if (seedStr !== ""){
+      const seed = Number(seedStr);
+      if (!Number.isFinite(seed)){
+        setMsg("随机种子必须是数字或留空。", true);
+        return;
+      }
+      state.rng = mulberry32(Math.floor(seed));
+    } else {
+      state.rng = Math.random;
+    }
+
+    updateNoRepeatBtnAvailability();
+    resetBags();
+  }
+
+  // Auto enum button
+  const btnAutoEnumEl = document.getElementById("autoEnum");
+  btnAutoEnumEl.addEventListener("click", () => {
+    if (state.autoEnumRunning){
+      stopAutoEnum(false);
+      return;
+    }
+    if (!canAutoEnum()){
+      setMsg("自动枚举不可用：请切换为“放回抽样”并开启“放回不重复”，且组合数量不要太大。", true);
+      updateAutoEnumAvailability();
+      return;
+    }
+
+    // Rebuild plan (especially for random / comp order)
+    prepareEnumPlan();
+    state.enumIndex = 0;
+
+    clearRecords();
+    state.autoEnumRunning = true;
+    updateAutoEnumAvailability();
+
+    const modeName = (state.enumOrder === "random") ? "随机顺序" : (state.enumOrder==="comp" ? "按成分分组" : "字典序");
+    setMsg(`开始自动枚举（${modeName}）：共 ${state.enumTotal} 种组合。`);
+    scheduleNextAutoEnum();
+  });
+
+  // Bind
+  btnApply.addEventListener("click", applyParams);
+  btnDraw.addEventListener("click", () => startDraw(false));
+  elMode.addEventListener("change", () => applyParams());
+  elEnumOrder.addEventListener("change", () => {
+    stopAutoEnum(true);
+    prepareEnumPlan();
+    updateAutoEnumAvailability();
+
+    const name = (elEnumOrder.value === "random") ? "随机顺序" : (elEnumOrder.value==="comp" ? "按成分分组" : "字典序");
+    if (state.mode === "with" && state.noRepeatWithReplacement){
+      setMsg(`已切换枚举顺序：${name}。点击“自动枚举”从头开始。`);
+    } else {
+      setMsg(`枚举顺序已设为：${name}（需放回+放回不重复才生效）。`);
+    }
+  });
+
+  // Clear records
+  btnClearRecords.addEventListener("click", () => {
+    clearRecords();
+    setMsg("记录已清空。");
+  });
+
+  // Auto enum availability / noRepeat toggle availability
+  function canAutoEnum(){
+    if (!(state.mode === "with" && state.noRepeatWithReplacement)) return false;
+    if (!Number.isFinite(state.enumTotal) || state.enumTotal <= 0) return false;
+    if (state.enumTotal > CFG.enumLimit) return false;
+    return true;
+  }
+
+  function updateAutoEnumAvailability(){
+    const ok = canAutoEnum();
+    btnAutoEnum.disabled = !ok;
+    btnAutoEnum.classList.toggle("enum", !state.autoEnumRunning);
+    btnAutoEnum.classList.toggle("enumStop", state.autoEnumRunning);
+    btnAutoEnum.textContent = state.autoEnumRunning ? "停止自动枚举" : "自动枚举";
+  }
+
+  // Init
+  function init(){
+    initTheme();
+    resize();
+    updateToggleBtn();
+
+    // Default: noRepeat off
+    setNoRepeatEnabled(false);
+
+    // Default parameters
+    applyParams();
+    updateAutoEnumAvailability();
+  }
+
+  function initTheme(){
+    const KEY = "edu-theme";
+    const saved = localStorage.getItem(KEY);
+    const initial = saved === "dark" || saved === "light" ? saved : "light";
+    function applyTheme(mode){
+      document.body.setAttribute("data-theme", mode);
+      localStorage.setItem(KEY, mode);
+      themeToggle.textContent = mode === "dark" ? "切换浅色" : "切换深色";
+    }
+    applyTheme(initial);
+    themeToggle.addEventListener("click", () => {
+      const cur = document.body.getAttribute("data-theme") || "light";
+      applyTheme(cur === "dark" ? "light" : "dark");
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>超几何分布与二项分布</title>
+  <style>
+    :root {
+      --ink: #16202d;
+      --sub: #546170;
+      --line: rgba(22, 32, 45, 0.12);
+      --card: rgba(255, 251, 245, 0.92);
+      --card-strong: #fffdfa;
+      --accent: #b25733;
+      --blue: #245e9d;
+      --shadow: 0 24px 60px rgba(58, 43, 26, 0.12);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(210, 171, 92, 0.18), transparent 24%),
+        radial-gradient(circle at left top, rgba(36, 94, 157, 0.12), transparent 20%),
+        linear-gradient(180deg, #f8f2e8 0%, #f4ecdf 100%);
+    }
+
+    .shell {
+      width: min(1680px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 249, 240, 0.76);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(58, 43, 26, 0.08);
+    }
+
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 0 2px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 48px);
+      letter-spacing: 0.08em;
+    }
+
+    .controls-grid,
+    .formula-grid,
+    .content-grid,
+    .summary-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .settings-panel {
+      display: flex;
+      align-items: end;
+      gap: 14px;
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+
+    .controls-grid {
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) 128px;
+      align-items: end;
+      gap: 12px;
+    }
+
+    .ratio-grid {
+      grid-template-columns: 152px 152px 112px minmax(260px, 1fr);
+    }
+
+    .draw-grid {
+      flex: 0 0 220px;
+      grid-template-columns: minmax(190px, 1fr);
+      margin-top: 0;
+    }
+
+    .control-mode {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .mode-tabs {
+      display: inline-flex;
+      gap: 6px;
+      flex: 0 0 auto;
+      margin-bottom: 0;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 253, 250, 0.7);
+    }
+
+    .mode-tab {
+      min-width: 88px;
+      height: 38px;
+      padding: 0 12px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--sub);
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .mode-tab.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(178, 87, 51, 0.22);
+    }
+
+    .control-mode[hidden] {
+      display: none;
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .field .value {
+      min-width: 40px;
+      text-align: right;
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    .inline-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .inline-field label {
+      flex: 0 0 auto;
+      margin-bottom: 0;
+      white-space: nowrap;
+    }
+
+    .inline-field input[type="number"] {
+      min-width: 66px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 40px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fffdfa;
+      color: var(--ink);
+      font: 800 17px "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    input[type="number"]:focus {
+      outline: 3px solid rgba(178, 87, 51, 0.16);
+      border-color: rgba(178, 87, 51, 0.5);
+    }
+
+    .computed-counts {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 56px;
+    }
+
+    .count-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+      min-width: 118px;
+      height: 56px;
+      padding: 0 14px;
+      border: 2px solid rgba(178, 87, 51, 0.34);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff9f1 0%, #ffe9d3 100%);
+      color: var(--ink);
+      box-shadow: 0 10px 20px rgba(178, 87, 51, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+    }
+
+    .count-box span {
+      color: var(--sub);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .count-box strong {
+      color: var(--accent);
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .scale-btn {
+      height: 40px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #b25733 0%, #d48251 100%);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(178, 87, 51, 0.24);
+    }
+
+    .formula-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .formula-card,
+    .table-card,
+    .chart-card,
+    .summary-card {
+      padding: 18px 20px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+    }
+
+    .formula-title,
+    .table-card h2,
+    .chart-card h2,
+    .summary-card h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .formula.hyper {
+      background: #fbf1ea;
+    }
+
+    .formula.binom {
+      background: #edf4fb;
+    }
+
+    .formula {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      overflow-x: auto;
+    }
+
+    math {
+      font-size: 26px;
+    }
+
+    .content-grid {
+      grid-template-columns: minmax(480px, 0.9fr) minmax(620px, 1.1fr);
+      align-items: stretch;
+    }
+
+    .table-card,
+    .chart-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .table-wrap {
+      margin-top: 14px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 14px 12px;
+      background: #f8f1e8;
+      border-bottom: 1px solid var(--line);
+      font-size: 20px;
+      font-weight: 900;
+      color: #111827;
+      text-align: center;
+    }
+
+    tbody td {
+      padding: 13px 10px;
+      border-top: 1px solid rgba(22, 32, 45, 0.08);
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      color: #18212e;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: rgba(248, 241, 232, 0.52);
+    }
+
+    tbody tr.max-gap-row td {
+      background: #fff1e6;
+      color: #111827;
+      box-shadow: inset 0 1px 0 rgba(178, 87, 51, 0.22), inset 0 -1px 0 rgba(178, 87, 51, 0.22);
+    }
+
+    .gap-cell {
+      min-width: 150px;
+    }
+
+    .gap-value {
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .chart-shell {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fffdfa;
+      flex: 1;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    .summary-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .summary-card {
+      text-align: center;
+      padding-top: 16px;
+      padding-bottom: 16px;
+    }
+
+    .summary-value {
+      margin-top: 10px;
+      font-size: clamp(34px, 4vw, 44px);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    @media (max-width: 1200px) {
+      .settings-panel {
+        display: grid;
+        align-items: stretch;
+      }
+
+      .controls-grid,
+      .ratio-grid,
+      .formula-grid,
+      .content-grid,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      canvas {
+        height: 380px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100vw - 16px, 1680px);
+        padding-top: 10px;
+      }
+
+      .topbar,
+      .panel {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero h1,
+      .formula-title,
+      .table-card h2,
+      .chart-card h2,
+      .summary-card h2 {
+        font-size: 22px;
+      }
+
+      thead th,
+      tbody td,
+      .legend {
+        font-size: 16px;
+      }
+
+      math {
+        font-size: 22px;
+      }
+
+      canvas {
+        height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <a href="index.html">返回主页</a>
+    </div>
+
+    <section class="hero">
+      <h1>超几何分布与二项分布</h1>
+    </section>
+
+    <section class="panel settings-panel">
+      <div class="mode-tabs" role="tablist" aria-label="设置方式">
+        <button class="mode-tab active" id="directModeBtn" type="button" aria-selected="true">数量设置</button>
+        <button class="mode-tab" id="ratioModeBtn" type="button" aria-selected="false">比例设置</button>
+      </div>
+
+      <div class="control-mode" id="directControls">
+        <div class="controls-grid">
+          <div class="field">
+            <label for="whiteInput">白球数 <span class="value" id="whiteValue">6</span></label>
+            <input id="whiteInput" type="range" min="0" max="2000" step="1" value="6" />
+          </div>
+          <div class="field">
+            <label for="blackInput">黑球数 <span class="value" id="blackValue">4</span></label>
+            <input id="blackInput" type="range" min="0" max="2000" step="1" value="4" />
+          </div>
+          <button class="scale-btn" id="scaleBtn" type="button">规模 ×2</button>
+        </div>
+      </div>
+
+      <div class="control-mode" id="ratioControls" hidden>
+        <div class="controls-grid ratio-grid">
+          <div class="field inline-field">
+            <label for="whiteRatioInput">白球比例</label>
+            <input id="whiteRatioInput" type="number" min="0" max="2000" step="1" value="3" />
+          </div>
+          <div class="field inline-field">
+            <label for="blackRatioInput">黑球比例</label>
+            <input id="blackRatioInput" type="number" min="0" max="2000" step="1" value="2" />
+          </div>
+          <div class="field inline-field">
+            <label for="multiplierInput">倍率</label>
+            <input id="multiplierInput" type="number" min="1" max="666" step="1" value="2" />
+          </div>
+          <div class="field">
+            <div class="computed-counts">
+              <div class="count-box"><span>白球</span><strong id="ratioWhiteCount">6</strong></div>
+              <div class="count-box"><span>黑球</span><strong id="ratioBlackCount">4</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-grid draw-grid">
+        <div class="field">
+          <label for="drawInput">抽取个数 <span class="value" id="drawValue">5</span></label>
+          <input id="drawInput" type="range" min="1" max="30" step="1" value="5" />
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="content-grid">
+        <article class="table-card">
+          <div class="table-title-row">
+            <h2>概率对照表</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>白球个数 k</th>
+                  <th>超几何分布</th>
+                  <th>二项分布</th>
+                  <th>区别 |Δ|</th>
+                </tr>
+              </thead>
+              <tbody id="probabilityBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <h2>柱状图</h2>
+          <div class="chart-shell">
+            <canvas id="chartCanvas" width="1120" height="460"></canvas>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-swatch" style="background:#b25733;"></span>超几何分布</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#245e9d;"></span>二项分布</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="formula-grid">
+        <article class="formula-card">
+          <h2 class="formula-title">不放回抽样 · 超几何分布 · 概率公式</h2>
+          <div class="formula hyper" id="hyperFormula"></div>
+        </article>
+        <article class="formula-card">
+          <h2 class="formula-title">放回抽样 · 二项分布 · 概率公式</h2>
+          <div class="formula binom" id="binomFormula"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="summary-grid">
+        <article class="summary-card">
+          <h2>当前模型</h2>
+          <div class="summary-value" id="whiteRatioValue"></div>
+        </article>
+        <article class="summary-card">
+          <h2>期望白球数</h2>
+          <div class="summary-value" id="expectationValue"></div>
+        </article>
+        <article class="summary-card">
+          <h2>分布接近程度</h2>
+          <div class="summary-value" id="differenceValue"></div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const MAX_BALL_COUNT = 2000;
+    const defaults = { white: 6, black: 4, draw: 5, whiteRatio: 3, blackRatio: 2, multiplier: 2 };
+    let activeMode = "direct";
+
+    const directModeBtn = document.getElementById("directModeBtn");
+    const ratioModeBtn = document.getElementById("ratioModeBtn");
+    const directControls = document.getElementById("directControls");
+    const ratioControls = document.getElementById("ratioControls");
+    const whiteInput = document.getElementById("whiteInput");
+    const blackInput = document.getElementById("blackInput");
+    const whiteRatioInput = document.getElementById("whiteRatioInput");
+    const blackRatioInput = document.getElementById("blackRatioInput");
+    const multiplierInput = document.getElementById("multiplierInput");
+    const drawInput = document.getElementById("drawInput");
+    const scaleBtn = document.getElementById("scaleBtn");
+
+    const whiteValue = document.getElementById("whiteValue");
+    const blackValue = document.getElementById("blackValue");
+    const ratioWhiteCount = document.getElementById("ratioWhiteCount");
+    const ratioBlackCount = document.getElementById("ratioBlackCount");
+    const drawValue = document.getElementById("drawValue");
+    const whiteRatioValue = document.getElementById("whiteRatioValue");
+    const expectationValue = document.getElementById("expectationValue");
+    const differenceValue = document.getElementById("differenceValue");
+    const hyperFormula = document.getElementById("hyperFormula");
+    const binomFormula = document.getElementById("binomFormula");
+    const probabilityBody = document.getElementById("probabilityBody");
+    const canvas = document.getElementById("chartCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function gcd(a, b) {
+      let x = Math.abs(a);
+      let y = Math.abs(b);
+      while (y !== 0) {
+        const temp = x % y;
+        x = y;
+        y = temp;
+      }
+      return x || 1;
+    }
+
+    function combination(n, r) {
+      if (!Number.isFinite(n) || !Number.isFinite(r)) return 0;
+      if (r < 0 || r > n) return 0;
+      if (r === 0 || r === n) return 1;
+      const m = Math.min(r, n - r);
+      let result = 1;
+      for (let i = 1; i <= m; i += 1) {
+        result = (result * (n - m + i)) / i;
+      }
+      return result;
+    }
+
+    function hypergeometricProbability(white, black, draw, k) {
+      const total = white + black;
+      if (draw > total) return 0;
+      return (combination(white, k) * combination(black, draw - k)) / combination(total, draw);
+    }
+
+    function binomialProbability(draw, p, k) {
+      return combination(draw, k) * (p ** k) * ((1 - p) ** (draw - k));
+    }
+
+    function formatProbability(value) {
+      if (value === 0) return "0";
+      if (value >= 0.001) return value.toFixed(4);
+      return value.toExponential(2);
+    }
+
+    function formatTwoSignificantDecimal(value) {
+      if (value === 0) return "0";
+      const magnitude = Math.floor(Math.log10(Math.abs(value)));
+      const decimals = Math.min(100, Math.max(0, 1 - magnitude));
+      const rounded = value.toFixed(decimals);
+      return Number(rounded) === 0 ? value.toFixed(Math.min(100, decimals + 2)) : rounded;
+    }
+
+    function formatRatio(numerator, denominator) {
+      if (denominator === 0) return "0";
+      const divisor = gcd(numerator, denominator);
+      return `${numerator / divisor}/${denominator / divisor}`;
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const numericValue = Math.round(Number(value));
+      if (!Number.isFinite(numericValue)) return fallback;
+      return Math.min(max, Math.max(min, numericValue));
+    }
+
+    function updateSliderLabels(white, black, draw) {
+      whiteValue.textContent = String(white);
+      blackValue.textContent = String(black);
+      drawValue.textContent = String(draw);
+    }
+
+    function readDirectCounts() {
+      let white = clampNumber(whiteInput.value, 0, MAX_BALL_COUNT, defaults.white);
+      let black = clampNumber(blackInput.value, 0, MAX_BALL_COUNT, defaults.black);
+
+      if (white + black === 0) {
+        white = defaults.white;
+        black = defaults.black;
+      }
+
+      whiteInput.value = String(white);
+      blackInput.value = String(black);
+      return { white, black };
+    }
+
+    function readRatioCounts() {
+      let whiteRatio = clampNumber(whiteRatioInput.value, 0, MAX_BALL_COUNT, defaults.whiteRatio);
+      let blackRatio = clampNumber(blackRatioInput.value, 0, MAX_BALL_COUNT, defaults.blackRatio);
+
+      if (whiteRatio + blackRatio === 0) {
+        whiteRatio = defaults.whiteRatio;
+        blackRatio = defaults.blackRatio;
+      }
+
+      const largestRatio = Math.max(whiteRatio, blackRatio, 1);
+      const maxMultiplier = Math.max(1, Math.floor(MAX_BALL_COUNT / largestRatio));
+      const multiplier = clampNumber(multiplierInput.value, 1, maxMultiplier, defaults.multiplier);
+      const white = whiteRatio * multiplier;
+      const black = blackRatio * multiplier;
+
+      whiteRatioInput.value = String(whiteRatio);
+      blackRatioInput.value = String(blackRatio);
+      multiplierInput.max = String(maxMultiplier);
+      multiplierInput.value = String(multiplier);
+      whiteInput.value = String(white);
+      blackInput.value = String(black);
+      ratioWhiteCount.textContent = String(white);
+      ratioBlackCount.textContent = String(black);
+
+      return { white, black };
+    }
+
+    function syncRatioFromDirect() {
+      const { white, black } = readDirectCounts();
+      const divisor = gcd(white, black);
+      const whiteRatio = white / divisor;
+      const blackRatio = black / divisor;
+      const largestRatio = Math.max(whiteRatio, blackRatio, 1);
+      const maxMultiplier = Math.max(1, Math.floor(MAX_BALL_COUNT / largestRatio));
+      const multiplier = Math.min(divisor, maxMultiplier);
+
+      whiteRatioInput.value = String(whiteRatio);
+      blackRatioInput.value = String(blackRatio);
+      multiplierInput.max = String(maxMultiplier);
+      multiplierInput.value = String(multiplier);
+      ratioWhiteCount.textContent = String(whiteRatio * multiplier);
+      ratioBlackCount.textContent = String(blackRatio * multiplier);
+    }
+
+    function setMode(mode) {
+      activeMode = mode;
+      directControls.hidden = mode !== "direct";
+      ratioControls.hidden = mode !== "ratio";
+      directModeBtn.classList.toggle("active", mode === "direct");
+      ratioModeBtn.classList.toggle("active", mode === "ratio");
+      directModeBtn.setAttribute("aria-selected", mode === "direct" ? "true" : "false");
+      ratioModeBtn.setAttribute("aria-selected", mode === "ratio" ? "true" : "false");
+
+      if (mode === "ratio") {
+        syncRatioFromDirect();
+      }
+
+      updateView();
+    }
+
+    function clampInputs() {
+      const { white, black } = activeMode === "ratio" ? readRatioCounts() : readDirectCounts();
+      let draw = clampNumber(drawInput.value, 1, 30, defaults.draw);
+      const total = white + black;
+      drawInput.max = String(Math.max(1, Math.min(30, total)));
+      if (draw > total) {
+        draw = total;
+      }
+
+      drawInput.value = String(draw);
+      updateSliderLabels(white, black, draw);
+      return { white, black, draw };
+    }
+
+    function buildRows(white, black, draw) {
+      const total = white + black;
+      const p = total === 0 ? 0 : white / total;
+      const rows = [];
+      let maxGap = 0;
+
+      for (let k = 0; k <= draw; k += 1) {
+        const hyper = hypergeometricProbability(white, black, draw, k);
+        const binom = binomialProbability(draw, p, k);
+        const gap = Math.abs(hyper - binom);
+        if (gap > maxGap) maxGap = gap;
+        rows.push({ k, hyper, binom, gap });
+      }
+
+      return { rows, maxGap, p };
+    }
+
+    function formulaCombination(top, bottom) {
+      return `
+        <msubsup>
+          <mi>C</mi>
+          <mrow>${top}</mrow>
+          <mrow>${bottom}</mrow>
+        </msubsup>
+      `;
+    }
+
+    function renderFirstValues(rows, key) {
+      return rows.slice(0, 3).map((row) => formatProbability(row[key])).join("，");
+    }
+
+    function formatCloseness(maxGap) {
+      return `${(Math.max(0, 1 - maxGap) * 100).toFixed(1)}%`;
+    }
+
+    function renderFormulas(white, black, draw, p, rows) {
+      const total = white + black;
+      const blackRatio = total === 0 ? 0 : black / total;
+
+      hyperFormula.innerHTML = `
+        <math display="block">
+          <mrow>
+            <mi>P</mi><mo>(</mo><mi>X</mi><mo>=</mo><mi>k</mi><mo>)</mo><mo>=</mo>
+            <mfrac>
+              <mrow>
+                ${formulaCombination("<mi>W</mi>", "<mi>k</mi>")}
+                ${formulaCombination("<mi>B</mi>", "<mrow><mi>n</mi><mo>-</mo><mi>k</mi></mrow>")}
+              </mrow>
+              <mrow>
+                ${formulaCombination("<mrow><mi>W</mi><mo>+</mo><mi>B</mi></mrow>", "<mi>n</mi>")}
+              </mrow>
+            </mfrac>
+            <mo>=</mo>
+            <mfrac>
+              <mrow>
+                ${formulaCombination(`<mn>${white}</mn>`, "<mi>k</mi>")}
+                ${formulaCombination(`<mn>${black}</mn>`, `<mrow><mn>${draw}</mn><mo>-</mo><mi>k</mi></mrow>`)}
+              </mrow>
+              <mrow>${formulaCombination(`<mn>${total}</mn>`, `<mn>${draw}</mn>`)}</mrow>
+            </mfrac>
+            <mo>=</mo>
+            <mtext>${renderFirstValues(rows, "hyper")}</mtext>
+          </mrow>
+        </math>
+      `;
+
+      binomFormula.innerHTML = `
+        <math display="block">
+          <mrow>
+            <mi>P</mi><mo>(</mo><mi>Y</mi><mo>=</mo><mi>k</mi><mo>)</mo><mo>=</mo>
+            ${formulaCombination("<mi>n</mi>", "<mi>k</mi>")}
+            <msup>
+              <mrow>
+                <mo>(</mo>
+                <mfrac><mi>W</mi><mrow><mi>W</mi><mo>+</mo><mi>B</mi></mrow></mfrac>
+                <mo>)</mo>
+              </mrow>
+              <mi>k</mi>
+            </msup>
+            <msup>
+              <mrow>
+                <mo>(</mo>
+                <mfrac><mi>B</mi><mrow><mi>W</mi><mo>+</mo><mi>B</mi></mrow></mfrac>
+                <mo>)</mo>
+              </mrow>
+              <mrow><mi>n</mi><mo>-</mo><mi>k</mi></mrow>
+            </msup>
+            <mo>=</mo>
+            ${formulaCombination(`<mn>${draw}</mn>`, "<mi>k</mi>")}
+            <msup>
+              <mrow><mo>(</mo><mn>${p.toFixed(4)}</mn><mo>)</mo></mrow>
+              <mi>k</mi>
+            </msup>
+            <msup>
+              <mrow><mo>(</mo><mn>${blackRatio.toFixed(4)}</mn><mo>)</mo></mrow>
+              <mrow><mn>${draw}</mn><mo>-</mo><mi>k</mi></mrow>
+            </msup>
+            <mo>=</mo>
+            <mtext>${renderFirstValues(rows, "binom")}</mtext>
+          </mrow>
+        </math>
+      `;
+    }
+
+    function renderSummary(white, black, draw, p, maxGap) {
+      const total = white + black;
+      whiteRatioValue.textContent = `${white}:${black} | ${formatRatio(white, total)}`;
+      expectationValue.textContent = (draw * p).toFixed(3);
+      differenceValue.textContent = formatCloseness(maxGap);
+    }
+
+    function renderTable(rows, maxGap) {
+      probabilityBody.innerHTML = rows.map((row) => `
+        <tr class="${maxGap > 0 && row.gap === maxGap ? "max-gap-row" : ""}">
+          <td>${row.k}</td>
+          <td>${formatProbability(row.hyper)}</td>
+          <td>${formatProbability(row.binom)}</td>
+          <td class="gap-cell">
+            <div class="gap-value">${formatTwoSignificantDecimal(row.gap)}</div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function drawRoundedBar(x, y, width, height, color) {
+      const radius = Math.min(10, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x, y + height);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+
+    function fitCanvasToDisplay() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = Math.max(320, Math.round(rect.width));
+      const displayHeight = Math.max(300, Math.round(rect.height));
+      const backingWidth = Math.round(displayWidth * dpr);
+      const backingHeight = Math.round(displayHeight * dpr);
+
+      if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
+        canvas.width = backingWidth;
+        canvas.height = backingHeight;
+      }
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { width: displayWidth, height: displayHeight };
+    }
+
+    function renderChart(rows) {
+      const { width, height } = fitCanvasToDisplay();
+      const left = Math.min(120, Math.max(92, width * 0.1));
+      const right = 28;
+      const top = 28;
+      const bottom = 98;
+      const plotWidth = width - left - right;
+      const plotHeight = height - top - bottom;
+      const maxValue = Math.max(...rows.flatMap((row) => [row.hyper, row.binom]), 0.01);
+      const groupWidth = plotWidth / rows.length;
+      const barWidth = Math.min(34, groupWidth * 0.34);
+      const xTickStep = Math.max(1, Math.ceil(28 / groupWidth));
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#fffdfa";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(22, 32, 45, 0.14)";
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i <= 4; i += 1) {
+        const y = top + (plotHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+
+        const labelValue = ((maxValue * (4 - i)) / 4).toFixed(2);
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 20px 'Source Han Sans SC', sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(labelValue, left - 12, y + 7);
+      }
+
+      ctx.strokeStyle = "#111827";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, height - bottom);
+      ctx.lineTo(width - right, height - bottom);
+      ctx.stroke();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "800 22px 'Source Han Sans SC', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("白球个数 k", left + plotWidth / 2, height - 28);
+
+      ctx.save();
+      ctx.translate(28, top + plotHeight / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("概率", 0, 0);
+      ctx.restore();
+
+      rows.forEach((row, index) => {
+        const center = left + groupWidth * index + groupWidth / 2;
+        const hyperHeight = (row.hyper / maxValue) * plotHeight;
+        const binomHeight = (row.binom / maxValue) * plotHeight;
+        const hyperX = center - barWidth - 6;
+        const binomX = center + 6;
+
+        drawRoundedBar(hyperX, top + plotHeight - hyperHeight, barWidth, hyperHeight, "#b25733");
+        drawRoundedBar(binomX, top + plotHeight - binomHeight, barWidth, binomHeight, "#245e9d");
+
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 20px 'Source Han Sans SC', sans-serif";
+        ctx.textAlign = "center";
+        if (row.k % xTickStep === 0 || index === rows.length - 1) {
+          ctx.fillText(String(row.k), center, height - bottom + 34);
+        }
+      });
+    }
+
+    function updateView() {
+      const { white, black, draw } = clampInputs();
+      const { rows, maxGap, p } = buildRows(white, black, draw);
+      renderFormulas(white, black, draw, p, rows);
+      renderSummary(white, black, draw, p, maxGap);
+      renderTable(rows, maxGap);
+      renderChart(rows);
+    }
+
+    scaleBtn.addEventListener("click", () => {
+      whiteInput.value = String(Math.min(MAX_BALL_COUNT, Math.round(Number(whiteInput.value) * 2)));
+      blackInput.value = String(Math.min(MAX_BALL_COUNT, Math.round(Number(blackInput.value) * 2)));
+      updateView();
+    });
+
+    directModeBtn.addEventListener("click", () => setMode("direct"));
+    ratioModeBtn.addEventListener("click", () => setMode("ratio"));
+
+    [whiteInput, blackInput, drawInput].forEach((input) => {
+      input.addEventListener("input", updateView);
+      input.addEventListener("change", updateView);
+    });
+
+    [whiteRatioInput, blackRatioInput, multiplierInput].forEach((input) => {
+      input.addEventListener("change", updateView);
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          input.blur();
+          updateView();
+        }
+      });
+    });
+
+    updateView();
+    window.addEventListener("resize", updateView);
+  </script>
+</body>
+</html>

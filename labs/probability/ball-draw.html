@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>抽球实验室 · MathRender</title>
+  
+
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/ball-draw.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="ball-draw">
+<div class="home-nav-bar">
+  <a class="home-nav-link" href="../../index.html">← 返回主页 Home</a>
+  <div class="home-nav-meta">高中数学教学实验室 · 开心课堂荣誉出品 MathRender.com · © 2026</div>
+  <button id="themeToggle" class="theme-toggle" type="button">切换深色</button>
+</div>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <div class="title">BallLab 抽球实验室</div>
+      <div class="subtitle">放回与不放回抽样 · 计数与概率</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="stageRow">
+      <div class="stage">
+        <canvas id="cv"></canvas>
+      </div>
+
+      <aside class="sidebar">
+        <div class="sideHead">
+          <button id="draw" class="headerDraw" type="button">抽取一次</button>
+          <div class="sideActions">
+            <button class="miniBtn on" id="toggleBagBalls">袋内球：开</button>
+            <button class="miniBtn" id="toggleNoRepeat">放回不重复：关</button>
+            <button class="miniBtn" id="clearRecords">清空</button>
+          </div>
+        </div>
+
+        <div class="records" id="records">
+          <div class="empty" id="emptyTip">
+            暂无记录。点击“抽取一次”后会按行记录（可滚动）。<br/>
+            想要“自动枚举”，请切换为“放回抽样”并开启“放回不重复”。
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="controls">
+      <div class="form">
+        <div class="field">
+          <label>袋子数量 N</label>
+          <input id="numBags" type="number" min="1" max="10" value="3" />
+        </div>
+        <div class="field">
+          <label>每袋球数 M</label>
+          <input id="ballsPerBag" type="number" min="1" max="12" value="2" />
+        </div>
+        <div class="field" style="grid-column: span 2;">
+          <label>球颜色列表（逗号分隔；每袋相同）</label>
+          <input id="colors" type="text" value="#ef4444,#f59e0b,#3b82f6" />
+        </div>
+
+        <div class="field">
+          <label>抽样方式</label>
+          <select id="mode">
+            <option value="with" selected>放回抽样</option>
+            <option value="without">不放回抽样</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>随机种子（可选）</label>
+          <input id="seed" type="number" placeholder="留空=每次不同" />
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label>枚举顺序（放回不重复）</label>
+          <select id="enumOrder">
+            <option value="lex" selected>字典序（规律枚举）</option>
+            <option value="comp">按成分分组（相同成分连在一起）</option>
+            <option value="random">随机顺序（不重复）</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>自动枚举速度</label>
+          <select id="enumSpeed">
+            <option value="fast">快</option>
+            <option value="mid" selected>中</option>
+            <option value="slow">慢</option>
+          </select>
+        </div>
+
+        <div class="msg" id="msg">提示：开启“放回不重复”后可使用“自动枚举”。</div>
+      </div>
+
+      <div class="btns">
+        <button id="apply" class="big ghost">应用参数 / 重置袋子</button>
+        <button id="autoEnum" class="big enum" disabled>自动枚举</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/ball-draw.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

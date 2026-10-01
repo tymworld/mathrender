@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>传球概率模型 · MathRender</title>
+  
+
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/passing.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="passing">
+<div class="home-nav-bar">
+  <a class="home-nav-link" href="../../index.html">← 返回主页 Home</a>
+  <div class="home-nav-meta">高中数学教学实验室 · 开心课堂荣誉出品 MathRender.com · © 2026</div>
+  <button id="themeToggle" class="theme-toggle" type="button">切换深色</button>
+</div>
+<div class="app">
+  <section class="hero">
+    <div>
+      <h1>传球概率教学小程序</h1>
+    </div>
+  </section>
+
+  <section class="layout">
+    <aside class="card">
+      <div class="card-head"><h2>设置与操作</h2><span class="chip">课堂交互</span></div>
+      <div class="card-body">
+        <div class="panel">
+          <label>传球次数：<b id="passCountLabel">4</b>
+            <input id="passCount" type="range" min="1" max="10" value="4" />
+          </label>
+          <div class="row">
+            <label>动画速度：<b id="animSpeedLabel">中</b>
+              <input id="animSpeed" type="range" min="1" max="5" value="3" />
+            </label>
+            <label>演示节奏：<b id="demoSpeedLabel">中</b>
+              <input id="demoSpeed" type="range" min="1" max="5" value="3" />
+            </label>
+          </div>
+          <div class="row">
+            <label>显示答案
+              <select id="showAnswer">
+                <option value="hide">先隐藏</option>
+                <option value="show">直接显示</option>
+              </select>
+            </label>
+            <label>样本空间展示
+              <select id="sampleMode">
+                <option value="hide" selected>隐藏</option>
+                <option value="cards">路径卡片</option>
+                <option value="summary">只看汇总</option>
+              </select>
+            </label>
+          </div>
+          <label>递推关系展示
+            <select id="formulaMode">
+              <option value="hide" selected>隐藏</option>
+              <option value="show">显示</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="panel">
+          <div class="btn-row">
+            <button class="primary" id="resetManualBtn">重置手动传球</button>
+            <button id="undoBtn">撤销一步</button>
+          </div>
+          <label>自动演示次数
+            <select id="autoDemoCount">
+              <option value="1">1 次</option>
+              <option value="5">5 次</option>
+              <option value="10">10 次</option>
+              <option value="20">20 次</option>
+            </select>
+          </label>
+          <div class="btn-row">
+            <button class="secondary" id="randomDemoBtn">开始自动演示</button>
+            <button class="ghost" id="optimalExplainBtn">显示递推思路</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>随机实验</h3>
+          <div class="btn-row">
+            <button class="good" data-trials="10">做 10 次</button>
+            <button class="good" data-trials="100">做 100 次</button>
+          </div>
+          <div class="btn-row">
+            <button class="good" data-trials="1000">做 1000 次</button>
+            <button class="warn" id="clearExpBtn">清空实验</button>
+          </div>
+          <div class="footer-note">通过大量重复试验，观察频率如何逐渐靠近理论概率。</div>
+        </div>
+
+        <div class="formula">
+          <b>本题核心：</b><br/>
+          设第 n 次传球后球在甲手中的概率为 <b>p<sub>n</sub></b>。<br/>
+          则有 <b>p<sub>n</sub> = (1 - p<sub>n-1</sub>) / 2</b>，且 <b>p<sub>1</sub> = 0</b>。
+        </div>
+      </div>
+    </aside>
+
+    <main class="card">
+      <div class="card-head"><h2>学生操作区</h2><span class="chip">甲开始传球</span></div>
+      <div class="card-body">
+        <div class="stats">
+          <div class="stat"><div class="k">目标次数</div><div class="v" id="targetStat">4</div></div>
+          <div class="stat"><div class="k">当前已传</div><div class="v" id="stepStat">0</div></div>
+          <div class="stat"><div class="k">当前持球者</div><div class="v" id="holderStat">甲</div></div>
+          <div class="stat"><div class="k">实验频率</div><div class="v" id="freqStat">—</div></div>
+        </div>
+
+        <div class="banner" id="banner">
+          <span>👋</span>
+          <div><b>开始吧。</b> 第一次由甲开始持球。请让学生点击下一位接球者，完成 4 次传球。</div>
+        </div>
+
+        <div class="arena" id="arena">
+          <div class="arena-inner" id="arenaInner">
+            <div class="court-lines" aria-hidden="true"></div>
+            <div class="pass-track" id="passTrack"></div>
+            <div class="player zh" data-player="甲" id="playerA">
+              <div class="player-figure" aria-hidden="true">
+                <svg viewBox="0 0 82 96">
+                  <ellipse cx="41" cy="91" rx="29" ry="4" fill="rgba(23,36,58,.12)"/>
+                  <path d="M29 59L20 88M52 59L62 88" fill="none" stroke="#27405d" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M29 61L22 88M52 61L60 88" fill="none" stroke="#f6fbff" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M27 88H14M59 88H70" fill="none" stroke="#17324f" stroke-width="6" stroke-linecap="round"/>
+                  <path d="M28 33L13 54M54 33L69 54" fill="none" stroke="#d99b73" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M23 32Q41 24 59 32L55 65Q41 72 27 65Z" fill="var(--jersey)" stroke="var(--jersey-dark)" stroke-width="2"/>
+                  <path d="M32 30L41 40L50 30" fill="#f8fbff" opacity=".94"/>
+                  <text x="41" y="57" text-anchor="middle" fill="#fff" font-size="20" font-weight="900" font-family="Arial">A</text>
+                  <circle cx="41" cy="19" r="14" fill="#e8ae84"/>
+                  <path d="M27 18Q28 3 42 4Q56 5 56 20Q48 14 37 13Q32 19 27 18Z" fill="#25354b"/>
+                  <circle cx="36" cy="20" r="1.2" fill="#25354b"/>
+                  <circle cx="47" cy="20" r="1.2" fill="#25354b"/>
+                  <path d="M37 26Q41 29 46 25" fill="none" stroke="#a9574e" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="player-name-row"><div class="player-name">甲</div><div class="player-role">甲队员</div></div>
+              <div class="player-sub">初始持球者</div>
+              <div class="player-status" id="statusA">当前持球</div>
+              <span class="ball-anchor" aria-hidden="true"></span>
+            </div>
+            <div class="player yi" data-player="乙" id="playerB">
+              <div class="player-figure" aria-hidden="true">
+                <svg viewBox="0 0 82 96">
+                  <ellipse cx="41" cy="91" rx="29" ry="4" fill="rgba(23,36,58,.12)"/>
+                  <path d="M29 59L20 88M52 59L62 88" fill="none" stroke="#27405d" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M29 61L22 88M52 61L60 88" fill="none" stroke="#f6fbff" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M27 88H14M59 88H70" fill="none" stroke="#17324f" stroke-width="6" stroke-linecap="round"/>
+                  <path d="M28 33L13 54M54 33L69 54" fill="none" stroke="#e2a57d" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M23 32Q41 24 59 32L55 65Q41 72 27 65Z" fill="var(--jersey)" stroke="var(--jersey-dark)" stroke-width="2"/>
+                  <path d="M32 30L41 40L50 30" fill="#f8fbff" opacity=".94"/>
+                  <text x="41" y="57" text-anchor="middle" fill="#fff" font-size="20" font-weight="900" font-family="Arial">B</text>
+                  <circle cx="41" cy="19" r="14" fill="#edb58c"/>
+                  <path d="M27 18Q28 5 40 4Q54 4 56 18L51 14L45 16L38 12L32 17Z" fill="#384052"/>
+                  <circle cx="36" cy="20" r="1.2" fill="#25354b"/>
+                  <circle cx="47" cy="20" r="1.2" fill="#25354b"/>
+                  <path d="M37 26Q41 29 46 25" fill="none" stroke="#a9574e" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="player-name-row"><div class="player-name">乙</div><div class="player-role">乙队员</div></div>
+              <div class="player-sub">可与甲、丙互传</div>
+              <div class="player-status" id="statusB">等待接球</div>
+              <span class="ball-anchor" aria-hidden="true"></span>
+            </div>
+            <div class="player bing" data-player="丙" id="playerC">
+              <div class="player-figure" aria-hidden="true">
+                <svg viewBox="0 0 82 96">
+                  <ellipse cx="41" cy="91" rx="29" ry="4" fill="rgba(23,36,58,.12)"/>
+                  <path d="M29 59L20 88M52 59L62 88" fill="none" stroke="#27405d" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M29 61L22 88M52 61L60 88" fill="none" stroke="#f6fbff" stroke-width="4.5" stroke-linecap="round"/>
+                  <path d="M27 88H14M59 88H70" fill="none" stroke="#17324f" stroke-width="6" stroke-linecap="round"/>
+                  <path d="M28 33L13 54M54 33L69 54" fill="none" stroke="#d89a73" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M23 32Q41 24 59 32L55 65Q41 72 27 65Z" fill="var(--jersey)" stroke="var(--jersey-dark)" stroke-width="2"/>
+                  <path d="M32 30L41 40L50 30" fill="#f8fbff" opacity=".94"/>
+                  <text x="41" y="57" text-anchor="middle" fill="#fff" font-size="20" font-weight="900" font-family="Arial">C</text>
+                  <circle cx="41" cy="19" r="14" fill="#e7ad83"/>
+                  <path d="M27 18Q29 4 42 4Q55 5 56 18Q50 13 44 15Q36 10 27 18Z" fill="#212e42"/>
+                  <circle cx="36" cy="20" r="1.2" fill="#25354b"/>
+                  <circle cx="47" cy="20" r="1.2" fill="#25354b"/>
+                  <path d="M37 26Q41 29 46 25" fill="none" stroke="#a9574e" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="player-name-row"><div class="player-name">丙</div><div class="player-role">丙队员</div></div>
+              <div class="player-sub">可与甲、乙互传</div>
+              <div class="player-status" id="statusC">等待接球</div>
+              <span class="ball-anchor" aria-hidden="true"></span>
+            </div>
+            <div class="ball" id="ball" role="img" aria-label="篮球">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <defs>
+                  <radialGradient id="basketballFill" cx="32%" cy="25%" r="72%">
+                    <stop offset="0" stop-color="#ffc36b"/>
+                    <stop offset=".52" stop-color="#ef8128"/>
+                    <stop offset="1" stop-color="#bf4d16"/>
+                  </radialGradient>
+                  <clipPath id="basketballClip"><circle cx="24" cy="24" r="21"/></clipPath>
+                </defs>
+                <circle cx="24" cy="24" r="22" fill="#fff" opacity=".9"/>
+                <circle cx="24" cy="24" r="20.5" fill="url(#basketballFill)" stroke="#8a3415" stroke-width="1.5"/>
+                <g clip-path="url(#basketballClip)" fill="none" stroke="#7a3017" stroke-width="2.1" stroke-linecap="round">
+                  <path d="M3 24H45"/>
+                  <path d="M24 3V45"/>
+                  <path d="M7 9C18 15 20 32 8 39"/>
+                  <path d="M41 9C30 15 28 32 40 39"/>
+                </g>
+                <ellipse cx="17" cy="13" rx="6" ry="3.2" fill="#fff" opacity=".28" transform="rotate(-28 17 13)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="card">
+      <div class="card-head"><h2>教学辅助</h2><span class="chip">讲解区</span></div>
+      <div class="card-body">
+        <div class="panel">
+          <h3>本题答案</h3>
+          <div id="answerBox" class="exact hidden-answer">当前设置为“先隐藏”。可先让学生猜想、实验、列递推，再显示答案。</div>
+        </div>
+
+        <div class="panel" id="samplePanel">
+          <h3>样本空间</h3>
+          <div id="sampleSummary" class="exact" style="margin-bottom:10px;">共有 16 条等可能路径，其中回到甲手上 6 条。</div>
+          <div id="routeList" class="route-list"></div>
+        </div>
+
+        <div class="panel" id="formulaPanel">
+          <h3>递推关系</h3>
+          <div id="formulaBox" class="formula-box"></div>
+        </div>
+
+        <div class="panel">
+          <h3>操作 / 实验日志</h3>
+          <div id="logList" class="log-list"></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast"></div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/passing.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

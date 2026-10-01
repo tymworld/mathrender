@@ -1,0 +1,1515 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>杨辉三角（聚焦模式 + 黑板/白板）</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#18255a;
+      --text:#eaf0ff;
+      --muted:#8ea0c9;
+      --accent:#7aa7ff;
+      --good:#49d17c;
+      --warn:#ffcc66;
+      --danger:#ff7d7d;
+
+      --card: rgba(0,0,0,.18);
+      --panel: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      --border: rgba(255,255,255,.10);
+      --cell: rgba(17,26,51,.55);
+
+      --shadow: 0 10px 28px rgba(0,0,0,.32);
+      --cellBorder: rgba(255,255,255,.10);
+      --badgeBg: rgba(0,0,0,.12);
+      --badgeBorder: rgba(255,255,255,.12);
+
+      --arrowA: rgba(255,216,106,.75);
+      --arrowB: rgba(122,167,255,.75);
+      --arrowA2: rgba(255,216,106,.9);
+      --arrowB2: rgba(122,167,255,.9);
+    }
+
+    [data-theme="white"]{
+      --bg:#ffffff;
+      --bg2:#f4f6fb;
+      --text:#101521;
+      --muted:#44506d;
+      --accent:#1f5eff;
+
+      --card: rgba(255,255,255,.92);
+      --panel: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.02));
+      --border: rgba(0,0,0,.10);
+      --cell: rgba(255,255,255,.95);
+
+      --shadow: 0 10px 24px rgba(0,0,0,.10);
+      --cellBorder: rgba(0,0,0,.12);
+      --badgeBg: rgba(0,0,0,.04);
+      --badgeBorder: rgba(0,0,0,.12);
+
+      --arrowA: rgba(255,155,0,.75);
+      --arrowB: rgba(31,94,255,.75);
+      --arrowA2: rgba(255,155,0,.9);
+      --arrowB2: rgba(31,94,255,.9);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, var(--bg2) 0%, var(--bg) 55%) fixed;
+      color:var(--text);
+    }
+    .wrap{ max-width:1280px; margin:18px auto 54px; padding:0 14px; }
+
+    header{ display:flex; gap:12px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; margin-bottom:10px; }
+    h1{ margin:0; font-size:20px; letter-spacing:.4px; }
+    .sub{ margin-top:4px; color:var(--muted); font-size:12px; line-height:1.45; max-width: 980px; }
+
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 10px 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+    }
+    .toolbar::-webkit-scrollbar{ height: 8px; }
+    .toolbar::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.15); border-radius: 999px; }
+    [data-theme="dark"] .toolbar::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); }
+    .toolbar::-webkit-scrollbar-track{ background: transparent; }
+
+    .cluster{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.10);
+      flex: 0 0 auto;
+    }
+    [data-theme="white"] .cluster{
+      border-color: rgba(0,0,0,.10);
+      background: rgba(0,0,0,.03);
+    }
+
+    .sep{ width:1px; height: 28px; background: rgba(255,255,255,.10); flex: 0 0 auto; }
+    [data-theme="white"] .sep{ background: rgba(0,0,0,.10); }
+
+    label{
+      display:flex; gap:6px; align-items:center;
+      color: var(--muted);
+      font-size: 12px;
+      user-select:none;
+      white-space: nowrap;
+    }
+    select, input[type="number"], input[type="text"]{
+      padding: 6px 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline: none;
+      font-size: 12px;
+    }
+    [data-theme="white"] select,
+    [data-theme="white"] input[type="number"],
+    [data-theme="white"] input[type="text"]{
+      border-color: rgba(0,0,0,.14);
+      background: rgba(255,255,255,.95);
+      color: var(--text);
+    }
+    input[type="number"]{ width: 76px; }
+    input[type="text"]{ width: 52px; text-align:center; padding: 6px 6px; }
+
+    select:focus, input:focus{
+      border-color: rgba(122,167,255,.6);
+      box-shadow: 0 0 0 3px rgba(122,167,255,.16);
+    }
+
+    .sliderWrap{ display:flex; align-items:center; gap:8px; white-space: nowrap; }
+    .sliderWrap .mono{
+      font-variant-numeric: tabular-nums;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: rgba(234,240,255,.88);
+      font-size: 12px;
+      min-width: 56px;
+      text-align:right;
+    }
+    [data-theme="white"] .sliderWrap .mono{ color: rgba(16,21,33,.85); }
+    input[type="range"]{ width: 110px; }
+
+    button{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-weight: 650;
+      letter-spacing:.2px;
+      transition: transform .06s ease, background .2s ease, border-color .2s ease;
+      user-select:none;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    [data-theme="white"] button{
+      border-color: rgba(0,0,0,.14);
+      background: rgba(0,0,0,.03);
+    }
+    button:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); }
+    [data-theme="white"] button:hover{ background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.18); }
+    button:active{ transform: translateY(1px); }
+    button.primary{ border-color: rgba(122,167,255,.45); background: rgba(122,167,255,.18); }
+    button.primary:hover{ background: rgba(122,167,255,.26); }
+    button.danger{ border-color: rgba(255,125,125,.35); background: rgba(255,125,125,.12); }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
+
+    .status{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding: 2px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.10);
+    }
+    [data-theme="white"] .pill{
+      border-color: rgba(0,0,0,.12);
+      background: rgba(0,0,0,.03);
+    }
+    .dot{ width: 10px; height:10px; border-radius: 99px; background: var(--good); box-shadow: 0 0 0 3px rgba(73,209,124,.18); }
+    .dot.pause{ background: var(--warn); box-shadow: 0 0 0 3px rgba(255,204,102,.16); }
+
+    .grid{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr 340px;
+      gap: 12px;
+      align-items:start;
+    }
+    @media (max-width: 1020px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .triangleWrap{
+      padding: 14px 10px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow:auto;
+      min-height: 520px;
+      box-shadow: var(--shadow);
+    }
+    .triangle{ position: relative; z-index:1; min-height:60px; }
+    .overlay{ position:absolute; inset:0; z-index:2; pointer-events:none; overflow: visible; }
+
+    .row{
+      display:flex;
+      justify-content:center;
+      gap: 12px;
+      padding: 10px 0;
+      position: relative;
+      z-index:1;
+      align-items:center;
+    }
+    .row:not(:last-child)::after{
+      content:"";
+      position:absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
+    }
+    [data-theme="white"] .row:not(:last-child)::after{
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,.10), transparent);
+    }
+
+    .rowLabel{
+      width: 66px;
+      text-align:right;
+      color: rgba(234,240,255,.82);
+      font-size: 12px;
+      padding-right: 8px;
+      user-select:none;
+      opacity: .9;
+    }
+    [data-theme="white"] .rowLabel{ color: rgba(16,21,33,.82); }
+
+    .rowSum{
+      width: 180px;
+      text-align:left;
+      padding-left: 8px;
+      font-size: 12px;
+      color: rgba(234,240,255,.86);
+      user-select:none;
+    }
+    [data-theme="white"] .rowSum{ color: rgba(16,21,33,.86); }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--badgeBorder);
+      background: var(--badgeBg);
+      white-space: nowrap;
+    }
+    .badge b{ color: var(--accent); }
+
+    .cell{
+      min-width: 96px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--cellBorder);
+      background: var(--cell);
+      text-align:center;
+      font-variant-numeric: tabular-nums;
+      position: relative;
+      cursor: pointer;
+    }
+    .cell.edge{ background: rgba(122,167,255,.10); border-color: rgba(122,167,255,.25); cursor: default; }
+    [data-theme="white"] .cell.edge{ background: rgba(31,94,255,.06); border-color: rgba(31,94,255,.20); }
+
+    .cellMeta{
+      position:absolute;
+      top: 6px;
+      left: 8px;
+      font-size: 11px;
+      color: rgba(142,160,201,.95);
+      user-select:none;
+      opacity: .95;
+    }
+    [data-theme="white"] .cellMeta{ color: rgba(68,80,109,.95); }
+
+    .value{
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      line-height: 1.1;
+      min-height: 24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .value .lhs{ opacity:.95; }
+    .value .eq{ color: rgba(255,255,255,.55); padding: 0 4px; }
+    [data-theme="white"] .value .eq{ color: rgba(16,21,33,.45); }
+    .value .rhs{ color: var(--accent); }
+    .cell.edge .value .rhs{ color: var(--text); }
+
+    .resultOnly{
+      font-size: 20px;
+      font-weight: 950;
+      letter-spacing: .2px;
+      color: var(--text);
+      min-height: 24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity: 0;
+      transform: translateY(3px);
+      animation: resultIn .22s ease forwards;
+    }
+    @keyframes resultIn{ to{ opacity:1; transform: translateY(0); } }
+
+    .cell.parentHotA{ border-color: rgba(255,216,106,.75); box-shadow: 0 0 0 3px rgba(255,216,106,.18); animation: pulseA .9s ease 0s 2; }
+    .cell.parentHotB{ border-color: rgba(122,167,255,.80); box-shadow: 0 0 0 3px rgba(122,167,255,.20); animation: pulseB .9s ease 0s 2; }
+    @keyframes pulseA{ 0%{transform:translateY(0)} 50%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
+    @keyframes pulseB{ 0%{transform:translateY(0)} 50%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
+
+    .fly{
+      position: absolute;
+      z-index: 3;
+      pointer-events:none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+      transform: translate(-50%, -50%);
+      opacity: 0;
+    }
+    [data-theme="white"] .fly{
+      border-color: rgba(0,0,0,.14);
+      background: rgba(255,255,255,.90);
+      backdrop-filter: none;
+    }
+    .fly.a{ border-color: rgba(255,216,106,.55); box-shadow: 0 0 0 3px rgba(255,216,106,.14); }
+    .fly.b{ border-color: rgba(122,167,255,.55); box-shadow: 0 0 0 3px rgba(122,167,255,.14); }
+    .pop{ animation: popIn .25s ease forwards; }
+    @keyframes popIn{ from{transform:translateY(4px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      position: sticky;
+      top: 12px;
+      max-height: calc(100vh - 24px);
+    }
+    .card{
+      padding: 12px 10px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.12);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow:auto;
+    }
+    [data-theme="white"] .card{ background: rgba(255,255,255,.92); }
+
+    .card h2{
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      letter-spacing: .2px;
+      color: rgba(234,240,255,.92);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    [data-theme="white"] .card h2{ color: rgba(16,21,33,.92); }
+    .card h2 span{ flex: 1 1 auto; min-width: 0; }
+    .card h2 small{ color: var(--muted); font-weight: 500; display:block; white-space: normal; }
+
+    .tools{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 8px; }
+    .logList{ display:flex; flex-direction:column; gap:8px; }
+    .logItem{
+      padding: 8px 9px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(17,26,51,.40);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.35;
+      font-size: 12px;
+    }
+    [data-theme="white"] .logItem{ background: rgba(0,0,0,.03); }
+    .logItem b{ color: var(--accent); }
+
+    .poly{
+      font-size: 12px;
+      line-height: 1.6;
+      word-break: break-word;
+      color: rgba(234,240,255,.92);
+      white-space: normal;
+    }
+    [data-theme="white"] .poly{ color: rgba(16,21,33,.92); }
+
+    .mono{
+      font-variant-numeric: tabular-nums;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .err{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,120,120,.35);
+      background: rgba(255,120,120,.12);
+      color: rgba(255,235,235,.95);
+      display:none;
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+    [data-theme="white"] .err{ color: #7a1b1b; }
+
+    .tip{
+      position: fixed;
+      z-index: 9999;
+      pointer-events:none;
+      max-width: 380px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      color: rgba(234,240,255,.95);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      font-size: 12px;
+      line-height: 1.45;
+      display:none;
+      white-space: normal;
+    }
+    [data-theme="white"] .tip{
+      background: rgba(255,255,255,.95);
+      color: rgba(16,21,33,.95);
+      backdrop-filter: none;
+    }
+    .tip b{ color: var(--accent); }
+    .tip .dim{ color: var(--muted); }
+
+    .hint{ margin-top:10px; color:var(--muted); font-size:12px; line-height:1.6; }
+    .kbd{
+      display:inline-block;
+      padding: 2px 7px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.12);
+      font-size: 12px;
+      color: var(--text);
+    }
+    [data-theme="white"] .kbd{
+      background: rgba(0,0,0,.03);
+      color: var(--text);
+    }
+
+    /* ====== 聚焦模式：隐藏侧栏/顶栏（保留浮动教学控件） ====== */
+    body.focus header{ display:none; }
+    body.focus .panel{ display:none; }
+    body.focus .hint{ display:none; }
+    body.focus .grid{ grid-template-columns: 1fr; gap:0; margin-top:0; }
+    body.focus #sidePanel{ display:none !important; }
+    body.focus .triangleWrap{
+      min-height: calc(100vh - 16px);
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      box-shadow: none;
+    }
+
+    /* ====== 截图模式：更“干净”，浮动控件只保留退出 ====== */
+    body.capture header,
+    body.capture .panel,
+    body.capture .hint,
+    body.capture #sidePanel{ display:none !important; }
+    body.capture .grid{ grid-template-columns: 1fr; }
+    body.capture .triangleWrap{
+      min-height: calc(100vh - 16px);
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 浮动按钮（聚焦/截图共用） */
+    .floatDock{
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 9998;
+      display:none;
+      gap:8px;
+      align-items:center;
+    }
+    body.focus .floatDock,
+    body.capture .floatDock{ display:flex; }
+
+    .floatDock button{
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 12px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.18);
+    }
+
+    /* 区分聚焦/截图的浮动按钮 */
+    .focusOnly{ display:none; }
+    body.focus .focusOnly{ display:inline-flex; }
+    body.capture .focusOnly{ display:none; } /* 截图模式隐藏教学控件 */
+
+    @media print{
+      body{ background: #fff !important; }
+      header, .panel, .hint, #sidePanel, .floatDock, .tip, .err{ display:none !important; }
+      .triangleWrap{ border:none !important; box-shadow:none !important; min-height:auto !important; }
+    }
+  </style>
+</head>
+
+<body data-theme="dark">
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>杨辉三角（教学增强版）</h1>
+        <div class="sub">默认：行数 5；记录不显示；打开页面自动显示第 0 行。</div>
+      </div>
+    </header>
+
+    <div class="panel" id="topPanel">
+      <div class="toolbar">
+        <div class="cluster">
+          <label>行数 <input id="rowsInput" type="number" min="1" max="30" value="5" /></label>
+          <button id="buildBtn">应用</button>
+          <button id="nextBtn" class="primary">下一行</button>
+          <button id="playBtn">播放</button>
+          <button id="resetBtn" class="danger">重置</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="cluster">
+          <label>模式
+            <select id="modeSelect">
+              <option value="beginner" selected>初学</option>
+              <option value="compact">熟练</option>
+              <option value="static">静态</option>
+            </select>
+          </label>
+          <div class="sliderWrap">
+            <span style="color:var(--muted);font-size:12px;">速度</span>
+            <input id="speedRange" type="range" min="0.5" max="2.0" step="0.05" value="1.0" />
+            <span class="mono" id="speedText">1.00×</span>
+          </div>
+          <label>密度
+            <select id="densitySelect">
+              <option value="detailed">详细</option>
+              <option value="simple" selected>简洁</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="cluster">
+          <label><input id="toggleLabels" type="checkbox" checked />标签</label>
+          <label><input id="toggleSum" type="checkbox" checked />行和</label>
+          <label><input id="toggleLog" type="checkbox" />记录</label>
+          <label><input id="toggleBinomial" type="checkbox" checked />二项式</label>
+          <label>变量
+            <input id="varA" type="text" value="a" maxlength="2" />
+            <span style="color:var(--muted);font-size:12px;">+</span>
+            <input id="varB" type="text" value="b" maxlength="2" />
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="cluster">
+          <button id="focusBtn">聚焦模式(F)</button>
+          <button id="captureBtn">截图模式(C)</button>
+          <label>主题
+            <select id="themeSelect">
+              <option value="dark" selected>深黑</option>
+              <option value="white">白板</option>
+            </select>
+          </label>
+          <button id="printBtn">打印/存PDF</button>
+        </div>
+      </div>
+
+      <div class="status">
+        <span class="pill"><span id="stateDot" class="dot pause"></span><span id="stateText">暂停</span></span>
+        <span class="pill">已显示：<b id="shownCount">0</b> / <b id="totalCount">5</b> 行</span>
+        <span class="pill">当前行：<b id="selectedRowText">—</b></span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="triangleWrap" id="triangleWrap">
+        <svg class="overlay" id="overlay"></svg>
+        <div class="triangle" id="triangle"></div>
+      </div>
+
+      <div class="side" id="sidePanel">
+        <section class="card" id="binomialCard">
+          <h2>
+            <span>二项式 <small id="binomialTitle">(a+b)^n</small></span>
+            <button id="copyPolyBtn">复制</button>
+          </h2>
+          <div class="poly mono" id="polyBox">—</div>
+        </section>
+
+        <section class="card" id="logCard">
+          <h2>推导记录 <small>（点击格子也会记录）</small></h2>
+          <div class="tools">
+            <button id="clearLogBtn" class="danger">清空</button>
+          </div>
+          <div class="logList" id="logList"></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="err" id="errBox"></div>
+
+    <div class="hint">
+      快捷键：<span class="kbd">Enter</span> 下一行，
+      <span class="kbd">Space</span> 播放/暂停，
+      <span class="kbd">R</span> 重置，
+      <span class="kbd">Esc</span> 清除箭头/高亮/展开，
+      <span class="kbd">F</span> 聚焦，
+      <span class="kbd">C</span> 截图，
+      <span class="kbd">T</span> 主题切换。
+    </div>
+
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <!-- 浮动按钮：聚焦/截图模式下 -->
+  <div class="floatDock" id="floatDock">
+    <button id="exitBtn" class="primary">退出</button>
+
+    <!-- ✅ 只在“聚焦模式”显示：课堂用控件 -->
+    <button id="floatNextBtn" class="focusOnly">下一行</button>
+    <button id="floatPlayBtn" class="focusOnly">播放</button>
+    <button id="floatResetBtn" class="focusOnly danger">重置</button>
+
+    <button id="floatThemeBtn" class="focusOnly">主题</button>
+    <button id="floatPrintBtn" class="focusOnly">打印</button>
+  </div>
+
+  <script>
+    const BASE = { flyMs: 560, flyStaggerMs: 120, arrowMs: 520, cellGapMs: 160, rowCollapseMs: 650, compactRowCollapseMs: 260 };
+
+    let totalRows = 5;              // ✅ 默认 5
+    let triangleData = [];
+    let currentShown = 0;
+    let playing = false;
+    let animLock = false;
+    let token = 0;
+
+    let expandedKey = null;
+    let selectedRow = null;
+
+    const triangleWrap = document.getElementById('triangleWrap');
+    const triangleEl   = document.getElementById('triangle');
+    const overlayEl    = document.getElementById('overlay');
+    const errBox       = document.getElementById('errBox');
+    const tipEl        = document.getElementById('tip');
+
+    const rowsInput = document.getElementById('rowsInput');
+    const buildBtn  = document.getElementById('buildBtn');
+    const nextBtn   = document.getElementById('nextBtn');
+    const playBtn   = document.getElementById('playBtn');
+    const resetBtn  = document.getElementById('resetBtn');
+
+    const modeSelect = document.getElementById('modeSelect');
+    const densitySelect = document.getElementById('densitySelect');
+    const speedRange = document.getElementById('speedRange');
+    const speedText  = document.getElementById('speedText');
+
+    const toggleLabels = document.getElementById('toggleLabels');
+    const toggleSum = document.getElementById('toggleSum');
+    const toggleLog = document.getElementById('toggleLog'); // 默认不勾选
+    const toggleBinomial = document.getElementById('toggleBinomial');
+
+    const varAInput = document.getElementById('varA');
+    const varBInput = document.getElementById('varB');
+
+    const shownCountEl = document.getElementById('shownCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const stateDot = document.getElementById('stateDot');
+    const stateText = document.getElementById('stateText');
+    const selectedRowText = document.getElementById('selectedRowText');
+
+    const sidePanel = document.getElementById('sidePanel');
+    const logCard = document.getElementById('logCard');
+    const logList = document.getElementById('logList');
+    const clearLogBtn = document.getElementById('clearLogBtn');
+
+    const binomialCard = document.getElementById('binomialCard');
+    const binomialTitle = document.getElementById('binomialTitle');
+    const polyBox = document.getElementById('polyBox');
+    const copyPolyBtn = document.getElementById('copyPolyBtn');
+
+    const focusBtn = document.getElementById('focusBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const themeSelect = document.getElementById('themeSelect');
+    const printBtn = document.getElementById('printBtn');
+
+    const exitBtn = document.getElementById('exitBtn');
+    const floatNextBtn = document.getElementById('floatNextBtn');
+    const floatPlayBtn = document.getElementById('floatPlayBtn');
+    const floatResetBtn = document.getElementById('floatResetBtn');
+    const floatThemeBtn = document.getElementById('floatThemeBtn');
+    const floatPrintBtn = document.getElementById('floatPrintBtn');
+
+    function showErr(msg){ errBox.style.display = 'block'; errBox.textContent = msg; }
+    function clearErr(){ errBox.style.display = 'none'; errBox.textContent = ''; }
+    window.addEventListener('error', (e) => {
+      showErr("发生错误：\n" + (e?.message || "未知错误") + (e?.error?.stack ? ("\n\n" + e.error.stack) : ""));
+    });
+
+    const clamp = (n,a,b)=>Math.max(a, Math.min(b, n));
+
+    function buildTriangle(rows){
+      const data = [];
+      for (let i=0;i<rows;i++){
+        const row = new Array(i+1).fill(1);
+        for (let j=1;j<i;j++) row[j] = data[i-1][j-1] + data[i-1][j];
+        data.push(row);
+      }
+      return data;
+    }
+
+    function combBigInt(n, k){
+      k = Math.min(k, n-k);
+      let num = 1n, den = 1n;
+      for (let i=1; i<=k; i++){
+        num *= BigInt(n - (k - i));
+        den *= BigInt(i);
+      }
+      return num / den;
+    }
+
+    function updateOverlaySize(){
+      const w = triangleWrap.clientWidth;
+      const h = triangleWrap.clientHeight;
+      overlayEl.setAttribute('width', w);
+      overlayEl.setAttribute('height', h);
+      overlayEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    }
+
+    function clearOverlay(){
+      const arrowA2 = getComputedStyle(document.body).getPropertyValue('--arrowA2').trim() || 'rgba(255,216,106,.9)';
+      const arrowB2 = getComputedStyle(document.body).getPropertyValue('--arrowB2').trim() || 'rgba(122,167,255,.9)';
+      overlayEl.innerHTML = `
+        <defs>
+          <marker id="arrowA" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L10,3 L0,6 Z" fill="${arrowA2}"></path>
+          </marker>
+          <marker id="arrowB" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L10,3 L0,6 Z" fill="${arrowB2}"></path>
+          </marker>
+        </defs>
+      `;
+      if (!document.getElementById('dashStyle')){
+        const st = document.createElement('style');
+        st.id = 'dashStyle';
+        st.textContent = `@keyframes dash { to { stroke-dashoffset: 0; } }`;
+        document.head.appendChild(st);
+      }
+    }
+
+    function relPointToWrap(el){
+      const r1 = triangleWrap.getBoundingClientRect();
+      const r2 = el.getBoundingClientRect();
+      const x = (r2.left - r1.left) + r2.width/2 + triangleWrap.scrollLeft;
+      const y = (r2.top  - r1.top ) + r2.height/2 + triangleWrap.scrollTop;
+      return {x, y};
+    }
+
+    function drawArrow(from, to, kind, arrowMs){
+      const arrowA = getComputedStyle(document.body).getPropertyValue('--arrowA').trim() || 'rgba(255,216,106,.75)';
+      const arrowB = getComputedStyle(document.body).getPropertyValue('--arrowB').trim() || 'rgba(122,167,255,.75)';
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const dx = (to.x - from.x);
+      const dy = (to.y - from.y);
+      const mx = from.x + dx*0.5;
+      const my = from.y + dy*0.5 - 18;
+      path.setAttribute("d", `M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`);
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", kind === 'A' ? arrowA : arrowB);
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("marker-end", `url(#arrow${kind})`);
+      path.setAttribute("stroke-linecap", "round");
+      const len = 5000;
+      path.style.strokeDasharray = `${len}`;
+      path.style.strokeDashoffset = `${len}`;
+      path.style.animation = `dash ${arrowMs}ms ease forwards`;
+      overlayEl.appendChild(path);
+    }
+
+    function makeFly(label, kind){
+      const div = document.createElement('div');
+      div.className = `fly ${kind === 'A' ? 'a' : 'b'}`;
+      div.textContent = label;
+      triangleWrap.appendChild(div);
+      return div;
+    }
+
+    function animateFly(flyEl, from, to, duration, myToken){
+      return new Promise(resolve => {
+        flyEl.style.left = `${from.x}px`;
+        flyEl.style.top  = `${from.y}px`;
+        flyEl.style.opacity = "1";
+
+        const start = performance.now();
+        const ease = (t)=>1-Math.pow(1-t,3);
+
+        function step(now){
+          if (myToken !== token){ flyEl.remove(); resolve(); return; }
+          const p = Math.min(1, (now - start)/duration);
+          const e = ease(p);
+          flyEl.style.left = `${from.x + (to.x - from.x)*e}px`;
+          flyEl.style.top  = `${from.y + (to.y - from.y)*e}px`;
+          flyEl.style.transform = `translate(-50%, -50%) scale(${0.9 + 0.1*e})`;
+          if (p < 1) requestAnimationFrame(step);
+          else { flyEl.remove(); resolve(); }
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    function getCell(n,k){ return triangleEl.querySelector(`.cell[data-n="${n}"][data-k="${k}"]`); }
+
+    function removeAllParentHighlights(){
+      triangleEl.querySelectorAll('.cell.parentHotA, .cell.parentHotB').forEach(c=>{
+        c.classList.remove('parentHotA');
+        c.classList.remove('parentHotB');
+      });
+    }
+
+    function hardClear(){
+      // ✅ Esc 清理：箭头 + 提示 + 父格高亮 + 展开推导
+      clearOverlay();
+      tipEl.style.display = "none";
+      removeAllParentHighlights();
+
+      if (expandedKey){
+        const [pn, pk] = expandedKey.split(",").map(Number);
+        const cell = getCell(pn, pk);
+        if (cell){
+          // 收回为纯数字
+          const valueEl = cell.querySelector('.value');
+          if (valueEl) valueEl.style.display = 'none';
+          let res = cell.querySelector('.resultOnly');
+          if (!res){
+            res = document.createElement('div');
+            res.className = 'resultOnly';
+            cell.appendChild(res);
+          }
+          res.textContent = String(cell.dataset.c ?? "");
+          cell.dataset.expanded = "0";
+        }
+        expandedKey = null;
+      }
+    }
+
+    function appendLog(n, kHuman, a, b, c){
+      if (!toggleLog.checked) return;
+      const item = document.createElement('div');
+      item.className = 'logItem';
+      item.innerHTML = `第 <b>${n}</b> 行，第 <b>${kHuman}</b> 个： ${a} + ${b} = <b>${c}</b> <span class="dim">(C(${n},${kHuman-1}))</span>`;
+      logList.prepend(item);
+    }
+
+    function setSelectedRow(n){
+      selectedRow = n;
+      selectedRowText.textContent = (n == null ? "—" : String(n));
+      updateBinomialPanel();
+    }
+
+    const formatSup = (p)=>`<sup>${p}</sup>`;
+
+    function updateBinomialPanel(){
+      const show = toggleBinomial.checked;
+      binomialCard.style.display = show ? "block" : "none";
+      if (!show) return;
+
+      const aVar = (varAInput.value || "a").trim() || "a";
+      const bVar = (varBInput.value || "b").trim() || "b";
+      binomialTitle.textContent = `(${aVar}+${bVar})^n`;
+
+      if (selectedRow == null){ polyBox.textContent = "—"; return; }
+      const n = selectedRow;
+      if (n < 0 || n >= triangleData.length){ polyBox.textContent = "—"; return; }
+
+      const coeffs = triangleData[n];
+      const terms = [];
+      for (let k=0; k<=n; k++){
+        const c = coeffs[k];
+        const powA = n-k, powB = k;
+        let coef = (c !== 1) ? String(c) : "";
+        let partA = powA > 0 ? aVar + (powA > 1 ? formatSup(powA) : "") : "";
+        let partB = powB > 0 ? bVar + (powB > 1 ? formatSup(powB) : "") : "";
+        let mono = (partA && partB) ? (partA + partB) : (partA || partB || "1");
+        terms.push(coef ? `${coef}${mono==="1" ? "" : "·"}${mono}` : mono);
+      }
+      polyBox.innerHTML = `(${aVar}+${bVar})${n>1 ? formatSup(n) : ""} = ` + terms.join(" + ");
+    }
+
+    async function copyPoly(){
+      const text = polyBox.innerText || polyBox.textContent || "";
+      if (!text || text === "—") return;
+      try{
+        await navigator.clipboard.writeText(text);
+        copyPolyBtn.textContent = "已复制";
+        setTimeout(()=>copyPolyBtn.textContent="复制", 800);
+      }catch{
+        copyPolyBtn.textContent = "失败";
+        setTimeout(()=>copyPolyBtn.textContent="复制", 800);
+      }
+    }
+
+    function showTip(html, x, y){
+      tipEl.innerHTML = html;
+      tipEl.style.display = "block";
+      const pad = 14;
+      const w = tipEl.offsetWidth;
+      const h = tipEl.offsetHeight;
+      let left = x + 14;
+      let top  = y + 14;
+      const maxX = window.innerWidth - w - pad;
+      const maxY = window.innerHeight - h - pad;
+      if (left > maxX) left = x - w - 14;
+      if (top  > maxY) top  = y - h - 14;
+      tipEl.style.left = left + "px";
+      tipEl.style.top  = top + "px";
+    }
+    function hideTip(){ tipEl.style.display = "none"; }
+
+    const getSpeed = ()=>clamp(parseFloat(speedRange.value || "1"), 0.5, 2.0);
+
+    function calcTimings(){
+      const s = getSpeed();
+      const flyMs = Math.round(BASE.flyMs / s);
+      const arrowMs = Math.round(BASE.arrowMs / s);
+      const cellGapMs = Math.round(BASE.cellGapMs / s);
+      const flyStaggerMs = Math.round(BASE.flyStaggerMs / s);
+      const mode = modeSelect.value;
+      let rowCollapseMs = Math.round((mode === "compact" ? BASE.compactRowCollapseMs : BASE.rowCollapseMs) / s);
+      if (mode === "static") rowCollapseMs = 0;
+      return { flyMs, flyStaggerMs, arrowMs, cellGapMs, rowCollapseMs, mode };
+    }
+
+    function applyDensity(){
+      // 简洁/详细目前只影响标签，不强制改“记录”
+      toggleLabels.checked = (densitySelect.value === "detailed");
+      renderVisibility();
+    }
+
+    function renderVisibility(){
+      const showLabels = toggleLabels.checked;
+      triangleEl.querySelectorAll(".cellMeta").forEach(el => el.style.display = showLabels ? "block" : "none");
+      triangleEl.querySelectorAll(".rowLabel").forEach(el => el.style.display = showLabels ? "block" : "none");
+
+      const showSum = toggleSum.checked;
+      triangleEl.querySelectorAll(".rowSum").forEach(el => el.style.display = showSum ? "block" : "none");
+
+      logCard.style.display = toggleLog.checked ? "block" : "none";
+      binomialCard.style.display = toggleBinomial.checked ? "block" : "none";
+      updateBinomialPanel();
+
+      const anySide = (toggleLog.checked || toggleBinomial.checked);
+      sidePanel.style.display = anySide ? "flex" : "none";
+    }
+
+    function updateUI(){
+      shownCountEl.textContent = String(currentShown);
+      totalCountEl.textContent = String(totalRows);
+      nextBtn.disabled = (currentShown >= totalRows) || animLock;
+
+      stateDot.classList.toggle('pause', !playing);
+      stateText.textContent = playing ? '播放中' : '暂停';
+      playBtn.textContent = playing ? '暂停' : '播放';
+
+      // 同步浮动按钮文本
+      floatPlayBtn.textContent = playing ? "暂停" : "播放";
+
+      speedText.textContent = getSpeed().toFixed(2) + "×";
+    }
+
+    function collapseRow(n, myToken){
+      if (myToken !== token) return;
+      const cells = triangleEl.querySelectorAll(`.cell[data-n="${n}"]`);
+      cells.forEach(cell => {
+        const k = Number(cell.dataset.k);
+        if (!(k > 0 && k < n)) return;
+        const c = cell.dataset.c;
+        if (c == null) return;
+
+        const valueEl = cell.querySelector('.value');
+        if (valueEl) valueEl.style.display = 'none';
+
+        let res = cell.querySelector('.resultOnly');
+        if (!res){
+          res = document.createElement('div');
+          res.className = 'resultOnly';
+          cell.appendChild(res);
+        }
+        res.textContent = String(c);
+      });
+    }
+
+    function collapseCellToResult(cell){
+      const c = cell.dataset.c;
+      const valueEl = cell.querySelector(".value");
+      if (valueEl) valueEl.style.display = "none";
+      let res = cell.querySelector(".resultOnly");
+      if (!res){
+        res = document.createElement("div");
+        res.className = "resultOnly";
+        cell.appendChild(res);
+      }
+      res.textContent = String(c ?? "");
+      cell.dataset.expanded = "0";
+    }
+
+    function expandCellToExpr(cell){
+      const a = cell.dataset.a, b = cell.dataset.b, c = cell.dataset.c;
+      const valueEl = cell.querySelector(".value");
+      if (!valueEl) return;
+
+      const res = cell.querySelector(".resultOnly");
+      if (res) res.remove();
+
+      valueEl.style.display = 'flex';
+      valueEl.innerHTML = `<span class="lhs">${a} + ${b}</span><span class="eq">=</span><span class="rhs">${c}</span>`;
+      valueEl.classList.add("pop");
+      setTimeout(()=>valueEl.classList.remove("pop"), 240);
+      cell.dataset.expanded = "1";
+    }
+
+    function highlightParentsAndArrows(n, k, myToken){
+      if (myToken !== token) return;
+      const pA = getCell(n-1, k-1);
+      const pB = getCell(n-1, k);
+      const child = getCell(n, k);
+      if (!pA || !pB || !child) return;
+
+      updateOverlaySize();
+      clearOverlay();
+
+      pA.classList.add("parentHotA");
+      pB.classList.add("parentHotB");
+
+      const { arrowMs } = calcTimings();
+      drawArrow(relPointToWrap(pA), relPointToWrap(child), "A", arrowMs);
+      drawArrow(relPointToWrap(pB), relPointToWrap(child), "B", arrowMs);
+
+      setTimeout(()=>{
+        pA.classList.remove("parentHotA");
+        pB.classList.remove("parentHotB");
+      }, Math.max(400, Math.round(900 / getSpeed())));
+    }
+
+    async function animateOneCell(n, k, myToken){
+      if (myToken !== token) return;
+      const parentA = getCell(n-1, k-1);
+      const parentB = getCell(n-1, k);
+      const child   = getCell(n, k);
+      if (!parentA || !parentB || !child) return;
+
+      const t = calcTimings();
+      updateOverlaySize();
+      clearOverlay();
+
+      const pA = relPointToWrap(parentA);
+      const pB = relPointToWrap(parentB);
+      const pc = relPointToWrap(child);
+
+      parentA.classList.add('parentHotA');
+      parentB.classList.add('parentHotB');
+
+      drawArrow(pA, pc, 'A', t.arrowMs);
+      drawArrow(pB, pc, 'B', t.arrowMs);
+
+      const a = triangleData[n-1][k-1];
+      const b = triangleData[n-1][k];
+      const c = triangleData[n][k];
+
+      child.dataset.a = String(a);
+      child.dataset.b = String(b);
+      child.dataset.c = String(c);
+
+      const oldRes = child.querySelector('.resultOnly');
+      if (oldRes) oldRes.remove();
+
+      const valueEl = child.querySelector('.value');
+      if (!valueEl) return;
+      valueEl.style.display = 'flex';
+      valueEl.textContent = "";
+
+      const flyA = makeFly(String(a), 'A');
+      const flyB = makeFly(String(b), 'B');
+
+      await Promise.all([
+        animateFly(flyA, pA, pc, t.flyMs, myToken),
+        new Promise(r => setTimeout(r, t.flyStaggerMs)).then(() => animateFly(flyB, pB, pc, t.flyMs, myToken))
+      ]);
+
+      if (myToken !== token) return;
+
+      valueEl.innerHTML = `<span class="lhs">${a} + ${b}</span><span class="eq">=</span><span class="rhs">${c}</span>`;
+      valueEl.classList.add('pop');
+      setTimeout(()=>valueEl.classList.remove('pop'), 260);
+
+      appendLog(n, k+1, a, b, c);
+
+      setTimeout(() => {
+        parentA.classList.remove('parentHotA');
+        parentB.classList.remove('parentHotB');
+      }, Math.max(350, Math.round(700 / getSpeed())));
+    }
+
+    function cellTipHTML(n,k){
+      const isEdge = (k===0 || k===n);
+      const cnk = combBigInt(n,k).toString();
+      let html = `<div><b>组合数</b>：C(${n},${k}) = <b>${cnk}</b></div>`;
+      if (!isEdge){
+        const a = triangleData[n-1][k-1];
+        const b = triangleData[n-1][k];
+        const c = triangleData[n][k];
+        html += `<div class="dim">来源：C(${n-1},${k-1}) + C(${n-1},${k})</div>`;
+        html += `<div>${a} + ${b} = <b>${c}</b></div>`;
+      }else{
+        html += `<div class="dim">边界：两侧恒为 1</div>`;
+      }
+      html += `<div class="dim">对称：C(${n},${k}) = C(${n},${n-k})</div>`;
+      return html;
+    }
+
+    function onCellHover(ev, cell){
+      const n = Number(cell.dataset.n);
+      const k = Number(cell.dataset.k);
+      showTip(cellTipHTML(n,k), ev.clientX, ev.clientY);
+    }
+
+    function onCellClick(ev, cell){
+      const n = Number(cell.dataset.n);
+      const k = Number(cell.dataset.k);
+      setSelectedRow(n);
+
+      if (k === 0 || k === n) return;
+      if (n <= 0) return;
+
+      const myToken = token;
+      const key = `${n},${k}`;
+      const alreadyExpanded = (cell.dataset.expanded === "1");
+
+      if (expandedKey && expandedKey !== key){
+        const [pn, pk] = expandedKey.split(",").map(Number);
+        const prev = getCell(pn, pk);
+        if (prev) collapseCellToResult(prev);
+      }
+
+      if (alreadyExpanded){
+        collapseCellToResult(cell);
+        expandedKey = null;
+        clearOverlay();
+        removeAllParentHighlights();
+      }else{
+        if (cell.dataset.a == null || cell.dataset.b == null){
+          const a = triangleData[n-1][k-1];
+          const b = triangleData[n-1][k];
+          const c = triangleData[n][k];
+          cell.dataset.a = String(a);
+          cell.dataset.b = String(b);
+          cell.dataset.c = String(c);
+          appendLog(n, k+1, a, b, c);
+        }
+        expandCellToExpr(cell);
+        expandedKey = key;
+        highlightParentsAndArrows(n, k, myToken);
+      }
+    }
+
+    async function renderNextRow(){
+      if (animLock) return;
+      if (currentShown >= totalRows) return;
+
+      clearErr();
+      animLock = true;
+      updateUI();
+
+      const myToken = token;
+
+      try{
+        const n = currentShown;
+        const rowVals = triangleData[n];
+
+        const rowEl = document.createElement('div');
+        rowEl.className = 'row';
+        rowEl.dataset.n = String(n);
+
+        const rowLabel = document.createElement("div");
+        rowLabel.className = "rowLabel";
+        rowLabel.textContent = `n=${n}`;
+        rowEl.appendChild(rowLabel);
+
+        for (let k=0; k<=n; k++){
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.tabIndex = 0;
+          cell.dataset.n = String(n);
+          cell.dataset.k = String(k);
+
+          const meta = document.createElement("div");
+          meta.className = "cellMeta";
+          meta.textContent = `k=${k}`;
+          cell.appendChild(meta);
+
+          const value = document.createElement('div');
+          value.className = 'value';
+
+          const c = rowVals[k];
+          cell.dataset.c = String(c);
+
+          if (k === 0 || k === n){
+            cell.classList.add('edge');
+            value.innerHTML = `<span class="rhs">1</span>`;
+          }else{
+            value.textContent = "";
+          }
+
+          cell.appendChild(value);
+
+          cell.addEventListener("click", (ev) => onCellClick(ev, cell));
+          cell.addEventListener("mousemove", (ev) => onCellHover(ev, cell));
+          cell.addEventListener("mouseleave", () => hideTip());
+          cell.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onCellClick(ev, cell); }
+          });
+
+          rowEl.appendChild(cell);
+        }
+
+        const rowSum = document.createElement("div");
+        rowSum.className = "rowSum";
+        const sum = (1n << BigInt(n)).toString();
+        rowSum.innerHTML = `<span class="badge">Σ = <span class="mono">2^${n}</span> = <b>${sum}</b></span>`;
+        rowEl.appendChild(rowSum);
+
+        triangleEl.appendChild(rowEl);
+        currentShown++;
+
+        setSelectedRow(n);
+        renderVisibility();
+        updateUI();
+
+        rowEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+        const t = calcTimings();
+
+        // n=0、n=1 没有内部推导，直接结束
+        if (t.mode === "static"){
+          for (let k=1; k<n; k++){
+            const cell = getCell(n, k);
+            if (!cell) continue;
+            const valueEl = cell.querySelector(".value");
+            if (!valueEl) continue;
+            valueEl.style.display = "none";
+            let res = cell.querySelector(".resultOnly");
+            if (!res){
+              res = document.createElement("div");
+              res.className = "resultOnly";
+              cell.appendChild(res);
+            }
+            res.textContent = cell.dataset.c || "";
+          }
+          clearOverlay();
+          return;
+        }
+
+        if (n >= 2){
+          for (let k = 1; k < n; k++){
+            if (myToken !== token) break;
+            await animateOneCell(n, k, myToken);
+            await new Promise(r => setTimeout(r, t.cellGapMs));
+          }
+
+          setTimeout(() => {
+            collapseRow(n, myToken);
+            if (expandedKey && expandedKey.startsWith(n + ",")){
+              const parts = expandedKey.split(",");
+              const kk = Number(parts[1]);
+              const cell = getCell(n, kk);
+              if (cell && cell.dataset.expanded === "1"){
+                expandCellToExpr(cell);
+              }
+            }
+          }, t.rowCollapseMs);
+        }
+
+        setTimeout(() => clearOverlay(), Math.max(200, Math.round(420 / getSpeed())));
+      }catch(err){
+        showErr("发生错误：\n" + (err?.message || String(err)) + (err?.stack ? ("\n\n" + err.stack) : ""));
+      }finally{
+        animLock = false;
+        updateUI();
+      }
+    }
+
+    function stopPlay(){ playing = false; updateUI(); }
+    async function startPlay(){
+      if (playing) return;
+      playing = true;
+      updateUI();
+
+      const myToken = token;
+      while (playing && currentShown < totalRows && myToken === token){
+        await renderNextRow();
+        await new Promise(r => setTimeout(r, Math.max(180, Math.round(260 / getSpeed()))));
+      }
+      playing = false;
+      updateUI();
+    }
+    function togglePlay(){ playing ? stopPlay() : startPlay(); }
+
+    function resetAll(){
+      token++;
+      playing = false;
+      animLock = false;
+      expandedKey = null;
+      selectedRow = null;
+
+      triangleEl.innerHTML = '';
+      clearOverlay();
+      currentShown = 0;
+
+      clearErr();
+      setSelectedRow(null);
+      updateUI();
+      renderVisibility();
+
+      // ✅ 重置后也自动显示第 0 行
+      renderNextRow();
+    }
+
+    function applyRows(){
+      stopPlay();
+      token++;
+      animLock = false;
+      expandedKey = null;
+
+      const n = clamp(parseInt(rowsInput.value || '5', 10), 1, 30);
+      rowsInput.value = String(n);
+      totalRows = n;
+      triangleData = buildTriangle(totalRows);
+      totalCountEl.textContent = String(totalRows);
+
+      triangleEl.innerHTML = '';
+      clearOverlay();
+      currentShown = 0;
+      setSelectedRow(null);
+      updateUI();
+      renderVisibility();
+      clearErr();
+
+      // ✅ 应用行数后自动显示第 0 行
+      renderNextRow();
+    }
+
+    function enterFocus(){
+      document.body.classList.remove('capture');
+      document.body.classList.add('focus');
+      hardClear();
+      updateOverlaySize();
+    }
+    function enterCapture(){
+      document.body.classList.remove('focus');
+      document.body.classList.add('capture');
+      hardClear();
+      updateOverlaySize();
+    }
+    function exitFocusCapture(){
+      document.body.classList.remove('focus');
+      document.body.classList.remove('capture');
+      hardClear();
+      updateOverlaySize();
+    }
+    function toggleFocus(){ document.body.classList.contains('focus') ? exitFocusCapture() : enterFocus(); }
+    function toggleCapture(){ document.body.classList.contains('capture') ? exitFocusCapture() : enterCapture(); }
+
+    function setTheme(theme){
+      document.body.setAttribute('data-theme', theme);
+      themeSelect.value = theme;
+      clearOverlay();
+    }
+    function toggleTheme(){
+      const cur = document.body.getAttribute('data-theme') || 'dark';
+      setTheme(cur === 'dark' ? 'white' : 'dark');
+    }
+
+    /* ===== 绑定 ===== */
+    buildBtn.addEventListener('click', applyRows);
+    nextBtn.addEventListener('click', renderNextRow);
+    playBtn.addEventListener('click', togglePlay);
+    resetBtn.addEventListener('click', resetAll);
+
+    // 浮动课堂控件（只在 focus 模式显示）
+    floatNextBtn.addEventListener('click', renderNextRow);
+    floatPlayBtn.addEventListener('click', togglePlay);
+    floatResetBtn.addEventListener('click', resetAll);
+
+    clearLogBtn.addEventListener('click', () => { logList.innerHTML = ''; });
+
+    speedRange.addEventListener('input', () => updateUI());
+    modeSelect.addEventListener('change', () => updateUI());
+    densitySelect.addEventListener('change', applyDensity);
+
+    toggleLabels.addEventListener('change', renderVisibility);
+    toggleSum.addEventListener('change', renderVisibility);
+    toggleLog.addEventListener('change', renderVisibility);
+    toggleBinomial.addEventListener('change', renderVisibility);
+
+    varAInput.addEventListener('input', updateBinomialPanel);
+    varBInput.addEventListener('input', updateBinomialPanel);
+    copyPolyBtn.addEventListener('click', copyPoly);
+
+    rowsInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyRows(); });
+    window.addEventListener('resize', () => updateOverlaySize());
+
+    focusBtn.addEventListener('click', toggleFocus);
+    captureBtn.addEventListener('click', toggleCapture);
+    themeSelect.addEventListener('change', () => setTheme(themeSelect.value));
+    printBtn.addEventListener('click', () => {
+      if ((document.body.getAttribute('data-theme') || 'dark') !== 'white') setTheme('white');
+      window.print();
+    });
+
+    exitBtn.addEventListener('click', exitFocusCapture);
+    floatThemeBtn.addEventListener('click', toggleTheme);
+    floatPrintBtn.addEventListener('click', () => {
+      if ((document.body.getAttribute('data-theme') || 'dark') !== 'white') setTheme('white');
+      window.print();
+    });
+
+    // ✅ Esc 清理（不再强制退出聚焦/截图）
+    window.addEventListener('keydown', (e) => {
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+      if (e.key === 'Escape'){
+        e.preventDefault();
+        hardClear();
+        return;
+      }
+
+      if (e.key === 'Enter' && !inInput){ e.preventDefault(); renderNextRow(); }
+      if (e.code === 'Space' && !inInput){ e.preventDefault(); togglePlay(); }
+      if ((e.key === 'r' || e.key === 'R') && !inInput){ e.preventDefault(); resetAll(); }
+      if (!inInput && (e.key === 'f' || e.key === 'F')){ e.preventDefault(); toggleFocus(); }
+      if (!inInput && (e.key === 'c' || e.key === 'C')){ e.preventDefault(); toggleCapture(); }
+      if (!inInput && (e.key === 't' || e.key === 'T')){ e.preventDefault(); toggleTheme(); }
+    }, { capture: true });
+
+    window.addEventListener("mousemove", (ev) => {
+      if (tipEl.style.display === "block"){
+        showTip(tipEl.innerHTML, ev.clientX, ev.clientY);
+      }
+    });
+
+    function init(){
+      setTheme('dark');
+      updateOverlaySize();
+      clearOverlay();
+
+      triangleData = buildTriangle(totalRows);
+      totalCountEl.textContent = String(totalRows);
+
+      applyDensity();
+      updateUI();
+      renderVisibility();
+
+      // ✅ 打开页面自动显示第 0 行
+      renderNextRow();
+    }
+    init();
+  </script>
+</body>
+</html>

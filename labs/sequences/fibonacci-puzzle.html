@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>斐波那契正方形拼图 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/fibonacci-puzzle.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="fibonacci-puzzle">
+  <header class="topbar"><a class="back" href="../../index.html">← 实验室</a><div class="title">斐波那契正方形拼图</div><div class="lesson">06｜递推数列</div><div class="top-actions"><button id="focusBtn">聚焦模式</button><button id="themeBtn">深色</button></div></header>
+  <main class="app"><div class="layout">
+    <aside class="card sidebar"><div class="head"><h2>拼图工具</h2><span>拖拽方块</span></div><div class="body"><div class="seg"><button class="active" data-mode="free">自由拼图</button><button data-mode="guide">引导拼图</button></div><div class="count-control"><div class="count-title"><label for="pieceCount">方块数目</label><output id="countValue" for="pieceCount">7 个</output></div><input id="pieceCount" type="range" min="2" max="12" step="1" value="7" aria-label="方块数目"><div class="range-ends"><span>2 个</span><span>12 个</span></div></div><div class="toggle"><span>网格吸附</span><div id="gridToggle" class="switch on" role="switch" aria-checked="true" tabindex="0"></div></div><div class="toggle"><span>边缘磁吸</span><div id="magnetToggle" class="switch on" role="switch" aria-checked="true" tabindex="0"></div></div><div class="actions"><button id="undoBtn">↶ 撤销</button><button id="shuffleBtn">打乱</button><button class="hint" id="hintBtn">提示一步</button><button id="resetBtn">重置</button><button class="primary" id="checkBtn" style="grid-column:1/-1">检查拼图</button></div><div class="status" aria-live="polite"><strong id="statusTitle">自由探索</strong><span id="statusText">尝试用全部方块拼成一个长方形。</span></div></div></aside>
+    <section class="card board-card"><div class="head"><h2>拼图画布</h2><div class="board-tools"><span id="placed">7 个方块</span><div class="zoom-controls" role="group" aria-label="画布缩放"><button id="zoomOutBtn" title="缩小画布" aria-label="缩小画布">−</button><span id="zoomLevel" class="zoom-level">100%</span><button id="zoomInBtn" title="放大画布" aria-label="放大画布">＋</button><button id="fitBtn" class="fit-view" title="显示全部内容">适应画布</button></div></div></div><div class="body"><div class="board-wrap"><canvas id="board" aria-label="可拖拽、缩放和平移的斐波那契正方形拼图"></canvas><div class="board-note">拖动方块；拖动画布空白处平移；滚轮或“±”缩放。松手后自动吸附。</div></div></div></section>
+    <aside class="card evidence"><div class="head"><h2>规律发现</h2><span>先操作再揭示</span></div><div class="body"><div class="sequence" id="sequence"></div><div class="task" id="taskText">任务：使用边长为 1，1，2，3，5，8，13 的全部正方形，拼成一个长方形。</div><div class="properties"><div class="prop locked">F<sub>n+2</sub> = F<sub>n+1</sub> + F<sub>n</sub></div><div class="prop locked">F<sub>1</sub>+F<sub>3</sub>+⋯+F<sub>2n−1</sub> = F<sub>2n</sub></div><div class="prop locked">F<sub>1</sub><sup>2</sup>+⋯+F<sub>n</sub><sup>2</sup> = F<sub>n</sub>F<sub>n+1</sub></div><div class="prop locked">F<sub>n</sub>/F<sub>n+1</sub> → 0.618…</div></div><button class="reveal" id="revealBtn">显示规律</button><div class="teacher">课堂建议：默认只追问“下一个正方形的边长为什么确定”，其余性质作为拓展。</div></div></aside>
+  </div></main>
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/fibonacci-puzzle.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

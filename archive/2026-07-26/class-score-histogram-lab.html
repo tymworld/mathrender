@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>班级成绩概率分布直方图</title>
+  <style>
+    :root {
+      --ink: #182431;
+      --sub: #556577;
+      --line: rgba(24, 36, 49, 0.12);
+      --card: rgba(255, 252, 246, 0.94);
+      --card-strong: #fffdfa;
+      --accent: #0f8a70;
+      --accent2: #d0712f;
+      --accent3: #235f97;
+      --shadow: 0 24px 60px rgba(16, 74, 63, 0.14);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(15, 138, 112, 0.16), transparent 24%),
+        radial-gradient(circle at left top, rgba(208, 113, 47, 0.10), transparent 22%),
+        linear-gradient(180deg, #f2fbf8 0%, #edf6fb 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      background: rgba(242, 254, 250, 0.88);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(16, 74, 63, 0.09);
+    }
+
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .topbar button {
+      height: 42px;
+      padding: 0 16px;
+      border: 1.5px solid rgba(15, 138, 112, 0.28);
+      border-radius: 999px;
+      background: #f5fffb;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 24px 28px 28px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4px 0 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 3.7vw, 44px);
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    .hero p {
+      margin: 12px auto 0;
+      max-width: 900px;
+      color: var(--sub);
+      font-size: 18px;
+      line-height: 1.75;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      padding: 18px;
+    }
+
+    .controls h2,
+    .chart h2 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .controls-note {
+      margin-top: 8px;
+      color: var(--sub);
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .slider-group {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f4fffb 0%, #eef7ff 100%);
+      border: 1px solid rgba(15, 138, 112, 0.14);
+    }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .slider-group .v {
+      color: var(--accent);
+      font-size: 22px;
+      font-weight: 900;
+      min-width: 84px;
+      text-align: right;
+    }
+
+    .slider-group .subtext {
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .slider-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      border-radius: 14px;
+      border: 1px solid rgba(15, 138, 112, 0.14);
+      background: #f8fffc;
+      padding: 10px 12px;
+    }
+
+    .stat .k {
+      color: var(--sub);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .stat .val {
+      margin-top: 4px;
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .data-chip {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(208, 113, 47, 0.08) 0%, rgba(35, 95, 151, 0.08) 100%);
+      border: 1px solid rgba(208, 113, 47, 0.18);
+      color: #7f4520;
+      font-size: 16px;
+      line-height: 1.7;
+      font-weight: 800;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 12px;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 18px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .canvas-wrap {
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 10px;
+      min-height: 500px;
+    }
+
+    .canvas-wrap canvas {
+      width: 100% !important;
+      display: block;
+    }
+
+    .caption {
+      margin-top: 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(15, 138, 112, 0.08) 0%, rgba(35, 95, 151, 0.09) 100%);
+      border: 1px solid rgba(15, 138, 112, 0.18);
+      padding: 14px;
+      font-size: 18px;
+      line-height: 1.65;
+      font-weight: 800;
+    }
+
+    .caption .hl1 { color: var(--accent); }
+    .caption .hl2 { color: var(--accent2); }
+    .caption .hl3 { color: var(--accent3); }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .panel {
+        padding: 20px 16px 24px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .topbar {
+        padding: 10px 14px;
+      }
+
+      .topbar button {
+        padding: 0 12px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="index.html">← 返回主页</a>
+    <button id="regenBtn">重新生成 20 个班成绩</button>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>班级成绩概率分布直方图</h1>
+      <p>页面加载时先随机生成 20 个教学班、每班 100 名学生的成绩库。再通过三个滑块动态控制纳入的班级数、每班参与统计的人数和组距，观察概率分布直方图怎样随样本范围变化而改变。</p>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>抽样设置</h2>
+        <div class="controls-note">默认按班级编号顺序抽取前若干个班，并从每个班取前若干名学生。成绩库固定不变，直到点击上方按钮重新生成。</div>
+
+        <div class="slider-group">
+          <label>考虑的班级数 <span class="v" id="classCountVal">10 个</span></label>
+          <div class="subtext">从 20 个班中取前若干个班参与统计。</div>
+          <input type="range" id="classCount" min="1" max="20" step="1" value="10" />
+        </div>
+
+        <div class="slider-group">
+          <label>每班考虑的学生数 <span class="v" id="studentCountVal">50 人</span></label>
+          <div class="subtext">每个入选班级只纳入前若干名学生，共同构成样本。</div>
+          <input type="range" id="studentCount" min="10" max="100" step="1" value="50" />
+        </div>
+
+        <div class="slider-group">
+          <label>组距 <span class="v" id="binWidthVal">5 分</span></label>
+          <div class="subtext">组距越小，柱形越细；组距越大，分布更平滑。</div>
+          <input type="range" id="binWidth" min="2" max="20" step="1" value="5" />
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">样本总人数</div>
+            <div class="val" id="sampleN">500</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本均值</div>
+            <div class="val" id="sampleMean">0.0</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本标准差</div>
+            <div class="val" id="sampleSd">0.0</div>
+          </div>
+          <div class="stat">
+            <div class="k">分组个数</div>
+            <div class="val" id="binCount">20</div>
+          </div>
+        </div>
+
+        <div class="data-chip" id="dataChip"></div>
+      </div>
+
+      <div class="card chart">
+        <h2>概率分布直方图</h2>
+        <div class="legend">
+          <span><i style="background: rgba(15, 138, 112, 0.78)"></i>频率密度柱形</span>
+          <span><i style="background: rgba(208, 113, 47, 0.80)"></i>样本均值位置</span>
+          <span><i style="background: rgba(35, 95, 151, 0.78)"></i>参考：全体 20 班总体均值</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="chart" height="460"></canvas>
+        </div>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function randNormal(mu, sigma) {
+  let u = 0;
+  let v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return mu + sigma * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function meanOf(values) {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function sampleSdOf(values, avg) {
+  if (values.length <= 1) return 0;
+  const variance = values.reduce((sum, value) => sum + (value - avg) ** 2, 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+
+function generateDataset() {
+  return Array.from({ length: 20 }, (_, classIndex) => {
+    const classMean = 72 + randNormal(0, 4.8) + (classIndex - 9.5) * 0.18;
+    const classSigma = clamp(8 + randNormal(0, 1.5), 5.5, 13.5);
+    const scores = Array.from({ length: 100 }, () => {
+      const score = Math.round(randNormal(classMean, classSigma));
+      return clamp(score, 0, 100);
+    });
+    return {
+      id: classIndex + 1,
+      mean: classMean,
+      sigma: classSigma,
+      scores
+    };
+  });
+}
+
+function buildHistogram(values, binWidth) {
+  const lo = 0;
+  const hi = 100;
+  const edges = [];
+  for (let start = lo; start < hi; start += binWidth) {
+    edges.push(start);
+  }
+  const counts = edges.map(() => 0);
+  for (const value of values) {
+    const rawIndex = Math.floor((value - lo) / binWidth);
+    const index = clamp(rawIndex, 0, counts.length - 1);
+    counts[index] += 1;
+  }
+  return edges.map((start, index) => {
+    const end = Math.min(start + binWidth, hi);
+    const count = counts[index];
+    const probability = count / values.length;
+    const density = probability / (end - start);
+    return { start, end, count, probability, density };
+  });
+}
+
+const classCountInput = document.getElementById('classCount');
+const studentCountInput = document.getElementById('studentCount');
+const binWidthInput = document.getElementById('binWidth');
+const regenBtn = document.getElementById('regenBtn');
+
+const classCountVal = document.getElementById('classCountVal');
+const studentCountVal = document.getElementById('studentCountVal');
+const binWidthVal = document.getElementById('binWidthVal');
+
+const sampleN = document.getElementById('sampleN');
+const sampleMean = document.getElementById('sampleMean');
+const sampleSd = document.getElementById('sampleSd');
+const binCount = document.getElementById('binCount');
+const dataChip = document.getElementById('dataChip');
+const caption = document.getElementById('caption');
+
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+
+let dataset = generateDataset();
+
+function getSubset() {
+  const classCount = parseInt(classCountInput.value, 10);
+  const studentCount = parseInt(studentCountInput.value, 10);
+  const classes = dataset.slice(0, classCount);
+  const values = classes.flatMap(item => item.scores.slice(0, studentCount));
+  return { classes, values, classCount, studentCount };
+}
+
+function drawChart(histogram, subsetMean, overallMean) {
+  const dpr = window.devicePixelRatio || 1;
+  const cssWidth = canvas.parentElement.clientWidth - 20;
+  const cssHeight = 460;
+  canvas.style.width = cssWidth + 'px';
+  canvas.style.height = cssHeight + 'px';
+  canvas.width = cssWidth * dpr;
+  canvas.height = cssHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const pad = { top: 24, right: 26, bottom: 72, left: 76 };
+  const plotWidth = cssWidth - pad.left - pad.right;
+  const plotHeight = cssHeight - pad.top - pad.bottom;
+  const yMax = Math.max(...histogram.map(item => item.density), 0.001) * 1.16;
+
+  const toX = (x) => pad.left + (x / 100) * plotWidth;
+  const toY = (y) => pad.top + plotHeight - (y / yMax) * plotHeight;
+
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+  ctx.strokeStyle = 'rgba(24,36,49,0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + (i / 5) * plotHeight;
+    const value = yMax * (1 - i / 5);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + plotWidth, y);
+    ctx.stroke();
+
+    ctx.fillStyle = '#27384a';
+    ctx.font = 'bold 13px "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(value.toFixed(3), pad.left - 8, y + 4);
+  }
+
+  ctx.strokeStyle = 'rgba(24,36,49,0.24)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, pad.top + plotHeight);
+  ctx.lineTo(pad.left + plotWidth, pad.top + plotHeight);
+  ctx.stroke();
+
+  for (const item of histogram) {
+    const x = toX(item.start);
+    const width = toX(item.end) - toX(item.start);
+    const y = toY(item.density);
+    const height = pad.top + plotHeight - y;
+    const grad = ctx.createLinearGradient(0, y, 0, pad.top + plotHeight);
+    grad.addColorStop(0, 'rgba(15, 138, 112, 0.84)');
+    grad.addColorStop(1, 'rgba(35, 95, 151, 0.30)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x + 1, y, Math.max(1, width - 2), height);
+  }
+
+  const drawLine = (xValue, color, dash, label) => {
+    const x = toX(xValue);
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash(dash);
+    ctx.beginPath();
+    ctx.moveTo(x, pad.top);
+    ctx.lineTo(x, pad.top + plotHeight);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = color;
+    ctx.font = 'bold 14px "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, pad.top - 6);
+  };
+
+  drawLine(subsetMean, '#d0712f', [7, 5], '样本均值');
+  drawLine(overallMean, '#235f97', [4, 4], '总体均值');
+
+  ctx.fillStyle = '#182431';
+  ctx.font = 'bold 16px "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('分数', pad.left + plotWidth / 2, cssHeight - 18);
+
+  ctx.save();
+  ctx.translate(18, pad.top + plotHeight / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('频率密度', 0, 0);
+  ctx.restore();
+
+  ctx.font = 'bold 13px "PingFang SC", sans-serif';
+  for (let x = 0; x <= 100; x += 10) {
+    ctx.fillStyle = '#27384a';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(x), toX(x), pad.top + plotHeight + 22);
+  }
+}
+
+function render() {
+  const { classes, values, classCount, studentCount } = getSubset();
+  const width = parseInt(binWidthInput.value, 10);
+  const histogram = buildHistogram(values, width);
+  const avg = meanOf(values);
+  const sd = sampleSdOf(values, avg);
+  const overallValues = dataset.flatMap(item => item.scores);
+  const overallMean = meanOf(overallValues);
+  const classMeans = classes.map(item => meanOf(item.scores.slice(0, studentCount)));
+  const localMin = Math.min(...values);
+  const localMax = Math.max(...values);
+
+  classCountVal.textContent = classCount + ' 个';
+  studentCountVal.textContent = studentCount + ' 人';
+  binWidthVal.textContent = width + ' 分';
+
+  sampleN.textContent = String(values.length);
+  sampleMean.textContent = avg.toFixed(1);
+  sampleSd.textContent = sd.toFixed(1);
+  binCount.textContent = String(histogram.length);
+
+  dataChip.innerHTML = '当前样本来自第 <strong>' + classes[0].id + '</strong> 班到第 <strong>' + classes[classes.length - 1].id + '</strong> 班，共 <strong>' + values.length + '</strong> 人；分数范围约在 <strong>' + localMin + '</strong> 到 <strong>' + localMax + '</strong> 分之间。';
+
+  const classMeanSpread = Math.max(...classMeans) - Math.min(...classMeans);
+  let message = '当 <span class="hl1">班级数增加</span> 或 <span class="hl1">每班样本数增加</span> 时，柱形通常会更稳定，整体轮廓更接近连续分布。';
+  if (classMeanSpread > 4.5) {
+    message = '这组班级之间的平均成绩差异较明显，所以直方图会显得更宽，甚至出现轻微偏斜。';
+  } else if (width >= 12) {
+    message = '当前 <span class="hl2">组距较大</span>，细节被合并了，整体趋势更容易看清，但局部起伏会被抹平。';
+  } else if (width <= 4) {
+    message = '当前 <span class="hl3">组距较小</span>，柱形更细，能看见更多随机波动，也更适合比较局部差异。';
+  }
+
+  caption.innerHTML = '已纳入 <span class="hl1">' + classCount + '</span> 个班、每班 <span class="hl1">' + studentCount + '</span> 名学生，样本均值约为 <span class="hl2">' + avg.toFixed(1) + '</span> 分，标准差约为 <span class="hl3">' + sd.toFixed(1) + '</span>。' + message;
+
+  drawChart(histogram, avg, overallMean);
+}
+
+regenBtn.addEventListener('click', () => {
+  dataset = generateDataset();
+  render();
+});
+
+[classCountInput, studentCountInput, binWidthInput].forEach(input => {
+  input.addEventListener('input', render);
+});
+
+window.addEventListener('resize', render);
+render();
+</script>
+</body>
+</html>

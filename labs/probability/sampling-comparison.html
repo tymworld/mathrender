@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>放回与不放回对照实验 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/sampling-comparison.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="sampling-comparison">
+  <div class="app">
+    <section class="hero">
+      <h1>超几何分布 vs 二项分布：放回与不放回的对照实验</h1>
+
+    </section>
+
+    <section class="card controls">
+      <div class="controls-line">
+        <div class="control-group">
+          <div class="field inline">
+          <label for="aInput">白球数 a</label>
+          <input id="aInput" type="number" min="1" max="3000" step="1" value="10" />
+        </div>
+          <div class="field inline">
+          <label for="bInput">黑球数 b</label>
+          <input id="bInput" type="number" min="1" max="3000" step="1" value="10" />
+        </div>
+          <div class="field inline">
+          <label for="nInput">抽取次数 n</label>
+          <input id="nInput" type="number" min="1" max="30" step="1" value="5" />
+        </div>
+          <div class="field inline">
+          <label for="speedSelect">动画速度</label>
+          <select id="speedSelect">
+            <option>慢</option>
+            <option>中</option>
+            <option selected>快</option>
+            <option>极快</option>
+          </select>
+        </div>
+          <div class="field inline">
+          <label for="autoBatchSelect">自动实验轮数</label>
+          <select id="autoBatchSelect">
+            <option value="10">10 次</option>
+            <option value="50">50 次</option>
+            <option value="100" selected>100 次</option>
+            <option value="500">500 次</option>
+            <option value="1000">1000 次</option>
+          </select>
+        </div>
+          <div class="field inline">
+          <label for="histHeightInput">图1高度</label>
+          <input id="histHeightInput" type="number" min="220" max="700" step="10" value="340" />
+        </div>
+        </div>
+
+        <div class="button-panel">
+          <span class="title">操作区</span>
+          <div class="btn-row">
+            <button class="btn primary" id="singleBtn">单次演示</button>
+            <button class="btn warm" id="autoBtn">自动实验</button>
+            <button class="btn ghost" id="pauseBtn">暂停</button>
+            <button class="btn ghost" id="resetBtn">重置统计</button>
+            <button class="btn subtle-blue" id="randomBtn">随机生成参数</button>
+          </div>
+        </div>
+
+        <div class="button-panel">
+          <span class="title">参数预设</span>
+          <div class="preset-row">
+            <button class="btn ghost preset" data-a="5" data-b="5" data-n="5">5个球</button>
+            <button class="btn ghost preset" data-a="50" data-b="50" data-n="5">50个球</button>
+            <button class="btn ghost preset" data-a="500" data-b="500" data-n="5">500个球</button>
+          </div>
+        </div>
+
+        <div class="scale-panel">
+          <span class="title">保持比例不变，直接放大总体规模</span>
+          <div class="scale-row">
+            <button class="btn ghost" id="scale10Btn">规模 ×10</button>
+            <button class="btn ghost" id="scale100Btn">规模 ×100</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <label class="toggle-pill"><input id="showTheory" type="checkbox" /> 显示理论分布</label>
+          <label class="toggle-pill"><input id="showExp" type="checkbox" checked /> 显示实验频率</label>
+          <label class="toggle-pill"><input id="showDiff" type="checkbox" /> 显示差值图</label>
+          <label class="toggle-pill"><input id="highlightRatio" type="checkbox" /> 高亮 n / (a+b) 指标</label>
+          <label class="toggle-pill"><input id="showMiniStats" type="checkbox" /> 显示过程统计</label>
+          <label class="toggle-pill"><input id="useBatchAuto" type="checkbox" /> 自动实验全部批处理</label>
+          <label class="toggle-pill"><input id="sequentialMode" type="checkbox" checked /> 先左后右演示</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="sim-grid">
+      <div class="card panel" id="withoutPanel">
+        <div class="panel-head">
+          <div>
+            <h3>不放回抽样（超几何分布）</h3>
+          </div>
+        </div>
+
+        <div class="bag-shell">
+          <div class="bag-grid" id="withoutBag"></div>
+        </div>
+
+        <div class="current-wrap">
+          <div class="current-ball idle" id="withoutCurrentBall">?</div>
+          <div>
+            <div class="sample-top">
+              <strong>本轮抽样轨迹</strong>
+              <span id="withoutStepText">第 0 / 5 次</span>
+            </div>
+            <div class="sample-row" id="withoutSample"></div>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="withoutStatsGrid">
+          <div class="mini-stat">
+            <div class="k">当前抽到</div>
+            <div class="v" id="withoutCurrentText">—</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">本轮白球数</div>
+            <div class="v" id="withoutWhiteCount">0</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中剩余白球</div>
+            <div class="v" id="withoutWhiteRemain">10</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中剩余黑球</div>
+            <div class="v" id="withoutBlackRemain">10</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card panel" id="withPanel">
+        <div class="panel-head">
+          <div>
+            <h3>放回抽样（二项分布）</h3>
+          </div>
+        </div>
+
+        <div class="bag-shell">
+          <div class="bag-grid" id="withBag"></div>
+        </div>
+
+        <div class="current-wrap">
+          <div class="current-ball idle" id="withCurrentBall">?</div>
+          <div>
+            <div class="sample-top">
+              <strong>本轮抽样轨迹</strong>
+              <span id="withStepText">第 0 / 5 次</span>
+            </div>
+            <div class="sample-row" id="withSample"></div>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="withStatsGrid">
+          <div class="mini-stat">
+            <div class="k">当前抽到</div>
+            <div class="v" id="withCurrentText">—</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">本轮白球数</div>
+            <div class="v" id="withWhiteCount">0</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中白球数</div>
+            <div class="v" id="withWhiteRemain">10</div>
+          </div>
+          <div class="mini-stat">
+            <div class="k">袋中黑球数</div>
+            <div class="v" id="withBlackRemain">10</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card chart-card">
+      <!--<h3>图1：柱状图对照</h3>-->
+      <canvas class="chart-canvas" id="histCanvas"></canvas>
+    </section>
+
+    <section class="chart-2col">
+      <div class="card chart-card">
+        <h3>图2：理论分布对照</h3>
+        <p>蓝线表示不放回对应的超几何分布，橙线表示放回对应的二项分布。</p>
+        <canvas class="chart-canvas small" id="theoryCanvas"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3>图3：差值图 |P<sub>HG</sub> - P<sub>Bin</sub>|</h3>
+        <p>这张图专门刻画每个 k 处的理论差值。峰值和总和越小，说明“差别不大”的表述越有依据。</p>
+        <canvas class="chart-canvas small" id="diffCanvas"></canvas>
+      </div>
+    </section>
+
+    <section class="card table-card">
+      <h3>结果表</h3>
+      <p>便于课堂截图或对照讲解。若尚未开始实验，则实验频率列为 0。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>k</th>
+              <th>超几何理论值</th>
+              <th>二项理论值</th>
+              <th>|Δ|</th>
+              <th>不放回实验频率</th>
+              <th>放回实验频率</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="footnote">提示：当 a+b 很大时，袋中球会采用“按比例缩略显示”，但统计与理论计算均使用真实参数。</div>
+
+    <details class="card reference-info">
+      <summary>参考信息（点击展开）</summary>
+      <div class="status-strip">
+        <div class="metric" id="ratioMetric">
+          <div class="label">核心比例指标</div>
+          <div class="value" id="ratioText">n / (a+b) = 0.25</div>
+          <div class="hint" id="ratioHint">当这个比例较小时，不放回中每次抽取对总体组成的影响更小，两种分布通常更接近。</div>
+        </div>
+        <div class="metric" id="judgeMetric">
+          <div class="label">当前理论判断</div>
+          <div class="value" id="judgeText">差异较明显</div>
+          <div class="hint" id="judgeHint">请先看机制差异，再看总体规模放大后两种分布如何逐渐靠近。</div>
+        </div>
+        <div class="metric">
+          <div class="label">总实验轮数</div>
+          <div class="value" id="expCount">0</div>
+          <div class="hint">每轮都会同时完成一次“放回”和“不放回”的 n 次抽样。</div>
+        </div>
+        <div class="metric">
+          <div class="label">总体差异指标</div>
+          <div class="value" id="tvText">Σ|ΔP| = 0.0000</div>
+          <div class="hint" id="maxDiffText">max|ΔP| = 0.0000</div>
+        </div>
+      </div>
+
+      <section class="concept-grid">
+        <div class="card concept-card">
+          <div class="tag red">不放回</div>
+          <h3>后续概率会变化</h3>
+          <p>每次抽走一个球后，袋中白球数和黑球数都可能改变，因此后面每一步的抽取概率依赖前面已经发生的结果。</p>
+        </div>
+        <div class="card concept-card">
+          <div class="tag blue">放回</div>
+          <h3>每次环境保持不变</h3>
+          <p>摸出后放回，袋中组成始终不变，各次抽取共享同一个白球概率 <span id="pText">p = 0.5000</span>。</p>
+        </div>
+        <div class="card concept-card">
+          <div class="tag green">统计对照</div>
+          <h3>看分布而不是只看单轮</h3>
+          <p>单轮结果有波动，但大量重复实验后，“抽到白球个数”的频率分布会稳定下来，更适合比较两种抽样机制。</p>
+        </div>
+        <div class="card concept-card">
+          <div class="tag orange">关键结论</div>
+          <h3>总体足够大时更接近</h3>
+          <p>当 a+b 远大于 n 时，不放回造成的组成变化在短时间内变得很小，因此超几何分布可由二项分布近似。</p>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="card summary-card">
+          <h3>当前课堂观察</h3>
+          <p id="observationText">先通过单次演示观察“袋中组成是否变化”，再通过自动实验比较两种分布的频率图。</p>
+          <ul>
+            <li id="lastResultText">本轮尚未开始。</li>
+            <li id="mechanismText">不放回：后一步的概率会受到前一步结果影响；放回：每一步环境相同。</li>
+            <li id="ratioExplainText">当 n / (a+b) 较小时，单次抽取对总体组成的扰动更弱。</li>
+          </ul>
+        </div>
+        <div class="card summary-card">
+          <h3>理论结论</h3>
+          <p id="conclusionText">当前参数下，超几何分布与二项分布的理论差异可通过下方差值图与结果表来量化观察。</p>
+        </div>
+        <div class="card summary-card">
+          <h3>课堂建议</h3>
+          <p>建议先用“预设1”让学生感受差异，再点击“规模 ×10”或切换到“预设3”，观察分布如何逐步重合。</p>
+        </div>
+      </section>
+    </details>
+  </div>
+
+  <div class="message" id="messageBar"></div>
+
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/sampling-comparison.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+.env.qwen
+.env.qwen.*
+!.env.qwen.example
+.DS_Store
+._*
+@eaDir/

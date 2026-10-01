@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>等比数列的极限 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/geometric-limits.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="geometric-limits">
+  <header class="topbar"><a class="back" href="../../index.html">← 实验室</a><div class="title">等比数列的极限实验室</div><div class="lesson">05｜等比数列前 n 项和</div><div class="top-actions"><button id="focusBtn">聚焦模式</button><button id="themeBtn">深色</button></div></header>
+  <main class="app"><div class="layout">
+    <aside class="card sidebar"><div class="head"><h2>参数设置</h2><span>a<sub>n</sub>=aq<sup>n−1</sup></span></div><div class="body">
+      <div class="control"><label><span>a（首项）</span><input id="aInput" type="number" min="-10" max="10" step="0.1" value="2"></label><input id="aRange" type="range" min="-10" max="10" step="0.1" value="2"></div>
+      <div class="control"><label><span>q（公比）</span><input id="qInput" type="number" min="-2" max="2" step="0.05" value="0.5"></label><input id="qRange" type="range" min="-2" max="2" step="0.05" value="0.5"></div>
+      <div class="control"><label><span>N（显示项数）</span><b id="nValue">12</b></label><input id="nRange" type="range" min="5" max="50" step="1" value="12"></div>
+      <div class="presets" aria-label="公比预设"><button data-q="-1.5">−1.5</button><button data-q="-1">−1</button><button data-q="-.5">−0.5</button><button data-q=".5" class="active">0.5</button><button data-q="1">1</button><button data-q="1.5">1.5</button></div>
+      <div class="actions"><button class="primary" id="stepBtn">突出下一项</button><button id="resetBtn">重置</button><button class="sum-toggle" id="sumToggleBtn" aria-pressed="false">显示前 n 项和</button></div><div class="chart-modes" aria-label="图表显示方式"><button class="active" data-chart-mode="line">曲线</button><button data-chart-mode="bar">柱状图</button><button data-chart-mode="points">只显示点</button></div><div class="warn" id="boundaryNote">拖动参数，观察数列项的变化。</div>
+    </div></aside>
+    <section class="card"><div class="head"><h2>图像观察</h2><span id="activePoint">已显示前 12 项</span></div><div class="body charts"><div class="chart-box"><div class="chart-title blue">数列项 a<sub>n</sub></div><div class="legend">参考线 y = 0</div><canvas id="seqChart"></canvas></div><div class="chart-box sum-dependent is-hidden"><div class="chart-title teal">前 n 项和 S<sub>n</sub></div><div class="legend" id="sumLegend">参考线 y = 4</div><canvas id="sumChart"></canvas></div></div></section>
+    <aside class="card evidence"><div class="head"><h2>数据证据</h2><span>观察—猜想—证明</span></div><div class="body"><div class="formula" id="formula">a<sub>n</sub>=2·0.5<sup>n−1</sup></div><div class="table-wrap"><table><thead><tr><th>n</th><th>a<sub>n</sub></th><th class="sum-dependent is-hidden">S<sub>n</sub></th></tr></thead><tbody id="dataBody"></tbody></table></div><div class="teacher sum-dependent is-hidden"><span id="conclusion" class="blur">当 |q|&lt;1 时，a<sub>n</sub>→0，S<sub>n</sub>→a/(1−q)。有限图表支持猜想，结论仍需由公式证明。</span></div><button class="reveal sum-dependent is-hidden" id="revealBtn">教师揭示</button></div></aside>
+  </div></main>
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/geometric-limits.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

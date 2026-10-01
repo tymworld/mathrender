@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>班级成绩直方图 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/score-histogram.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="score-histogram">
+<div class="shell">
+  <div class="topbar">
+    <a href="../../index.html">← 返回主页</a>
+    <button id="regenBtn">重新生成 20 个班成绩</button>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>班级成绩概率分布直方图</h1>
+      <p>页面加载时先随机生成 20 个教学班、每班 100 名学生的成绩库。再通过三个滑块动态控制纳入的班级数、每班参与统计的人数和组距，观察概率分布直方图怎样随样本范围变化而改变。</p>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>抽样设置</h2>
+        <div class="controls-note">默认按班级编号顺序抽取前若干个班，并从每个班取前若干名学生。成绩库固定不变，直到点击上方按钮重新生成。</div>
+
+        <div class="slider-group">
+          <label>考虑的班级数 <span class="v" id="classCountVal">10 个</span></label>
+          <div class="subtext">从 20 个班中取前若干个班参与统计。</div>
+          <input type="range" id="classCount" min="1" max="20" step="1" value="10" />
+        </div>
+
+        <div class="slider-group">
+          <label>每班考虑的学生数 <span class="v" id="studentCountVal">50 人</span></label>
+          <div class="subtext">每个入选班级只纳入前若干名学生，共同构成样本。</div>
+          <input type="range" id="studentCount" min="10" max="100" step="1" value="50" />
+        </div>
+
+        <div class="slider-group">
+          <label>组距 <span class="v" id="binWidthVal">5 分</span></label>
+          <div class="subtext">组距越小，柱形越细；组距越大，分布更平滑。</div>
+          <input type="range" id="binWidth" min="2" max="20" step="1" value="5" />
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">样本总人数</div>
+            <div class="val" id="sampleN">500</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本均值</div>
+            <div class="val" id="sampleMean">0.0</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本标准差</div>
+            <div class="val" id="sampleSd">0.0</div>
+          </div>
+          <div class="stat">
+            <div class="k">分组个数</div>
+            <div class="val" id="binCount">20</div>
+          </div>
+        </div>
+
+        <div class="data-chip" id="dataChip"></div>
+      </div>
+
+      <div class="card chart">
+        <h2>概率分布直方图</h2>
+        <div class="legend">
+          <span><i style="background: rgba(15, 138, 112, 0.78)"></i>频率密度柱形</span>
+          <span><i style="background: rgba(208, 113, 47, 0.80)"></i>样本均值位置</span>
+          <span><i style="background: rgba(35, 95, 151, 0.78)"></i>参考：全体 20 班总体均值</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="chart" height="460"></canvas>
+        </div>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/score-histogram.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

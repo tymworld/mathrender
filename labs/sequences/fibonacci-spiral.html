@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>斐波那契螺旋生长 · MathRender</title>
+  
+  <link rel="stylesheet" href="../../assets/css/labs/fibonacci-spiral.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="fibonacci-spiral">
+  <header class="topbar"><a class="back" href="../../index.html">← 实验室</a><div class="title">螺旋生长动画</div><div class="lesson">06｜递推数列</div><div class="tabs"><button data-view="squares">方块生长</button><button data-view="arcs" class="active">圆弧绘制</button><button data-view="ratio">比值观察</button></div><div class="top-actions"><button id="focusBtn">聚焦模式</button><button id="themeBtn">深色</button></div></header>
+  <main class="app"><div class="layout">
+    <aside class="card sidebar"><div class="head"><h2>动画控制</h2><span id="status">已暂停</span></div><div class="body"><div class="stage-number">第 <span id="stageNum">1</span> 块</div><div class="stage-desc" id="stageDesc">完成边长 1 的正方形，并绘制对应圆弧。</div><div class="range-row"><label><span>构造进度</span><b id="rangeValue">1 / 20</b></label><input id="stageRange" type="range" min="1" max="20" value="1"></div><div class="actions"><button class="primary" id="playBtn">▶ 播放</button><button id="nextBtn">下一步 →</button><button id="prevBtn">← 上一步</button><button id="resetBtn">↻ 重置</button><button class="zoom-control" id="zoomBtn" aria-pressed="false">⌕ 放大右下角</button></div><div class="speed"><button data-speed=".6">0.5×</button><button class="active" data-speed="1">1×</button><button data-speed="1.8">2×</button></div><div class="toggle"><span>显示方格</span><div id="gridToggle" class="switch on"></div></div><div class="toggle"><span>显示圆心</span><div id="centerToggle" class="switch"></div></div><div class="toggle"><span>参考曲线</span><div id="refToggle" class="switch"></div></div></div></aside>
+    <section class="card canvas-card"><div class="head"><h2>由正方形到螺旋</h2><span id="viewLabel">四分之一圆构造</span></div><div class="body"><div class="canvas-wrap"><canvas id="board" aria-label="斐波那契正方形和四分之一圆弧动画；拖动可移动画布，滚轮可缩放"></canvas><div class="prompt">拖动画布移动 · 滚轮缩放 · 双击还原视图</div></div></div></section>
+    <aside class="card evidence"><div class="head"><h2>数列证据</h2><span>同步观察</span></div><div class="body"><div class="sequence">1，1，2，3，5，8，13，21，34，55，89，144，233，377，610，987，1597，2584，4181，6765</div><div class="formula">F<sub>n+2</sub> = F<sub>n+1</sub> + F<sub>n</sub></div><div class="formula">F<sub>n</sub>/F<sub>n+1</sub> → 0.618…</div><table class="ratio-table"><thead><tr><th>n</th><th>F<sub>n</sub>/F<sub>n+1</sub></th></tr></thead><tbody id="ratioBody"></tbody></table><div class="steps"><div class="done">1　添加正方形</div><div class="done">2　确定圆心</div><div class="done">3　绘制四分之一圆</div><div id="continueStep">4　继续向外</div></div><div class="note">构造圆弧由多个四分之一圆组成，与真正的黄金螺旋相近，但并不完全相同。</div></div></aside>
+  </div></main>
+  
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/fibonacci-spiral.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

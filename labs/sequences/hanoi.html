@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>汉诺塔与递归 · MathRender</title>
+  
+
+
+  <link rel="stylesheet" href="../../assets/css/labs/hanoi.css">
+  <link rel="stylesheet" href="../../assets/css/classroom.css">
+</head>
+<body data-lab-id="hanoi">
+<div class="home-nav-bar">
+  <a class="home-nav-link" href="../../index.html">← 返回主页 Home</a>
+  <div class="home-nav-meta">高中数学教学实验室 · 开心课堂荣誉出品 MathRender.com · © 2026</div>
+  <button id="themeToggle" class="theme-toggle" type="button">切换深色</button>
+</div>
+<div class="app">
+  <section class="hero">
+    <h1>汉诺塔实验室</h1>
+  </section>
+
+  <section class="grid">
+    <aside class="card sidebar">
+      <div class="card-body">
+        <div class="control-group">
+          <label>圆盘数量：<b id="diskCountLabel">4</b>
+            <input id="diskCount" type="range" min="1" max="8" value="4" />
+          </label>
+
+          <div class="mode-row">
+            <div class="mode-label">模式</div>
+            <select id="gameMode">
+              <option value="practice">练习模式</option>
+              <option value="challenge">挑战模式</option>
+            </select>
+          </div>
+
+          <div class="inline limit-row">
+            <label><span class="limit-label">允许超出最优步数</span>
+              <input id="allowance" type="number" min="0" max="20" value="2" />
+            </label>
+            <label><span class="limit-label">允许错误次数</span>
+              <input id="maxErrors" type="number" min="1" max="20" value="3" />
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="btn-row">
+            <button class="primary" id="resetBtn">重新开始</button>
+            <button id="undoBtn">撤销一步</button>
+          </div>
+          <div class="btn-row">
+            <button class="secondary" id="hintBtn">提示一步</button>
+            <button class="ghost" id="rulesBtn">显示规则</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>演示方案
+            <select id="strategy">
+              <option value="optimal">最优方案</option>
+              <option value="second">次快方案</option>
+              <option value="random">随机方案</option>
+            </select>
+          </label>
+
+          <div class="tight-row">
+            <label>自动节奏：<b id="speedLabel">中</b>
+              <input id="speed" type="range" min="1" max="5" value="3" />
+            </label>
+            <label>移动速度：<b id="animSpeedLabel">中</b>
+              <input id="animSpeed" type="range" min="1" max="5" value="3" />
+            </label>
+          </div>
+
+          <div class="btn-row">
+            <button class="good" id="autoBtn">开始自动演示</button>
+            <button class="warn" id="stepBtn">单步播放</button>
+          </div>
+          <div class="btn-row">
+            <button id="pauseBtn">暂停 / 继续</button>
+            <button class="ghost" id="stopBtn">停止演示</button>
+          </div>
+        </div>
+        <!--
+
+        <div class="formula">
+          <b>教学提醒：</b><br/>
+          最少步数公式为 <b>2<sup>n</sup> - 1</b>。<br/>
+          最优思路：先移 <b>n-1</b> 个，再移最大盘，最后再移 <b>n-1</b> 个。
+        </div>
+    -->
+
+        <div class="footer-note">
+          操作方式：先点选起点柱，再点选目标柱。<br/><!--
+          警告弹窗出现后，可<strong>点击屏幕</strong>或按 <span class="kbd">Esc</span> / <span class="kbd">Enter</span> / <span class="kbd">空格</span> 立即关闭。-->
+        </div>
+      </div>
+    </aside>
+
+    <main class="card board-card">
+        <!--
+        <div class="card-head">
+        <h2>操作区</h2>
+        <div class="legend">
+            <span class="chip">紫框：已选起点</span>
+            <span class="chip">绿框：合法目标</span>
+            <span class="chip">底部日志：过程追踪</span>
+        </div>
+        </div>
+        -->
+      <div class="card-body">
+        <div class="banner" id="banner">
+          <span>👋</span>
+          <div><b>欢迎使用。</b> 先选中一根柱子，再选目标柱子；也可以直接让程序自动演示。</div>
+        </div>
+
+        <div class="board" id="board">
+          <div class="pegs" id="pegs"></div>
+        </div>
+
+        <div class="status-area">
+          <div class="stats-toggle-row">
+            <button class="ghost" id="toggleMoveStatBtn">隐藏当前步数</button>
+            <button class="ghost" id="toggleExtraStatsBtn">显示其余统计</button>
+          </div>
+          <div class="status-strip">
+            <div class="stat" id="moveStat"><div class="k">当前步数</div><div class="v" id="moveCount">0</div></div>
+            <div class="stat is-hidden extra-stat"><div class="k">最优步数</div><div class="v" id="optimalCount">15</div></div>
+            <div class="stat is-hidden extra-stat"><div class="k">错误次数</div><div class="v" id="errorCount">0</div></div>
+            <div class="stat is-hidden extra-stat"><div class="k">至少还需</div><div class="v" id="remainCount">15</div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="card right-panels">
+      <!--
+      <div class="card-head"><h2>教学辅助</h2><span class="chip">讲解面板</span></div>
+      -->
+
+      <div class="card-body">
+        <div class="panel is-hidden" id="comparePanel">
+          <h3 style="margin:0 0 10px;font-size:15px;">方案比较</h3>
+          <div class="history" id="compareBox"></div>
+        </div>
+
+        <div class="panel log-panel">
+          <h3 style="margin:0 0 10px;font-size:15px;">操作日志</h3>
+          <div class="history" id="history"></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="card bottom-teaching">
+    <div class="card-body">
+      <div class="bottom-teaching-head">
+        <h3>教学辅助信息</h3>
+        <button class="ghost" id="toggleBottomInfoBtn">显示教学信息</button>
+      </div>
+      <div class="bottom-teaching-content is-hidden" id="bottomTeachingContent">
+        <div class="panel">
+          <div class="mini-grid">
+            <div class="mini">
+              <div class="key">当前状态编码</div>
+              <div class="val" id="stateCode">0000</div>
+            </div>
+            <div class="mini">
+              <div class="key">挑战步数上限</div>
+              <div class="val" id="limitCount">17</div>
+            </div>
+          </div>
+        </div>
+        <div class="formula" style="font-size:15px;">
+          <b>教学提醒：</b><br/>
+          最少步数公式为 <b>2<sup>n</sup> - 1</b>。<br/>
+          最优思路：先移 <b>n-1</b> 个，再移最大盘，最后再移 <b>n-1</b> 个。
+        </div>
+        <div class="panel">
+          <h3 style="margin:0 0 10px;font-size:15px;">即时讲解</h3>
+          <div class="tip" id="teachingTip">
+            若有 <b>n</b> 个盘，目标是把整塔从 A 移到 C。核心思想不是“硬试”，而是把问题拆成三个更小的问题。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="alert-overlay" id="alertOverlay"></div>
+<div class="toast" id="toast"></div>
+
+
+  <script defer src="../../assets/js/catalog.js"></script>
+  <script defer src="../../assets/js/labs/hanoi.js"></script>
+  <script defer src="../../assets/js/classroom.js"></script>
+</body>
+</html>

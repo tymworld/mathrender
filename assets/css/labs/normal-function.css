@@ -1,0 +1,206 @@
+:root {
+      --ink: #16202d;
+      --sub: #546170;
+      --line: rgba(22, 32, 45, 0.12);
+      --card: rgba(255, 251, 245, 0.92);
+      --card-strong: #fffdfa;
+      --accent: #1f6fb2;
+      --accent2: #b25733;
+      --shadow: 0 24px 60px rgba(22, 58, 100, 0.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(92, 150, 210, 0.18), transparent 24%),
+        radial-gradient(circle at left top, rgba(31, 111, 178, 0.12), transparent 20%),
+        linear-gradient(180deg, #eef4fb 0%, #e4edf8 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(240, 248, 255, 0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(22, 58, 100, 0.08);
+    }
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 24px 28px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 6px 0 16px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 46px);
+      letter-spacing: 0.06em;
+      color: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .card {
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      padding: 16px;
+    }
+
+    .controls h2,
+    .chart h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .slider-group {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #f6faff;
+      border: 1px solid rgba(31, 111, 178, 0.16);
+    }
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .slider-group .v {
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+      min-width: 64px;
+      text-align: right;
+    }
+    .slider-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .formula {
+      margin-top: 12px;
+      border-radius: 14px;
+      background: #fff8f2;
+      border: 1px solid rgba(178, 87, 51, 0.2);
+      padding: 12px;
+      color: #7c3b20;
+      line-height: 1.5;
+    }
+    .formula .eq-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #8b4a2a;
+      margin-bottom: 4px;
+    }
+    .formula .eq-main {
+      margin-top: 4px;
+    }
+    .formula math {
+      font-size: 30px;
+      font-weight: 900;
+      color: #7c3b20;
+    }
+    .formula .eq-sub {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(178, 87, 51, 0.28);
+    }
+    .formula .eq-sub math {
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      flex: 1 1 96px;
+      border-radius: 12px;
+      border: 1px solid rgba(31, 111, 178, 0.15);
+      background: #f3f9ff;
+      padding: 8px 10px;
+    }
+    .stat .k {
+      font-size: 13px;
+      color: var(--sub);
+      font-weight: 700;
+    }
+    .stat .val {
+      margin-top: 3px;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .canvas-wrap {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 10px;
+      min-height: 480px;
+      position: relative;
+    }
+
+    .canvas-wrap canvas {
+      width: 100% !important;
+      display: block;
+    }
+
+    .tip {
+      margin-top: 10px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(31, 111, 178, 0.08) 0%, rgba(92, 150, 210, 0.12) 100%);
+      border: 1px solid rgba(31, 111, 178, 0.2);
+      padding: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }

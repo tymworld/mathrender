@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>正态分布函数动态演示</title>
+  <style>
+    :root {
+      --ink: #16202d;
+      --sub: #546170;
+      --line: rgba(22, 32, 45, 0.12);
+      --card: rgba(255, 251, 245, 0.92);
+      --card-strong: #fffdfa;
+      --accent: #1f6fb2;
+      --accent2: #b25733;
+      --shadow: 0 24px 60px rgba(22, 58, 100, 0.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(92, 150, 210, 0.18), transparent 24%),
+        radial-gradient(circle at left top, rgba(31, 111, 178, 0.12), transparent 20%),
+        linear-gradient(180deg, #eef4fb 0%, #e4edf8 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(240, 248, 255, 0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(22, 58, 100, 0.08);
+    }
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 24px 28px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 6px 0 16px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 46px);
+      letter-spacing: 0.06em;
+      color: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .card {
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      padding: 16px;
+    }
+
+    .controls h2,
+    .chart h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .slider-group {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #f6faff;
+      border: 1px solid rgba(31, 111, 178, 0.16);
+    }
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .slider-group .v {
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+      min-width: 64px;
+      text-align: right;
+    }
+    .slider-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .formula {
+      margin-top: 12px;
+      border-radius: 14px;
+      background: #fff8f2;
+      border: 1px solid rgba(178, 87, 51, 0.2);
+      padding: 12px;
+      color: #7c3b20;
+      line-height: 1.5;
+    }
+    .formula .eq-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #8b4a2a;
+      margin-bottom: 4px;
+    }
+    .formula .eq-main {
+      margin-top: 4px;
+    }
+    .formula math {
+      font-size: 30px;
+      font-weight: 900;
+      color: #7c3b20;
+    }
+    .formula .eq-sub {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(178, 87, 51, 0.28);
+    }
+    .formula .eq-sub math {
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      flex: 1 1 96px;
+      border-radius: 12px;
+      border: 1px solid rgba(31, 111, 178, 0.15);
+      background: #f3f9ff;
+      padding: 8px 10px;
+    }
+    .stat .k {
+      font-size: 13px;
+      color: var(--sub);
+      font-weight: 700;
+    }
+    .stat .val {
+      margin-top: 3px;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .canvas-wrap {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 10px;
+      min-height: 480px;
+      position: relative;
+    }
+
+    .canvas-wrap canvas {
+      width: 100% !important;
+      display: block;
+    }
+
+    .tip {
+      margin-top: 10px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(31, 111, 178, 0.08) 0%, rgba(92, 150, 210, 0.12) 100%);
+      border: 1px solid rgba(31, 111, 178, 0.2);
+      padding: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="index.html">← 返回主页</a>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>正态分布函数动态演示</h1>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>参数滑块</h2>
+
+        <div class="slider-group">
+          <label>均值 μ <span class="v" id="muVal">0.00</span></label>
+          <input type="range" id="mu" min="-4" max="4" step="0.01" value="0" />
+        </div>
+
+        <div class="slider-group">
+          <label>标准差 σ <span class="v" id="sigmaVal">1.00</span></label>
+          <input type="range" id="sigma" min="0.2" max="3" step="0.01" value="1" />
+        </div>
+
+        <div class="slider-group">
+          <label>振幅 A <span class="v" id="ampVal">1.00</span></label>
+          <input type="range" id="amp" min="0.2" max="2.5" step="0.01" value="1" />
+        </div>
+
+        <div class="slider-group">
+          <label>横轴范围 L <span class="v" id="rangeVal">5.0</span></label>
+          <input type="range" id="xRange" min="3" max="10" step="0.1" value="5" />
+        </div>
+
+        <div class="formula" id="formulaText"></div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">峰值位置</div>
+            <div class="val" id="peakX">x = 0</div>
+          </div>
+          <div class="stat">
+            <div class="k">峰值大小</div>
+            <div class="val" id="peakY">0.0000</div>
+          </div>
+          <div class="stat">
+            <div class="k">拐点</div>
+            <div class="val" id="inflect">μ ± σ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart">
+        <h2>函数图像</h2>
+        <div class="canvas-wrap">
+          <canvas id="chart" height="450"></canvas>
+        </div>
+        <div class="tip" id="tipText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function normalPDF(x, mu, sigma) {
+  const coeff = 1 / (sigma * Math.sqrt(2 * Math.PI));
+  return coeff * Math.exp(-0.5 * ((x - mu) / sigma) ** 2);
+}
+
+const muInput = document.getElementById('mu');
+const sigmaInput = document.getElementById('sigma');
+const ampInput = document.getElementById('amp');
+const xRangeInput = document.getElementById('xRange');
+
+const muVal = document.getElementById('muVal');
+const sigmaVal = document.getElementById('sigmaVal');
+const ampVal = document.getElementById('ampVal');
+const rangeVal = document.getElementById('rangeVal');
+
+const formulaText = document.getElementById('formulaText');
+const peakX = document.getElementById('peakX');
+const peakY = document.getElementById('peakY');
+const inflect = document.getElementById('inflect');
+const tipText = document.getElementById('tipText');
+
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+
+function draw() {
+  const mu = parseFloat(muInput.value);
+  const sigma = parseFloat(sigmaInput.value);
+  const amp = parseFloat(ampInput.value);
+  const L = parseFloat(xRangeInput.value);
+  const coeff = amp / (sigma * Math.sqrt(2 * Math.PI));
+  const twoSigma2 = 2 * sigma * sigma;
+
+  muVal.textContent = mu.toFixed(2);
+  sigmaVal.textContent = sigma.toFixed(2);
+  ampVal.textContent = amp.toFixed(2);
+  rangeVal.textContent = L.toFixed(1);
+
+  formulaText.innerHTML = `
+    <div class="eq-title">代入当前参数</div>
+    <div class="eq-main eq-sub">
+      <math display="block">
+        <mrow>
+          <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+          <mn>${coeff.toFixed(4)}</mn>
+          <mo>&#x2062;</mo>
+          <msup>
+            <mi>e</mi>
+            <mrow>
+              <mo>-</mo>
+              <mfrac>
+                <msup><mrow><mi>x</mi><mo>-</mo><mn>${mu.toFixed(2)}</mn></mrow><mn>2</mn></msup>
+                <mn>${twoSigma2.toFixed(4)}</mn>
+              </mfrac>
+            </mrow>
+          </msup>
+        </mrow>
+      </math>
+    </div>
+  `;
+
+  const peak = amp * normalPDF(mu, mu, sigma);
+  peakX.textContent = `x = ${mu.toFixed(2)}`;
+  peakY.textContent = peak.toFixed(4);
+  inflect.textContent = `${(mu - sigma).toFixed(2)} , ${(mu + sigma).toFixed(2)}`;
+
+  tipText.textContent = sigma < 0.7
+    ? 'σ 变小：曲线更瘦更高，数据更集中。'
+    : sigma > 1.7
+      ? 'σ 变大：曲线更矮更宽，数据更分散。'
+      : '';
+  tipText.style.display = tipText.textContent ? 'block' : 'none';
+
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.parentElement.clientWidth - 16;
+  const cssH = 450;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const pad = { top: 20, right: 22, bottom: 58, left: 66 };
+  const W = cssW - pad.left - pad.right;
+  const H = cssH - pad.top - pad.bottom;
+
+  const xMin = -L;
+  const xMax = L;
+  const ampMax = parseFloat(ampInput.max);
+  // Keep vertical scale independent from current A so changing A visibly stretches/shrinks the curve.
+  const yMax = Math.max(ampMax * normalPDF(mu, mu, sigma) * 1.12, 0.12);
+
+  const toX = (x) => pad.left + ((x - xMin) / (xMax - xMin)) * W;
+  const toY = (y) => pad.top + H - (y / yMax) * H;
+
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  // grid
+  ctx.strokeStyle = 'rgba(22,32,45,0.07)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 6; i++) {
+    const y = pad.top + (i / 6) * H;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + W, y);
+    ctx.stroke();
+
+    const yVal = yMax * (1 - i / 6);
+    ctx.fillStyle = '#1a2636';
+    ctx.font = 'bold 13px "PingFang SC",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(yVal.toFixed(2), pad.left - 8, y + 4);
+  }
+
+  // axes
+  ctx.strokeStyle = 'rgba(22,32,45,0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, pad.top + H);
+  ctx.lineTo(pad.left + W, pad.top + H);
+  ctx.stroke();
+
+  // curve area fill
+  ctx.beginPath();
+  for (let i = 0; i <= 420; i++) {
+    const x = xMin + (i / 420) * (xMax - xMin);
+    const y = amp * normalPDF(x, mu, sigma);
+    const px = toX(x);
+    const py = toY(y);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.lineTo(toX(xMax), toY(0));
+  ctx.lineTo(toX(xMin), toY(0));
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + H);
+  grad.addColorStop(0, 'rgba(31,111,178,0.28)');
+  grad.addColorStop(1, 'rgba(31,111,178,0.06)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // curve line
+  ctx.strokeStyle = '#1f6fb2';
+  ctx.lineWidth = 3.2;
+  ctx.beginPath();
+  for (let i = 0; i <= 420; i++) {
+    const x = xMin + (i / 420) * (xMax - xMin);
+    const y = amp * normalPDF(x, mu, sigma);
+    const px = toX(x);
+    const py = toY(y);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // mu / mu ± sigma lines
+  const drawDashed = (x, color) => {
+    const px = toX(x);
+    if (px < pad.left || px > pad.left + W) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(px, pad.top);
+    ctx.lineTo(px, pad.top + H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  };
+
+  drawDashed(mu, 'rgba(178,87,51,0.7)');
+  drawDashed(mu - sigma, 'rgba(31,111,178,0.45)');
+  drawDashed(mu + sigma, 'rgba(31,111,178,0.45)');
+
+  // axis labels
+  ctx.fillStyle = '#16202d';
+  ctx.font = 'bold 16px "PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('x', pad.left + W / 2, cssH - 14);
+
+  ctx.save();
+  ctx.translate(20, pad.top + H / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('f(x)', 0, 0);
+  ctx.restore();
+
+  // x ticks
+  ctx.fillStyle = '#1a2636';
+  ctx.font = 'bold 14px "PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  const step = Math.max(0.5, Math.round((xMax - xMin) / 10));
+  for (let x = Math.ceil(xMin / step) * step; x <= xMax + 1e-8; x += step) {
+    ctx.fillText(x.toFixed(1), toX(x), pad.top + H + 20);
+  }
+
+  // legend
+  ctx.fillStyle = '#1f6fb2';
+  ctx.fillRect(pad.left + W - 210, pad.top + 10, 20, 12);
+  ctx.fillStyle = '#16202d';
+  ctx.font = 'bold 14px "PingFang SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('正态分布函数', pad.left + W - 184, pad.top + 20);
+}
+
+[muInput, sigmaInput, ampInput, xRangeInput].forEach(el => {
+  el.addEventListener('input', draw);
+});
+
+window.addEventListener('resize', draw);
+draw();
+</script>
+</body>
+</html>

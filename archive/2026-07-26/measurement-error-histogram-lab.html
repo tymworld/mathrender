@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>测量误差概率分布直方图</title>
+  <style>
+    :root {
+      --ink: #182431;
+      --sub: #556577;
+      --line: rgba(24, 36, 49, 0.12);
+      --card: rgba(250, 253, 255, 0.94);
+      --card-strong: #ffffff;
+      --accent: #2567a8;
+      --accent2: #c86d2d;
+      --accent3: #0f8a70;
+      --shadow: 0 24px 60px rgba(25, 77, 128, 0.14);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(37, 103, 168, 0.16), transparent 24%),
+        radial-gradient(circle at left top, rgba(15, 138, 112, 0.10), transparent 22%),
+        linear-gradient(180deg, #f2f8fd 0%, #edf9f5 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      background: rgba(244, 250, 255, 0.88);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 32px rgba(25, 77, 128, 0.09);
+    }
+
+    .topbar a {
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .topbar button {
+      height: 42px;
+      padding: 0 16px;
+      border: 1.5px solid rgba(37, 103, 168, 0.24);
+      border-radius: 999px;
+      background: #f7fbff;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .toggle-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+      height: 38px;
+      padding: 0 12px;
+      border: 1.5px solid rgba(37, 103, 168, 0.22);
+      border-radius: 999px;
+      background: #f7fbff;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 8px 18px rgba(37, 103, 168, 0.2);
+    }
+
+    .sigma-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 42px;
+      padding: 0 10px;
+      border: 1.5px solid rgba(37, 103, 168, 0.22);
+      border-radius: 999px;
+      background: #f7fbff;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+      min-width: 220px;
+    }
+
+    .sigma-box input[type="range"] {
+      width: 96px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .panel {
+      margin-top: 14px;
+      padding: 24px 28px 28px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4px 0 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 3.7vw, 44px);
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    .hero p {
+      margin: 12px auto 0;
+      max-width: 940px;
+      color: var(--sub);
+      font-size: 18px;
+      line-height: 1.75;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .layout > * {
+      min-width: 0;
+    }
+
+    .card {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .controls h2,
+    .chart h2 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .controls-note {
+      margin-top: 8px;
+      color: var(--sub);
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .slider-group {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f5faff 0%, #eefbf7 100%);
+      border: 1px solid rgba(37, 103, 168, 0.14);
+    }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .slider-group .v {
+      color: var(--accent);
+      font-size: 22px;
+      font-weight: 900;
+      min-width: 92px;
+      text-align: right;
+    }
+
+    .slider-group .subtext {
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .slider-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      border-radius: 14px;
+      border: 1px solid rgba(37, 103, 168, 0.14);
+      background: #f8fcff;
+      padding: 10px 12px;
+    }
+
+    .stat .k {
+      color: var(--sub);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .stat .val {
+      margin-top: 4px;
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .data-chip {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(37, 103, 168, 0.07) 0%, rgba(15, 138, 112, 0.08) 100%);
+      border: 1px solid rgba(37, 103, 168, 0.16);
+      color: #29496d;
+      font-size: 16px;
+      line-height: 1.7;
+      font-weight: 800;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 12px;
+      color: var(--sub);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 18px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .canvas-wrap {
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 10px;
+      min-height: 500px;
+    }
+
+    .canvas-wrap canvas {
+      width: 100% !important;
+      display: block;
+    }
+
+    .caption {
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(37, 103, 168, 0.08) 0%, rgba(15, 138, 112, 0.08) 100%);
+      border: 1px solid rgba(37, 103, 168, 0.18);
+      padding: 14px;
+      font-size: 18px;
+      line-height: 1.65;
+      font-weight: 800;
+    }
+
+    .caption .hl1 { color: var(--accent); }
+    .caption .hl2 { color: var(--accent2); }
+    .caption .hl3 { color: var(--accent3); }
+
+    .summary-panel {
+      margin-top: 18px;
+      width: 100%;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .data-panel {
+      margin-top: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 16px;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .full-width-card {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .data-panel h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      color: var(--ink);
+    }
+
+    .data-panel p {
+      margin: 0 0 12px;
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      width: 100%;
+      max-width: 100%;
+      max-height: 420px;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(37, 103, 168, 0.12);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 780px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(24, 36, 49, 0.08);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .data-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #edf5ff;
+      color: #29496d;
+      font-weight: 900;
+    }
+
+    .data-table td {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .data-table tr.active-row {
+      background: rgba(15, 138, 112, 0.08);
+    }
+
+    .data-table tr.inactive-row {
+      background: rgba(24, 36, 49, 0.02);
+    }
+
+    .flag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .flag.active {
+      background: rgba(15, 138, 112, 0.16);
+      color: #0f8a70;
+    }
+
+    .flag.inactive {
+      background: rgba(84, 101, 119, 0.12);
+      color: #556577;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .panel { padding: 20px 16px 24px; }
+      .topbar { padding: 10px 14px; }
+      .topbar button { padding: 0 12px; font-size: 14px; }
+      .sigma-box { min-width: 180px; }
+      .sigma-box input[type="range"] { width: 72px; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a href="index.html">← 返回主页</a>
+    <div class="topbar-actions">
+      <div class="toggle-group" id="toggleGroup">
+        <button class="toggle-btn active" id="toggleMean">均值位置</button>
+        <button class="toggle-btn active" id="toggleCenter">理论中心</button>
+        <button class="toggle-btn active" id="toggleFit">拟合曲线</button>
+      </div>
+      <label class="sigma-box">测量偏差程度
+        <input type="range" id="sigmaQuick" min="0.05" max="0.30" step="0.01" value="0.10" />
+        <span id="sigmaQuickVal">0.10 cm</span>
+      </label>
+      <button id="regenBtn">生成测量数据</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="hero">
+      <h1>测量误差概率分布直方图</h1>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <h2>抽样设置</h2>
+
+        <div class="slider-group">
+          <label>考虑的班级数 <span class="v" id="groupCountVal">10 班</span></label>
+          <input type="range" id="groupCount" min="1" max="20" step="1" value="10" />
+        </div>
+
+        <div class="slider-group">
+          <label>每班考虑的测量数 <span class="v" id="measureCountVal">50 次</span></label>
+          <input type="range" id="measureCount" min="10" max="100" step="1" value="50" />
+        </div>
+
+        <div class="slider-group">
+          <label>组距 <span class="v" id="binWidthVal">0.02 cm</span></label>
+          <input type="range" id="binWidth" min="0.01" max="0.10" step="0.01" value="0.02" />
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">样本总数</div>
+            <div class="val" id="sampleN">500</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本均值</div>
+            <div class="val" id="sampleMean">0.000</div>
+          </div>
+          <div class="stat">
+            <div class="k">样本标准差</div>
+            <div class="val" id="sampleSd">0.000</div>
+          </div>
+          <div class="stat">
+            <div class="k">分组个数</div>
+            <div class="val" id="binCount">20</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart">
+        <h2>零中心误差直方图</h2>
+        <div class="legend">
+          <span><i style="background: rgba(37, 103, 168, 0.78)"></i>频率密度柱形</span>
+          <span><i style="background: rgba(200, 109, 45, 0.82)"></i>样本均值位置</span>
+          <span><i style="background: rgba(15, 138, 112, 0.82)"></i>理论中心 x = 0 cm</span>
+          <span><i style="background: rgba(160, 82, 45, 0.88)"></i>正态分布拟合曲线</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="chart" height="460"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-panel">
+      <div class="summary-grid">
+        <div class="data-chip" id="dataChip"></div>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+
+    <div class="data-panel full-width-card">
+      <h3>20 个班级原始误差数据</h3>
+      <p>表中显示全部原始数据，包含当前已纳入统计的班级与测量值。被纳入当前样本的班级和测量序号会被标记出来。</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>班级</th>
+              <th>是否纳入</th>
+              <th>班均值/cm</th>
+              <th>班级sigma/cm</th>
+              <th>1-10</th>
+              <th>11-20</th>
+              <th>21-30</th>
+              <th>31-40</th>
+              <th>41-50</th>
+              <th>51-60</th>
+              <th>61-70</th>
+              <th>71-80</th>
+              <th>81-90</th>
+              <th>91-100</th>
+            </tr>
+          </thead>
+          <tbody id="rawDataBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function randNormal(mu, sigma) {
+  let u = 0;
+  let v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return mu + sigma * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function meanOf(values) {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function sampleSdOf(values, avg) {
+  if (values.length <= 1) return 0;
+  const variance = values.reduce((sum, value) => sum + (value - avg) ** 2, 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+
+function roundTo(value, digits) {
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function generateDataset(baseSigma) {
+  return Array.from({ length: 20 }, (_, index) => {
+    const groupBias = randNormal(0, baseSigma * 0.12);
+    const groupSigma = clamp(baseSigma * (0.92 + Math.abs(randNormal(0, 0.18))), baseSigma * 0.55, baseSigma * 1.75);
+    const errors = Array.from({ length: 100 }, () => roundTo(randNormal(groupBias, groupSigma), 3));
+    return {
+      id: index + 1,
+      bias: groupBias,
+      sigma: groupSigma,
+      errors
+    };
+  });
+}
+
+function getDomain(groups) {
+  const allValues = groups.flatMap(item => item.errors);
+  const maxAbs = Math.max(...allValues.map(value => Math.abs(value)), 0.35);
+  return roundTo(Math.ceil(maxAbs * 1.2 * 20) / 20, 2);
+}
+
+function buildHistogram(values, binWidth, domain) {
+  const lo = -domain;
+  const hi = domain;
+  const edges = [];
+  for (let start = lo; start < hi - 1e-9; start += binWidth) {
+    edges.push(roundTo(start, 4));
+  }
+  const counts = edges.map(() => 0);
+  for (const value of values) {
+    const rawIndex = Math.floor((value - lo) / binWidth);
+    const index = clamp(rawIndex, 0, counts.length - 1);
+    counts[index] += 1;
+  }
+  return edges.map((start, index) => {
+    const end = Math.min(roundTo(start + binWidth, 4), hi);
+    const count = counts[index];
+    const probability = count / values.length;
+    const density = probability / (end - start);
+    return { start, end, count, probability, density };
+  });
+}
+
+const groupCountInput = document.getElementById('groupCount');
+const measureCountInput = document.getElementById('measureCount');
+const sigmaQuickInput = document.getElementById('sigmaQuick');
+const binWidthInput = document.getElementById('binWidth');
+const regenBtn = document.getElementById('regenBtn');
+const toggleMeanBtn = document.getElementById('toggleMean');
+const toggleCenterBtn = document.getElementById('toggleCenter');
+const toggleFitBtn = document.getElementById('toggleFit');
+
+const groupCountVal = document.getElementById('groupCountVal');
+const measureCountVal = document.getElementById('measureCountVal');
+const sigmaQuickVal = document.getElementById('sigmaQuickVal');
+const binWidthVal = document.getElementById('binWidthVal');
+
+const sampleN = document.getElementById('sampleN');
+const sampleMean = document.getElementById('sampleMean');
+const sampleSd = document.getElementById('sampleSd');
+const binCount = document.getElementById('binCount');
+const dataChip = document.getElementById('dataChip');
+const caption = document.getElementById('caption');
+const rawDataBody = document.getElementById('rawDataBody');
+
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+
+let dataset = generateDataset(parseFloat(sigmaQuickInput.value));
+const displayOptions = {
+  showMean: true,
+  showCenter: true,
+  showFit: true
+};
+
+function normalPDF(x, mu, sigma) {
+  const safeSigma = Math.max(sigma, 1e-6);
+  const coeff = 1 / (safeSigma * Math.sqrt(2 * Math.PI));
+  return coeff * Math.exp(-0.5 * ((x - mu) / safeSigma) ** 2);
+}
+
+function syncSigmaControls(value) {
+  const clamped = clamp(roundTo(value, 2), 0.05, 0.30);
+  sigmaQuickInput.value = clamped.toFixed(2);
+  sigmaQuickVal.textContent = clamped.toFixed(2) + ' cm';
+  return clamped;
+}
+
+function renderRawDataTable(groupCount, measureCount) {
+  rawDataBody.innerHTML = '';
+  dataset.forEach((group, index) => {
+    const isActiveGroup = index < groupCount;
+    const row = document.createElement('tr');
+    row.className = isActiveGroup ? 'active-row' : 'inactive-row';
+    const chunks = [];
+    for (let chunk = 0; chunk < 10; chunk++) {
+      const start = chunk * 10;
+      const text = group.errors.slice(start, start + 10).map((value, offset) => {
+        const activeValue = isActiveGroup && start + offset < measureCount;
+        return activeValue ? '<strong>' + value.toFixed(3) + '</strong>' : value.toFixed(3);
+      }).join(' , ');
+      chunks.push('<td>' + text + '</td>');
+    }
+    row.innerHTML = '<td>' + group.id + '</td>' +
+      '<td><span class="flag ' + (isActiveGroup ? 'active">已纳入' : 'inactive">未纳入') + '</span></td>' +
+      '<td>' + meanOf(group.errors).toFixed(3) + '</td>' +
+      '<td>' + group.sigma.toFixed(3) + '</td>' +
+      chunks.join('');
+    rawDataBody.appendChild(row);
+  });
+}
+
+function getSubset() {
+  const groupCount = parseInt(groupCountInput.value, 10);
+  const measureCount = parseInt(measureCountInput.value, 10);
+  const classes = dataset.slice(0, groupCount);
+  const values = classes.flatMap(item => item.errors.slice(0, measureCount));
+  return { classes, values, groupCount, measureCount };
+}
+
+function drawChart(histogram, subsetMean, subsetSd, domain) {
+  const dpr = window.devicePixelRatio || 1;
+  const cssWidth = canvas.parentElement.clientWidth - 20;
+  const cssHeight = 460;
+  canvas.style.width = cssWidth + 'px';
+  canvas.style.height = cssHeight + 'px';
+  canvas.width = cssWidth * dpr;
+  canvas.height = cssHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const pad = { top: 24, right: 26, bottom: 72, left: 78 };
+  const plotWidth = cssWidth - pad.left - pad.right;
+  const plotHeight = cssHeight - pad.top - pad.bottom;
+  const fitPeak = displayOptions.showFit ? normalPDF(subsetMean, subsetMean, subsetSd) : 0;
+  const yMax = Math.max(...histogram.map(item => item.density), fitPeak, 0.001) * 1.16;
+
+  const toX = (x) => pad.left + ((x + domain) / (2 * domain)) * plotWidth;
+  const toY = (y) => pad.top + plotHeight - (y / yMax) * plotHeight;
+
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+  ctx.strokeStyle = 'rgba(24,36,49,0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + (i / 5) * plotHeight;
+    const value = yMax * (1 - i / 5);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + plotWidth, y);
+    ctx.stroke();
+
+    ctx.fillStyle = '#27384a';
+    ctx.font = 'bold 15px "PingFang SC", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(value.toFixed(3), pad.left - 8, y + 4);
+  }
+
+  ctx.strokeStyle = 'rgba(24,36,49,0.24)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, pad.top + plotHeight);
+  ctx.lineTo(pad.left + plotWidth, pad.top + plotHeight);
+  ctx.stroke();
+
+  for (const item of histogram) {
+    const x = toX(item.start);
+    const width = toX(item.end) - toX(item.start);
+    const y = toY(item.density);
+    const height = pad.top + plotHeight - y;
+    const grad = ctx.createLinearGradient(0, y, 0, pad.top + plotHeight);
+    grad.addColorStop(0, 'rgba(37, 103, 168, 0.84)');
+    grad.addColorStop(1, 'rgba(15, 138, 112, 0.28)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x + 1, y, Math.max(1, width - 2), height);
+  }
+
+  if (displayOptions.showFit && subsetSd > 0) {
+    ctx.save();
+    ctx.strokeStyle = '#a0522d';
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    for (let i = 0; i <= 360; i++) {
+      const xValue = -domain + (i / 360) * domain * 2;
+      const yValue = normalPDF(xValue, subsetMean, subsetSd);
+      const x = toX(xValue);
+      const y = toY(yValue);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const drawLine = (xValue, color, dash, label) => {
+    const x = toX(xValue);
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash(dash);
+    ctx.beginPath();
+    ctx.moveTo(x, pad.top);
+    ctx.lineTo(x, pad.top + plotHeight);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = color;
+    ctx.font = 'bold 16px "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    if (label) ctx.fillText(label, x, pad.top - 6);
+  };
+
+  if (displayOptions.showCenter) drawLine(0, '#0f8a70', [4, 4], '');
+  if (displayOptions.showMean) drawLine(subsetMean, '#c86d2d', [7, 5], '样本均值');
+
+  ctx.fillStyle = '#182431';
+  ctx.font = 'bold 20px "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('误差值 / cm', pad.left + plotWidth / 2, cssHeight - 18);
+
+  ctx.save();
+  ctx.translate(20, pad.top + plotHeight / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.font = 'bold 18px "PingFang SC", sans-serif';
+  ctx.fillText('频率密度 / (1/cm)', 0, 0);
+  ctx.restore();
+
+  ctx.font = 'bold 15px "PingFang SC", sans-serif';
+  const tickStep = domain <= 0.5 ? 0.1 : 0.2;
+  for (let x = -domain; x <= domain + 1e-9; x += tickStep) {
+    ctx.fillStyle = '#27384a';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(roundTo(x, 2)), toX(x), pad.top + plotHeight + 22);
+  }
+}
+
+function render() {
+  const { classes, values, groupCount, measureCount } = getSubset();
+  const binWidth = parseFloat(binWidthInput.value);
+  const sigma = parseFloat(sigmaQuickInput.value);
+  const domain = getDomain(dataset);
+  const histogram = buildHistogram(values, binWidth, domain);
+  const avg = meanOf(values);
+  const sd = sampleSdOf(values, avg);
+  const localMin = Math.min(...values);
+  const localMax = Math.max(...values);
+  const biases = classes.map(item => meanOf(item.errors.slice(0, measureCount)));
+  const biasSpread = Math.max(...biases) - Math.min(...biases);
+
+  groupCountVal.textContent = groupCount + ' 班';
+  measureCountVal.textContent = measureCount + ' 次';
+  binWidthVal.textContent = binWidth.toFixed(2) + ' cm';
+
+  sampleN.textContent = String(values.length);
+  sampleMean.textContent = avg.toFixed(3);
+  sampleSd.textContent = sd.toFixed(3);
+  binCount.textContent = String(histogram.length);
+
+  dataChip.innerHTML = '当前样本来自第 <strong>' + classes[0].id + '</strong> 班到第 <strong>' + classes[classes.length - 1].id + '</strong> 班，共 <strong>' + values.length + '</strong> 次测量；设定测量偏差程度为 <strong>' + sigma.toFixed(2) + ' cm</strong>，误差大致落在 <strong>' + localMin.toFixed(3) + ' cm</strong> 到 <strong>' + localMax.toFixed(3) + ' cm</strong> 之间。';
+
+  let message = '理想情况下误差应围绕 <span class="hl3">0</span> 对称分布，样本均值越接近 0，说明整体系统偏差越小。';
+  if (Math.abs(avg) > sigma * 0.35) {
+    message = '当前样本均值离 0 略有偏移，说明这批测量里可能混入了轻微的系统误差。';
+  } else if (binWidth >= 0.06) {
+    message = '当前 <span class="hl2">组距较大</span>，更容易看出“以 0 为中心”的总体轮廓，但细节波动会被压平。';
+  } else if (binWidth <= 0.02) {
+    message = '当前 <span class="hl1">组距较小</span>，你能看见更多随机起伏，也更容易比较左右两侧是否真正对称。';
+  } else if (biasSpread > sigma * 0.45) {
+    message = '不同班级之间的均值略有差异，所以合并后直方图会出现一点点偏斜或扩散。';
+  }
+
+  caption.innerHTML = '已纳入 <span class="hl1">' + groupCount + '</span> 个班级、每班 <span class="hl1">' + measureCount + '</span> 次测量，测量偏差程度为 <span class="hl1">' + sigma.toFixed(2) + ' cm</span>，样本均值约为 <span class="hl2">' + avg.toFixed(3) + ' cm</span>，标准差约为 <span class="hl3">' + sd.toFixed(3) + ' cm</span>。' + message;
+
+  renderRawDataTable(groupCount, measureCount);
+  drawChart(histogram, avg, sd, domain);
+}
+
+function regenerateDatasetAndRender() {
+  const sigma = syncSigmaControls(parseFloat(sigmaQuickInput.value));
+  dataset = generateDataset(sigma);
+  render();
+}
+
+regenBtn.addEventListener('click', () => {
+  regenerateDatasetAndRender();
+});
+
+[groupCountInput, measureCountInput, binWidthInput].forEach(input => {
+  input.addEventListener('input', render);
+});
+
+sigmaQuickInput.addEventListener('input', () => {
+  const sigma = syncSigmaControls(parseFloat(sigmaQuickInput.value));
+  dataset = generateDataset(sigma);
+  render();
+});
+
+[
+  [toggleMeanBtn, 'showMean'],
+  [toggleCenterBtn, 'showCenter'],
+  [toggleFitBtn, 'showFit']
+].forEach(([button, key]) => {
+  button.addEventListener('click', () => {
+    displayOptions[key] = !displayOptions[key];
+    button.classList.toggle('active', displayOptions[key]);
+    render();
+  });
+});
+
+window.addEventListener('resize', render);
+syncSigmaControls(parseFloat(sigmaQuickInput.value));
+render();
+</script>
+</body>
+</html>
