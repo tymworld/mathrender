@@ -35,6 +35,12 @@
     history.replaceState(null, '', selected === 'all' ? '#experiments' : `#${selected}`);
     applyFilters();
   }));
+  document.querySelectorAll('.topic-card').forEach(link => link.addEventListener('click', event => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    history.replaceState(null, '', link.hash);
+    readHash();
+  }));
   search.addEventListener('input', applyFilters);
   clear.addEventListener('click', () => { search.value = ''; applyFilters(); search.focus(); });
   search.addEventListener('keydown', event => { if (event.key === 'Escape') { search.value = ''; applyFilters(); } });
