@@ -392,6 +392,7 @@ async function evaluateDirect(file, { signal } = {}) {
 window.inequalityReviewAPI = Object.freeze({
   get configured() { return Boolean(sessionKey); },
   get model() { return activeSettings.model; },
+  get reviewMetadata() { return {model:activeSettings.model, promptVersion:activeSettings.promptVersion, promptTitle:availablePrompts.get(activeSettings.promptVersion).title}; },
   configure, ensureConfigured, updateConnection: updateDirectConnection, evaluate: evaluateDirect
 });
 populateSettings();

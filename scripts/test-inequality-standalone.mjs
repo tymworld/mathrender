@@ -59,7 +59,7 @@ function harness(fetchImpl = async () => providerReply(fixture()), stored = new 
     requestAnimationFrame: callback => {callback(); return 1;}, cancelAnimationFrame() {},
     URL: class extends URL { static createObjectURL() { return 'blob:test-picture'; } static revokeObjectURL() {} },
     Image: class { async decode() {} },
-    TextDecoder, TextEncoder, Uint8Array, DOMException, AbortController, setTimeout, clearTimeout, crypto: webcrypto, atob,
+    TextDecoder, TextEncoder, Uint8Array, DOMException, AbortController, Blob, setTimeout, clearTimeout, crypto: webcrypto, atob,
     btoa: value => Buffer.from(value, 'binary').toString('base64'),
     fetch: (url, options) => mockTranscription && options?.body && JSON.parse(options.body).messages[0].content[0].text === RECOGNITION_PROMPT
       ? providerReply(mockTranscription) : fetchImpl(url, options)
@@ -82,7 +82,8 @@ test('single HTML embeds styles, executable scripts, and both illustrations', ()
   assert.doesNotMatch(html, /src="\.\.\//);
   assert.match(html, /href="\.\.\/\.\.\/index.html#algebra"/);
   assert.ok(artifact.outputPath.endsWith("labs/algebra/inequality-review.html"));
-  assert.doesNotMatch(scripts.join('\n'), /sessionStorage|indexedDB|document\.cookie/);
+  assert.doesNotMatch(scripts[0], /sessionStorage|indexedDB|document\.cookie/);
+  assert.doesNotMatch(scripts[1], /sessionStorage|document\.cookie/);
   assert.equal(harness().node('api-prompt').value, PROMPT_VERSIONS[0].prompt);
   assert.ok(html.includes(RESPONSE_CONTRACT));
   assert.ok(artifact.bytes < 6 * 1024 * 1024);
@@ -658,4 +659,20 @@ test('a corrupted embedded configuration is reported without external fetch or a
   assert.equal(app.node('api-settings').open, false);
   assert.equal(await app.api.ensureConfigured(), false);
   assert.equal(app.node('api-settings').open, true);
+});
+
+
+test('history storage failure never discards a completed card or reports it as saved', async () => {
+  const app = harness();
+  await app.submitKey();
+  await app.node('photo-input').dispatch('change', {target:{files:[file()]}});
+  await app.node('generate-button').dispatch('click');
+  assert.equal(app.node('result-screen').hidden, false);
+  assert.equal(app.node('scientific-grade').textContent, 'A');
+  assert.match(app.node('history-save-note').textContent, /历史未保存/);
+  assert.equal(app.node('history-save-note').hidden, false);
+  assert.equal(app.node('history-save-note').dataset.error, 'true');
+  assert.equal(app.node('history-button').disabled, false);
+  app.node('restart-button').dispatch('click');
+  assert.equal(app.node('history-save-note').hidden, true);
 });

@@ -9,12 +9,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const outputPath = path.join(root, 'labs/algebra/inequality-review.html');
 export async function buildStandalone() {
   const read = relative => readFile(path.join(root, relative), 'utf8');
-  const [template, css, settingsCSS, ui, protocol, direct, dialog, prompts, promptHistory, keyfile] = await Promise.all([
+  const [template, css, settingsCSS, ui, protocol, direct, dialog, prompts, promptHistory, keyfile, history] = await Promise.all([
     read('assets/html/inequality-review-template.html'), read('assets/css/labs/inequality-review.css'),
     read('assets/css/labs/inequality-review-standalone.css'), read('assets/js/labs/inequality-review.js'),
     read('assets/js/labs/inequality-review-protocol.mjs'), read('assets/js/labs/inequality-review-standalone.js'),
     read('assets/html/inequality-review-settings.html'), read('assets/js/labs/inequality-review-prompts.mjs'),
-    read('assets/js/labs/inequality-review-prompt-history.json'), read('assets/js/labs/inequality-review-keyfile.mjs')
+    read('assets/js/labs/inequality-review-prompt-history.json'), read('assets/js/labs/inequality-review-keyfile.mjs'),
+    read('assets/js/labs/inequality-review-history.js')
   ]);
   // Embed only the validated, password-encrypted file. Never read .env or plaintext credentials.
   let encryptedKeyFile = null;
@@ -25,6 +26,7 @@ export async function buildStandalone() {
     .replace('<title>不等式评价卡 · MathRender</title>', '<title>李老师开心课堂 · 不等式评价卡</title>')
     .replace('<link rel="stylesheet" href="../../assets/css/labs/inequality-review.css">', `<style>\n${css}\n${settingsCSS}\n</style>`)
     .replace('  <script defer src="../../assets/js/labs/inequality-review.js"></script>\n', '')
+    .replace('  <script defer src="../../assets/js/labs/inequality-review-history.js"></script>\n', '')
     .replace('<span class="connection-label" id="connection-label" role="status">千问 · 检查配置中</span>', '<button class="connection-label" id="connection-label" type="button" aria-haspopup="dialog" aria-controls="api-settings">AI 设置 · 待配置</button>');
   for (const match of [...html.matchAll(/src="(\.\.\/\.\.\/assets\/images\/[^\"]+)"/g)]) {
     const asset = path.resolve(root, 'labs/algebra', match[1]);
@@ -47,7 +49,7 @@ export async function buildStandalone() {
   const bundledProtocol = protocol.replace(/^import \{ DEFAULT_EVALUATION_PROMPT \} from '\.\/inequality-review-prompts\.mjs';\n/m, '').replace(/^export /gm, '');
   const directScript = `(() => {\n'use strict';\n${prompts.replace(/^export /gm, '')}\n${bundledProtocol}\n${modelScript}\n${historyScript}\n${keyConfigScript}\n${keyfile.replace(/^export /gm, '')}\n${direct}\n})();`;
   const safeScript = source => source.replace(/<\/script/gi, '<\\/script');
-  html = html.replace('</body>', `${settingsDialog}\n<script>\n${safeScript(directScript)}\n</script>\n<script>\n${safeScript(ui)}\n</script>\n</body>`);
+  html = html.replace('</body>', `${settingsDialog}\n<script>\n${safeScript(directScript)}\n</script>\n<script>\n${safeScript(history)}\n${safeScript(ui)}\n</script>\n</body>`);
   await writeFile(outputPath, html);
   return { outputPath, bytes: Buffer.byteLength(html) };
 }

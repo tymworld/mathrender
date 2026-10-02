@@ -2,6 +2,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const directAPI = window.inequalityReviewAPI;
+  const history = window.inequalityReviewHistory;
   // A grade alone cannot tell which proof step or equality case is missing.
   // Keep margin notes neutral; the actual diagnosis belongs in the AI comment.
   const gradeNotes = {
@@ -16,6 +17,18 @@
   let serverModel = '千问';
   let controller = null;
   let fitFrame = 0;
+  let historyPhotoURL = null;
+
+  function releaseHistoryPhoto() {
+    if (historyPhotoURL) URL.revokeObjectURL(historyPhotoURL);
+    historyPhotoURL = null;
+  }
+  function historyNote(text, error = false) {
+    $('history-save-note').textContent = text;
+    $('history-save-note').hidden = !text;
+    $('history-save-note').dataset.error = String(error);
+    scheduleFit();
+  }
 
   function fitCard() {
     const screen = $('result-screen');
@@ -132,15 +145,18 @@
     $('generate-button').setAttribute('aria-busy', String(value));
     $('generate-label').textContent = value ? `正在采用 ${directAPI?.model || serverModel} AI模型评价` : '上传并生成评价卡';
     $('generate-arrow').hidden = value;
+    $('history-button').disabled = value;
+    $('review-history-button').disabled = value;
     if (directAPI) {
       $('connection-label').disabled = value;
       $('review-settings-button').disabled = value;
     }
   }
 
-  function renderCard(result) {
-    $('result-photo').src = photoURL;
-    $('result-photo').hidden = false;
+  function renderCard(result, sourcePhoto = photoURL) {
+    if (sourcePhoto) $('result-photo').src = sourcePhoto;
+    else $('result-photo').removeAttribute('src');
+    $('result-photo').hidden = !sourcePhoto;
     $('verdict').textContent = result.verdict;
     $('formula').textContent = result.formula || '图片中的公式尚不能可靠识别';
     const pending = ['scientific', 'rigor', 'creativity'].some(key => result[key].grade === null);
@@ -179,6 +195,18 @@
     event.preventDefault(); $('upload-button').classList.remove('dragging');
     choosePhoto(event.dataTransfer.files[0]);
   });
+  const openHistory = () => {
+    if (busy) return;
+    return history.open((entry, photo) => {
+      releaseHistoryPhoto();
+      historyPhotoURL = photo instanceof Blob ? URL.createObjectURL(photo) : null;
+      historyNote('');
+      renderCard(entry.result, historyPhotoURL);
+      historyNote(`历史评价 · ${new Date(entry.createdAt).toLocaleString('zh-CN')} · ${entry.model || 'AI'} · ${entry.promptTitle || entry.promptVersion || '默认评价规则'}`);
+    });
+  };
+  $('history-button').addEventListener('click', openHistory);
+  $('review-history-button').addEventListener('click', openHistory);
   $('generate-button').addEventListener('click', async () => {
     if (!selectedFile || busy) return;
     if (directAPI && !directAPI.configured) {
@@ -186,6 +214,8 @@
       if (!selectedFile || busy) return;
     }
     setBusy(true);
+    const metadata = directAPI?.reviewMetadata || {model:serverModel, promptVersion:'server-default', promptTitle:'服务默认评价规则'};
+    const submittedPhoto = selectedFile;
     message('');
     controller = new AbortController();
     const timer = setTimeout(() => controller?.abort(), 105000);
@@ -205,8 +235,16 @@
       if (result.status === 'unreadable') {
         message(result.suggestion || '图片中的公式看不清，请拍清楚后重新上传。');
       } else {
+        releaseHistoryPhoto();
+        historyNote('');
         renderCard(result);
         message('');
+        try {
+          await history.save(result, {...metadata, photo:submittedPhoto});
+          historyNote('已保存到历史记录');
+        } catch (error) {
+          historyNote('评价卡已生成，但历史未保存。' + error.message, true);
+        }
       }
     } catch (error) {
       message(error.name === 'AbortError' ? '评价超时，请稍后重试。' : error.message === 'Failed to fetch' ? '连接失败，请确认评价服务已启动。' : error.message);
@@ -219,6 +257,8 @@
   });
   $('restart-button').addEventListener('click', () => {
     sequence++;
+    releaseHistoryPhoto();
+    historyNote('');
     clearPhoto();
     $('photo-input').value = '';
     $('result-screen').hidden = true;
