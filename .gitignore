@@ -1,6 +1,7 @@
 .env.qwen
 .env.qwen.*
 !.env.qwen.example
+inequality-ai-key.json
 .DS_Store
 ._*
 @eaDir/

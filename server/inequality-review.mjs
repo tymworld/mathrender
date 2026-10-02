@@ -2,10 +2,11 @@ import http from 'node:http';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {KEY_FILE_NAME, parseKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
-import { MAX_IMAGE_BYTES, PublicError, EVALUATION_PROMPT, validateEvaluation } from '../assets/js/labs/inequality-review-protocol.mjs';
+import { MAX_IMAGE_BYTES, PublicError, EVALUATION_PROMPT, validateEvaluation, recognizeAndEvaluate } from '../assets/js/labs/inequality-review-protocol.mjs';
 export { MAX_IMAGE_BYTES, PublicError, EVALUATION_PROMPT, validateEvaluation };
 
 export async function loadConfig() {
@@ -54,50 +55,50 @@ export async function evaluateImage(bytes, type, config, { fetchImpl = fetch, si
   if (!config.apiKey || /[\r\n]/.test(config.apiKey) || config.apiKey === '在这里粘贴你的APIKey') throw new PublicError(503, '请先在 .env.qwen 中填写 API Key 并保存。');
   validateImage(bytes, type);
   const endpoint = completionURL(config.baseURL);
-  const response = await fetchImpl(endpoint, {
-    method: 'POST', redirect: 'error', signal,
-    headers: { 'Authorization': `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: config.model, enable_thinking: false, temperature: 0.1, max_tokens: 2400,
-      response_format: { type: 'json_object' },
-      messages: [{ role: 'user', content: [
-        { type: 'text', text: EVALUATION_PROMPT },
-        { type: 'image_url', image_url: { url: `data:${type};base64,${bytes.toString('base64')}` } }
-      ] }]
-    })
-  });
-  if (!response.ok) {
-    // Never send raw provider errors back to the browser: they can contain request data.
-    await response.body?.cancel();
-    const errors = {
-      400: '千问未接受这次请求，请检查图片、模型名和调用地址。',
-      401: 'API Key 验证失败，请检查密钥及其所属地域。',
-      402: '百炼账户额度不足，请检查账户余额。',
-      403: '百炼拒绝调用，请检查模型权限及账户状态。',
-      404: '未找到模型或接口，请检查模型名和调用地址。',
-      429: '千问调用达到限额，请检查额度或稍后再试。'
-    };
-    throw new PublicError(502, errors[response.status] || '千问服务暂时不可用，请稍后再试。');
-  }
-  let body;
-  try {
-    const reader = response.body.getReader();
-    const chunks = []; let length = 0;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      length += value.length;
-      if (length > 512 * 1024) { await reader.cancel(); throw new Error('oversize'); }
-      chunks.push(Buffer.from(value));
+  const complete = async (content, stage) => {
+    const response = await fetchImpl(endpoint, {
+      method: 'POST', redirect: 'error', signal,
+      headers: { 'Authorization': `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: config.model, enable_thinking: false, temperature: stage === 'recognition' ? 0 : 0.1, max_tokens: stage === 'recognition' ? 4096 : 2400,
+        response_format: { type: 'json_object' },
+        messages: [{ role: 'user', content }]
+      })
+    });
+    if (!response.ok) {
+      // Never send raw provider errors back to the browser: they can contain request data.
+      await response.body?.cancel();
+      const errors = {
+        400: '千问未接受这次请求，请检查图片、模型名和调用地址。',
+        401: 'API Key 验证失败，请检查密钥及其所属地域。',
+        402: '百炼账户额度不足，请检查账户余额。',
+        403: '百炼拒绝调用，请检查模型权限及账户状态。',
+        404: '未找到模型或接口，请检查模型名和调用地址。',
+        429: '千问调用达到限额，请检查额度或稍后再试。'
+      };
+      throw new PublicError(502, errors[response.status] || '千问服务暂时不可用，请稍后再试。');
     }
-    body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  } catch { throw new PublicError(502, '千问返回内容不完整，请重新生成。'); }
-  const choice = body.choices?.[0];
-  if (choice?.finish_reason !== 'stop' || typeof choice?.message?.content !== 'string') throw new PublicError(502, '千问未完成本次评价，请重新生成。');
-  let evaluation;
-  try { evaluation = JSON.parse(choice.message.content); }
-  catch { throw new PublicError(502, '千问返回的评价格式不正确，请重新生成。'); }
-  return validateEvaluation(evaluation);
+    let body;
+    try {
+      const reader = response.body.getReader();
+      const chunks = []; let length = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        length += value.length;
+        if (length > 512 * 1024) { await reader.cancel(); throw new Error('oversize'); }
+        chunks.push(Buffer.from(value));
+      }
+      body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    } catch { throw new PublicError(502, '千问返回内容不完整，请重新生成。'); }
+    const choice = body.choices?.[0];
+    if (choice?.finish_reason !== 'stop' || typeof choice?.message?.content !== 'string') throw new PublicError(502, '千问未完成本次评价，请重新生成。');
+    let evaluation;
+    try { evaluation = JSON.parse(choice.message.content); }
+    catch { throw new PublicError(502, '千问返回的评价格式不正确，请重新生成。'); }
+    return evaluation;
+  };
+  return recognizeAndEvaluate({imageURL:`data:${type};base64,${bytes.toString('base64')}`, prompt:EVALUATION_PROMPT, complete});
 }
 
 function sendJSON(res, status, value) {
@@ -159,11 +160,12 @@ export function createReviewServer({ configLoader = loadConfig, fetchImpl = fetc
       let resource;
       try { resource = decodeURIComponent(url.pathname); } catch { throw new PublicError(400, '路径不正确。'); }
       if (resource === '/') resource = '/labs/algebra/inequality-review.html';
-      // Only public front-end files are served. Configuration, server code, and directories are never exposed.
+      // Only public front-end files and the validated encrypted key file are served.
       const allowedPath = resource === '/index.html' || resource.startsWith('/assets/') || resource.startsWith('/labs/');
       if (!allowedPath || resource.split('/').some(segment => segment.startsWith('.')) || resource.includes('\\')) throw new PublicError(404, '未找到页面。');
       const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
-      const mime = types[path.extname(resource)];
+      const keyResource = '/labs/algebra/' + KEY_FILE_NAME;
+      const mime = resource === keyResource ? 'application/json; charset=utf-8' : types[path.extname(resource)];
       if (!mime) throw new PublicError(404, '未找到页面。');
       let target;
       try {
@@ -171,9 +173,14 @@ export function createReviewServer({ configLoader = loadConfig, fetchImpl = fetc
         const root = await realpath(ROOT);
         if (!target.startsWith(root + path.sep) || !(await stat(target)).isFile()) throw new Error('not a file');
         const canonical = path.relative(root, target);
+        if (resource === keyResource && canonical !== keyResource.slice(1)) throw new Error('private target');
         if ((canonical !== 'index.html' && !/^(assets|labs)\//.test(canonical)) || canonical.split(path.sep).some(segment => segment.startsWith('.')) || path.extname(target) !== path.extname(resource)) throw new Error('private target');
       } catch { throw new PublicError(404, '未找到页面。'); }
-      const data = await readFile(target);
+      let data = await readFile(target);
+      if (resource === keyResource) {
+        try { data = JSON.stringify(parseKeyFile(data.toString('utf8'))); }
+        catch { throw new PublicError(404, '未找到有效的加密密钥文件。'); }
+      }
       res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'DENY' });
       return res.end(req.method === 'HEAD' ? undefined : data);
     } catch (error) {

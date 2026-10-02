@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { completionURL, validateEvaluation, validateImage, evaluateImage, createReviewServer, MAX_IMAGE_BYTES, EVALUATION_PROMPT } from '../server/inequality-review.mjs';
+import { RECOGNITION_PROMPT, recognizeAndEvaluate } from '../assets/js/labs/inequality-review-protocol.mjs';
 
 const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJFoAAAAASUVORK5CYII=', 'base64');
 const config = { apiKey: 'test-only-secret', model: 'qwen3.5-plus', baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1' };
@@ -15,6 +16,47 @@ const result = () => ({
   highlight: '有效使用母式构造不等式。', suggestion: '补上 x≤−2 的取等情形。', total: 999
 });
 const providerReply = value => new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(value) } }] }), { status: 200 });
+const transcription = () => ({status:'readable', formula:result().formula, reasoning:'', issue:''});
+
+test('grading cannot rewrite even an incorrect original; complete original text and proof are preserved', async () => {
+  const original = {...transcription(), formula:'|a−1|+|a−2|≤|2a−3|\n当且仅当 (a−1)(a−2)≤0 时等号成立\n' + '其他原文条件。'.repeat(20),
+    reasoning:'令 u=a−1，v=a−2。\n由三角不等式得证。'};
+  const stages = [];
+  const value = await recognizeAndEvaluate({imageURL:'data:image/png;base64,test', prompt:EVALUATION_PROMPT,
+    complete:async (content, stage) => {
+      stages.push(stage);
+      if (stage === 'recognition') {
+        assert.equal(content[0].text, RECOGNITION_PROMPT);
+        assert.doesNotMatch(content[0].text, /科学性|严谨性|a=1.5/);
+        return original;
+      }
+      assert.equal(content.some(part => part.type === 'image_url'), false);
+      assert.ok(content[1].text.endsWith(JSON.stringify({formula:original.formula,reasoning:original.reasoning})));
+      return {...result(),formula:'AI 自行纠正过的式子'};
+    }});
+  assert.deepEqual(stages, ['recognition','evaluation']);
+  assert.equal(value.formula, original.formula);
+});
+
+test('unreadable or invalid transcription stops before grading without inventing grades', async () => {
+  let calls = 0;
+  const value = await recognizeAndEvaluate({imageURL:'image',prompt:EVALUATION_PROMPT,complete:async () => {
+    calls++;
+    return {...transcription(),status:'unreadable',formula:'',issue:'无法辨认第二项中的常数。'};
+  }});
+  assert.equal(calls, 1);
+  assert.equal(value.status, 'unreadable');
+  assert.equal(value.rigor.grade, null);
+  assert.equal(value.suggestion, '无法辨认第二项中的常数。');
+  for (const invalid of [{}, {...transcription(),formula:''}, {...transcription(),reasoning:null},
+    {...transcription(),formula:'字'.repeat(1201)}, {...transcription(),status:'unreadable'}]) {
+    let attempts = 0;
+    await assert.rejects(recognizeAndEvaluate({imageURL:'image',prompt:EVALUATION_PROMPT,complete:async () => {
+      attempts++; return invalid;
+    }}), /手写识别结果不完整/);
+    assert.equal(attempts, 1);
+  }
+});
 
 test('accepts only A/B/C/D and never returns scores or a total', () => {
   for (const grade of ['A', 'B', 'C', 'D']) {
@@ -40,6 +82,19 @@ test('uncertain responses never present fabricated grades', () => {
     assert.equal(normalized.creativity.grade, null);
     assert.ok(!('total' in normalized));
   }
+});
+
+test('valid status cannot claim completion while scientific or rigor grades still show gaps', () => {
+  for (const dimension of ['scientific', 'rigor']) {
+    for (const grade of ['B','C','D']) {
+      const value = {...result(), status:'valid',scientific:{grade:'A',comment:'结论正确。'},rigor:{grade:'A',comment:'证明完整。'}};
+      value[dimension].grade = grade;
+      assert.equal(validateEvaluation(value).status, 'needs_revision');
+      assert.equal(validateEvaluation(value)[dimension].grade, grade);
+    }
+  }
+  const complete = {...result(),status:'valid',rigor:{grade:'A',comment:'论证完整。'}};
+  assert.equal(validateEvaluation(complete).status, 'valid');
 });
 
 test('rejects missing feedback, unknown statuses, and excessive text', () => {
@@ -74,8 +129,10 @@ test('credentials only go to approved HTTPS Qwen endpoints', () => {
   }
 });
 
-test('image and rubric reach the vision endpoint; response is normalized', async () => {
+test('backend sends separate recognition and grading requests; source formula stays fixed', async () => {
+  let calls = 0;
   const evaluated = await evaluateImage(image, 'image/png', config, { fetchImpl: async (url, options) => {
+    calls++;
     assert.equal(url, config.baseURL + '/chat/completions');
     assert.equal(options.headers.Authorization, 'Bearer test-only-secret');
     assert.equal(options.redirect, 'error');
@@ -83,10 +140,18 @@ test('image and rubric reach the vision endpoint; response is normalized', async
     assert.equal(payload.model, 'qwen3.5-plus');
     assert.equal(payload.enable_thinking, false);
     assert.equal(payload.response_format.type, 'json_object');
-    assert.equal(payload.messages[0].content[0].text, EVALUATION_PROMPT);
-    assert.equal(payload.messages[0].content[1].image_url.url, 'data:image/png;base64,' + image.toString('base64'));
-    return providerReply(result());
+    const content = payload.messages[0].content;
+    if (calls === 1) {
+      assert.equal(content[0].text, RECOGNITION_PROMPT);
+      assert.equal(content[1].image_url.url, 'data:image/png;base64,' + image.toString('base64'));
+      return providerReply(transcription());
+    }
+    assert.equal(content[0].text, EVALUATION_PROMPT);
+    assert.equal(content[1].type, 'text');
+    return providerReply({...result(), formula:'不应采用的改写'});
   } });
+  assert.equal(calls, 2);
+  assert.equal(evaluated.formula, transcription().formula);
   assert.equal(evaluated.scientific.grade, 'A');
 });
 
@@ -110,13 +175,16 @@ async function withServer(options, task) {
 
 test('HTTP route evaluates uploads; static server cannot serve secrets or backend code', async () => {
   let calls = 0;
-  await withServer({ configLoader: async () => config, fetchImpl: async () => { calls++; return providerReply(result()); } }, async url => {
+  await withServer({ configLoader: async () => config, fetchImpl: async (_url, options) => {
+    calls++;
+    return providerReply(JSON.parse(options.body).messages[0].content[0].text === RECOGNITION_PROMPT ? transcription() : result());
+  } }, async url => {
     const status = await (await fetch(url + '/api/status')).json();
     assert.deepEqual(status, { configured: true, model: 'qwen3.5-plus' });
     const response = await fetch(url + '/api/evaluate', { method: 'POST', headers: { 'Content-Type': 'image/png', Origin: url }, body: image });
     assert.equal(response.status, 200);
     assert.equal((await response.json()).rigor.grade, 'C');
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
     for (const route of ['/.env.qwen', '/server/inequality-review.mjs', '/assets/../.env.qwen', '/assets/%2eenv.qwen', '/assets/']) {
       const denied = await fetch(url + route);
       assert.equal(denied.status, 404);
@@ -127,7 +195,7 @@ test('HTTP route evaluates uploads; static server cannot serve secrets or backen
     assert.match(await page.text(), /id="generate-button"/);
     const blocked = await fetch(url + '/api/evaluate', { method: 'POST', headers: { Origin: 'https://evil.example', 'Content-Type': 'image/png' }, body: image });
     assert.equal(blocked.status, 403);
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
   });
 });
 

@@ -2,16 +2,18 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const directAPI = window.inequalityReviewAPI;
-  // Short margin notes follow the returned grade; the evidence stays in the AI comment.
+  // A grade alone cannot tell which proof step or equality case is missing.
+  // Keep margin notes neutral; the actual diagnosis belongs in the AI comment.
   const gradeNotes = {
-    scientific: { A: '结论成立\n推理有依据！', B: '结论正确\n表达再打磨！', C: '补条件、修正\n结论更可靠！', D: '检查代换\n重新核对结论' },
-    rigor: { A: '推导与取等\n清楚、完整！', B: '补齐细节\n论证更周全！', C: '补全论证\n取等情形要全', D: '写清推导\n说明取等条件' },
+    scientific: { A: '结论成立\n继续探索！', B: '结论正确\n表达再打磨！', C: '局部需要调整\n请看具体建议', D: '结论存在问题\n请看具体建议' },
+    rigor: { A: '推导与取等\n清楚、完整！', B: '补齐细节\n论证更周全！', C: '论证尚需完善\n继续补充依据', D: '论证存在问题\n请看具体建议' },
     creativity: { A: '推广有意义\n变化有说明！', B: '有效变式\n拓展新思路！', C: '从模仿出发\n再向前一步！', D: '试着改变原式\n创作新不等式' }
   };
   let photoURL = null;
   let selectedFile = null;
   let sequence = 0;
   let busy = false;
+  let serverModel = '千问';
   let controller = null;
   let fitFrame = 0;
 
@@ -73,6 +75,7 @@
       const response = await fetch('/api/status', { cache: 'no-store' });
       if (!response.ok) throw new Error('unavailable');
       const status = await response.json();
+      serverModel = status.model || '千问';
       $('connection-label').textContent = status.configured ? '千问 · 已配置' : '千问 · 待配置';
     } catch { $('connection-label').textContent = '千问 · 服务未启动'; }
   }
@@ -127,9 +130,12 @@
     $('upload-button').disabled = value;
     $('generate-button').disabled = value || !selectedFile;
     $('generate-button').setAttribute('aria-busy', String(value));
-    $('generate-label').textContent = value ? '千问正在评价…' : '上传并生成评价卡';
+    $('generate-label').textContent = value ? `正在采用 ${directAPI?.model || serverModel} AI模型评价` : '上传并生成评价卡';
     $('generate-arrow').hidden = value;
-    if (directAPI) $('connection-label').disabled = value;
+    if (directAPI) {
+      $('connection-label').disabled = value;
+      $('review-settings-button').disabled = value;
+    }
   }
 
   function renderCard(result) {
@@ -176,8 +182,8 @@
   $('generate-button').addEventListener('click', async () => {
     if (!selectedFile || busy) return;
     if (directAPI && !directAPI.configured) {
-      directAPI.configure();
-      return;
+      if (!await directAPI.ensureConfigured()) return;
+      if (!selectedFile || busy) return;
     }
     setBusy(true);
     message('');

@@ -1,13 +1,61 @@
-  <dialog class="api-dialog" id="api-settings" aria-labelledby="api-settings-title" aria-describedby="api-settings-note">
+  <dialog class="api-dialog" id="api-settings" aria-labelledby="api-settings-title">
     <form id="api-settings-form" autocomplete="off">
-      <div class="api-dialog-heading"><span aria-hidden="true">✦</span><p>开始你的数学探索</p></div>
-      <h2 id="api-settings-title">连接千问，开启评价</h2>
-      <p class="api-settings-subtitle">填写一次密钥，本次课堂可连续评价多份作品。</p>
-      <label for="api-key">千问 API Key</label>
-      <input id="api-key" type="password" placeholder="粘贴百炼控制台复制的完整密钥" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="api-settings-note api-settings-message">
-      <p id="api-settings-note">华北2（北京） · qwen3.5-plus<br>密钥仅在当前页面内存中使用，刷新或关闭后清除。</p>
-      <p id="api-settings-message" role="alert" hidden></p>
-      <button class="api-save" type="submit">开始使用 <span aria-hidden="true">→</span></button>
-      <div class="api-settings-actions"><button id="clear-api-key" type="button" hidden>清除密钥</button><button id="close-api-settings" type="button">暂不设置，先看看</button></div>
+      <header class="settings-header">
+        <div class="settings-title"><span class="settings-mark" aria-hidden="true">✦</span><div><p class="settings-eyebrow">李老师开心课堂 · MathRender</p><h2 id="api-settings-title">AI 设置</h2></div></div>
+        <button class="settings-close" id="close-api-settings" type="button" aria-label="关闭设置，返回评价卡">×</button>
+      </header>
+      <div class="settings-content">
+        <section class="settings-connection" aria-labelledby="connection-title">
+          <h3 id="connection-title">模型与连接</h3><p class="settings-description">选择读懂手写作品的 AI。</p>
+          <div class="key-file-settings" id="key-file-settings" hidden>
+            <p class="key-file-heading">课堂密钥</p>
+            <p class="field-hint" id="key-file-status">正在读取网站配置。</p>
+            <button id="unlock-site-key" type="button" class="key-unlock-button">输入使用密码</button>
+          </div>
+          <label for="api-model">模型名称</label>
+          <select id="api-model" required aria-describedby="api-model-hint model-catalog-note">
+            <!-- QWEN_MODEL_OPTIONS -->
+          </select>
+          <p class="field-hint model-hint" id="api-model-hint" aria-live="polite"></p>
+          <p class="field-hint model-catalog-note" id="model-catalog-note">千问北京 · 支持图片与 JSON 输出<br><a href="https://help.aliyun.com/zh/model-studio/vision-model" target="_blank" rel="noopener noreferrer">官方模型说明 ↗</a><span>核对于 <!-- QWEN_MODELS_CHECKED_ON --></span></p>
+          <div class="field-label"><label for="api-endpoint">API 地址</label><button id="reset-api-connection" type="button" class="text-action">千问北京默认</button></div>
+          <input id="api-endpoint" type="url" maxlength="500" spellcheck="false" required aria-describedby="endpoint-hint">
+          <p class="field-hint" id="endpoint-hint">填写完整的 /chat/completions 地址，支持兼容接口。</p>
+          <details id="manual-key-settings" class="manual-key-settings">
+            <summary id="manual-key-summary">临时填写 API Key（可选）</summary>
+            <div class="field-label"><label for="api-key">API Key</label><button id="clear-api-key" type="button" class="text-action" hidden>清除密钥</button></div>
+            <input id="api-key" type="password" placeholder="粘贴完整密钥" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="api-key-state">
+            <p class="field-hint" id="api-key-state">密钥仅在当前页面使用，不会保存。</p>
+          </details>
+          <details class="advanced-settings"><summary>更多生成设置</summary><div class="parameter-grid">
+            <div><label for="api-temperature">随机性</label><input id="api-temperature" type="number" min="0" max="2" step="0.1" required></div>
+            <div><label for="api-max-tokens">输出上限</label><input id="api-max-tokens" type="number" min="512" max="8192" step="1" required></div>
+          </div><p class="field-hint">默认 0.1 / 2400 tokens，适合简洁、稳定的课堂评价。</p></details>
+        </section>
+        <section class="settings-prompt" aria-labelledby="prompt-title">
+          <div class="prompt-heading"><div><h3 id="prompt-title">评价 Prompt</h3><p class="settings-description">选择评价规则，查看完整内容。</p></div><span class="prompt-readonly-badge">仅供查看</span></div>
+          <label for="api-prompt-version">Prompt 版本</label>
+          <select id="api-prompt-version" required aria-describedby="prompt-version-description">
+            <!-- PROMPT_VERSION_OPTIONS -->
+            <option id="legacy-prompt-option" value="legacy-local" hidden disabled>历史自定义（只读）</option>
+          </select>
+          <p class="field-hint prompt-version-description" id="prompt-version-description" aria-live="polite"></p>
+          <textarea id="api-prompt" readonly spellcheck="false" aria-label="Prompt 内容（只读）" aria-describedby="prompt-help"></textarea>
+          <div class="prompt-caption"><p id="prompt-help">内容随版本切换。选择并保存后，下次评价生效。</p><span id="prompt-count"></span></div>
+          <details class="prompt-format"><summary>查看识别与输出规则</summary><p>第一步只转写图片，固定原式和原有推导；第二步把转写原文交给所选 Prompt 评价。“上传的不等式”始终显示第一步的识别结果。</p><p>图片识别规则</p><pre id="api-recognition-prompt"></pre><p>评价卡输出格式</p><pre id="api-response-format"></pre></details>
+        </section>
+      </div>
+      <footer class="settings-footer"><div class="settings-footer-notes"><p id="api-settings-message" role="status" aria-live="polite">保存后，下次生成评价卡时生效。</p><p id="api-storage-note">模型和 Prompt 保存在当前浏览器。明文密钥与密码不保存。</p></div><button class="api-save" type="submit">保存并返回 <span aria-hidden="true">→</span></button></footer>
+    </form>
+  </dialog>
+
+  <dialog class="key-unlock-dialog" id="key-unlock-dialog" aria-labelledby="key-unlock-title">
+    <form id="key-unlock-form" autocomplete="off">
+      <h2 id="key-unlock-title">解锁课堂 AI</h2>
+      <p>已读取加密密钥，输入密码即可使用。</p>
+      <label for="key-file-password">使用密码</label>
+      <input id="key-file-password" type="password" required maxlength="1024" autocomplete="off" placeholder="输入密码" aria-describedby="key-unlock-message">
+      <p id="key-unlock-message" role="status" aria-live="polite">本次打开只需解锁一次。</p>
+      <div class="key-unlock-actions"><button type="button" id="cancel-key-unlock">取消</button><button type="submit" id="submit-key-unlock">解锁并继续</button></div>
     </form>
   </dialog>
