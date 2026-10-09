@@ -11,7 +11,7 @@
         headers:{...(token ? {Authorization:'Bearer ' + token} : {}), ...(body ? {'Content-Type':'application/json'} : {})},
         body:body ? JSON.stringify(body) : undefined, signal:controller.signal});
       if (!response.ok) {
-        let message = '课堂相册暂时无法连接，请确认电脑上的服务正在运行。';
+        let message = '课堂服务暂时无法连接，请稍后重试。';
         try { message = (await response.json()).error || message; } catch {}
         const error = new Error(message); error.status = response.status; throw error;
       }

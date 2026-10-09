@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {readFile} from 'node:fs/promises';
 import {handleClassroom, cleanupDeleted} from '../cloudflare/classroom-api.mjs';
+import {encryptKeyFile, decryptKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
 
-const schema = await readFile(new URL('../cloudflare/migrations/0001_classroom.sql',import.meta.url),'utf8');
+const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJFoAAAAASUVORK5CYII=';
 const jpeg = 'data:image/jpeg;base64,'+Buffer.from([255,216,255,224,1,2,255,217]).toString('base64');
 const origin = 'https://mathrender.test';
@@ -135,4 +136,49 @@ test('login attempts are rate limited and tokens expire',async () => {
   assert.equal((await app.request('/bootstrap',{method:'POST',body:{password:'wrong'}})).status,429);
   const now = Date.now; Date.now = () => now()+13*3600*1000;
   try { assert.equal((await app.request('/photos',{token})).status,401); } finally { Date.now = now; }
+});
+
+test('existing AI password initializes unified credentials once; password change revokes both roles without losing photos',async () => {
+  const app = environment();
+  const key = 'sk-unified-fixture-only', password = 'existing-ai-password', next = 'my-new-classroom-password';
+  const proof = Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mathrender-classroom-initialize-v1:'+key))).toString('hex');
+  const keyFile = await encryptKeyFile(key,'https://example.com/chat/completions',password);
+  app.env.CLASSROOM_UNIFIED_PROOF = proof;
+  const post = (path,body,token) => app.request(path,{method:'POST',body,token});
+  assert.equal((await post('/initialize',{password,proof:'wrong',keyFile})).status,401);
+  assert.deepEqual(await (await post('/bootstrap',{password})).json(),{setupRequired:true});
+  const initialized = await post('/initialize',{password,proof,keyFile}); assert.equal(initialized.status,200);
+  const first = await initialized.json();
+  assert.equal(await decryptKeyFile(first.keyFile,password),key);
+  assert.equal((await post('/initialize',{password,proof,keyFile})).status,409);
+  const work = payload(); assert.equal((await post('/photos',work,first.uploadToken)).status,201);
+  assert.equal((await post('/password',{},first.uploadToken)).status,403);
+  const newKeyFile = await encryptKeyFile(key,keyFile.endpoint,next);
+  assert.equal((await post('/password',{currentPassword:'wrong',newPassword:next,keyFile:newKeyFile},first.token)).status,401);
+  const changed = await post('/password',{currentPassword:password,newPassword:next,keyFile:newKeyFile},first.token);
+  assert.equal(changed.status,200); const second = await changed.json();
+  assert.equal((await app.request('/photos',{token:first.token})).status,401);
+  assert.equal((await post('/photos',payload(),first.uploadToken)).status,401);
+  assert.equal((await app.request('/photos',{token:second.token})).status,200);
+  const photos = await (await app.request('/photos',{token:second.token})).json(); assert.equal(photos.photos[0].id,work.id);
+  assert.equal(await decryptKeyFile(second.keyFile,next),key);
+  await assert.rejects(decryptKeyFile(second.keyFile,password));
+  const record = app.db.prepare('SELECT * FROM classroom_credentials').get();
+  assert.ok(!JSON.stringify(record).includes(next)); assert.ok(!JSON.stringify(record).includes(key));
+  app.db.exec('DELETE FROM classroom_limits');
+  assert.equal((await post('/bootstrap',{password})).status,401);
+  assert.equal((await post('/bootstrap',{password:app.env.CLASSROOM_ACCESS_CODE})).status,401);
+  assert.equal((await post('/bootstrap',{password:next})).status,200);
+});
+
+test('concurrent password edits have one winner and reject malformed replacement configuration',async () => {
+  const app = environment(), password = 'current-password';
+  app.env.CLASSROOM_UNIFIED_PROOF = 'a'.repeat(64);
+  const keyFile = await encryptKeyFile('sk-test','https://example.com/chat/completions',password);
+  const first = await (await app.request('/initialize',{method:'POST',body:{password,proof:app.env.CLASSROOM_UNIFIED_PROOF,keyFile}})).json();
+  const body = {currentPassword:password,newPassword:'replacement-password',keyFile};
+  assert.equal((await app.request('/password',{method:'POST',body:{...body,keyFile:{}},token:first.token})).status,400);
+  const results = await Promise.all([1,2].map(() => app.request('/password',{method:'POST',body,token:first.token})));
+  assert.equal(results.filter(r => r.status === 200).length,1);
+  assert.ok(results.some(r => [401,409].includes(r.status)));
 });

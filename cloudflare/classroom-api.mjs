@@ -1,3 +1,5 @@
+import {parseKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
+
 // Pictures stay in a private R2 bucket; D1 publishes a photo only after
 // both image writes succeed.
 const MAX_IMAGE = 10 * 1024 * 1024;
@@ -19,17 +21,39 @@ function equal(a, b) {
   let mismatch = 0; for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return mismatch === 0;
 }
-async function capability(env, role, lifetime) {
-  const value = `${role}.${Math.floor(Date.now()/1000) + lifetime}`;
+const credentials = env => env.CLASSROOM_DB.prepare('SELECT * FROM classroom_credentials WHERE id = 1').first();
+const passwordHash = (env, salt, password) => mac(env.CLASSROOM_SECRET, `classroom-password:${salt}:${password}`);
+async function capability(env, role, lifetime, version) {
+  const value = `${role}.${Math.floor(Date.now()/1000) + lifetime}.${version}`;
   return value + '.' + await mac(env.CLASSROOM_SECRET, value);
 }
-async function authorize(request, env) {
+async function session(env, record) {
+  const version = record?.version || 'legacy';
+  return {token:await capability(env,'teacher',12*3600,version), uploadToken:await capability(env,'upload',7*86400,version),
+    ...(record ? {keyFile:JSON.parse(record.key_file)} : {})};
+}
+async function authorize(request, env, record) {
   const token = request.headers.get('Authorization')?.replace(/^Bearer /, '') || '';
-  const match = /^(teacher|upload)\.(\d{10})\.([a-f0-9]{64})$/.exec(token);
-  if (!match || Number(match[2]) <= Date.now()/1000 || !equal(match[3], await mac(env.CLASSROOM_SECRET, match[1]+'.'+match[2]))) {
+  const match = /^(teacher|upload)\.(\d{10})\.([a-z0-9-]{1,40})\.([a-f0-9]{64})$/.exec(token);
+  if (!match || Number(match[2]) <= Date.now()/1000 || match[3] !== (record?.version || 'legacy') ||
+    (!record && env.CLASSROOM_UNIFIED_PROOF) || !equal(match[4], await mac(env.CLASSROOM_SECRET, match.slice(1,4).join('.')))) {
     throw new HttpError(401, '连接已过期或链接无效，请在电脑端重新打开相册并扫描二维码。');
   }
   return match[1];
+}
+function validatedKeyFile(value) {
+  try { return JSON.stringify(parseKeyFile(JSON.stringify(value))); }
+  catch { throw new HttpError(400, '课堂 AI 配置不完整，请刷新页面后重试。'); }
+}
+function validPassword(value, changing = false) {
+  if (typeof value !== 'string' || !value || value.length > (changing ? 128 : 1024) || (changing && value.trim().length < 8)) {
+    throw new HttpError(400, changing ? '新密码请使用 8–128 个字符。' : '请输入课堂密码。');
+  }
+  return value;
+}
+async function matchesPassword(env, record, password) {
+  return record ? equal(await passwordHash(env, record.salt, password), record.password_hash)
+    : !env.CLASSROOM_UNIFIED_PROOF && equal(await digest(password), await digest(env.CLASSROOM_ACCESS_CODE));
 }
 async function readJSON(request, limit = MAX_BODY) {
   if (Number(request.headers.get('Content-Length')) > limit) throw new HttpError(413, '照片过大，请压缩后上传。');
@@ -74,19 +98,46 @@ async function rateLimit(request, env, kind, maximum) {
 }
 
 async function route(request, env, url) {
-  if (!env.CLASSROOM_PHOTOS || !env.CLASSROOM_DB || !env.CLASSROOM_ACCESS_CODE || env.CLASSROOM_SECRET?.length < 32 || !env.CLASSROOM_SECRET) {
+  if (!env.CLASSROOM_PHOTOS || !env.CLASSROOM_DB || (!env.CLASSROOM_ACCESS_CODE && !env.CLASSROOM_UNIFIED_PROOF) || env.CLASSROOM_SECRET?.length < 32 || !env.CLASSROOM_SECRET) {
     throw new HttpError(503, '课堂相册尚未启用，请完成 Cloudflare 存储绑定与相册密码配置。');
   }
   const path = url.pathname;
+  const record = await credentials(env);
   if (path === '/api/classroom/bootstrap' && request.method === 'POST') {
-    const body = await readJSON(request, 4096);
-    if (!body?.password) throw new HttpError(401, '请输入课堂相册密码。');
+    const body = await readJSON(request, 8192);
+    if (!body?.password) throw new HttpError(401, '请输入课堂密码，解锁相册与 AI 评价。');
     await rateLimit(request, env, 'login', 10);
-    if (!equal(await digest(String(body.password)), await digest(env.CLASSROOM_ACCESS_CODE))) throw new HttpError(401, '相册密码不正确，请重试。');
+    const password = validPassword(body.password);
+    if (!record && env.CLASSROOM_UNIFIED_PROOF) return json({setupRequired:true});
+    if (!await matchesPassword(env, record, password)) throw new HttpError(401, '课堂密码不正确，请重试。');
     await env.CLASSROOM_DB.prepare('DELETE FROM classroom_limits WHERE reset_at < ?').bind(Math.floor(Date.now()/1000)-3600).run();
-    return json({token:await capability(env,'teacher',12*3600), uploadToken:await capability(env,'upload',7*86400)});
+    return json(await session(env, record));
   }
-  const role = await authorize(request, env);
+  if (path === '/api/classroom/initialize' && request.method === 'POST') {
+    await rateLimit(request, env, 'login', 10);
+    const body = await readJSON(request, 20000);
+    if (record || !env.CLASSROOM_UNIFIED_PROOF) throw new HttpError(409, '课堂密码已启用，请使用当前密码重新解锁。');
+    if (!equal(body?.proof, env.CLASSROOM_UNIFIED_PROOF)) throw new HttpError(401, '课堂密码验证失败，请使用原来的 AI 使用密码。');
+    const password = validPassword(body.password), keyFile = validatedKeyFile(body.keyFile);
+    const salt = crypto.randomUUID(), version = crypto.randomUUID();
+    const saved = await env.CLASSROOM_DB.prepare(`INSERT INTO classroom_credentials (id,password_hash,salt,version,key_file)
+      VALUES (1,?,?,?,?) ON CONFLICT(id) DO NOTHING RETURNING *`).bind(await passwordHash(env,salt,password),salt,version,keyFile).first();
+    if (!saved) throw new HttpError(409, '另一页面已完成设置，请重新解锁。');
+    return json(await session(env, saved));
+  }
+  const role = await authorize(request, env, record);
+  if (path === '/api/classroom/password' && request.method === 'POST') {
+    if (role !== 'teacher') throw new HttpError(403, '请在电脑端修改课堂密码。');
+    await rateLimit(request, env, 'login', 10);
+    const body = await readJSON(request, 24000);
+    if (!record || !await matchesPassword(env, record, validPassword(body?.currentPassword))) throw new HttpError(401, '当前课堂密码不正确，请重试。');
+    const password = validPassword(body.newPassword, true), keyFile = validatedKeyFile(body.keyFile);
+    const salt = crypto.randomUUID(), version = crypto.randomUUID();
+    const saved = await env.CLASSROOM_DB.prepare(`UPDATE classroom_credentials SET password_hash = ?, salt = ?, version = ?, key_file = ?
+      WHERE id = 1 AND version = ? RETURNING *`).bind(await passwordHash(env,salt,password),salt,version,keyFile,record.version).first();
+    if (!saved) throw new HttpError(409, '密码已在另一页面修改，请重新解锁。');
+    return json(await session(env, saved));
+  }
   const base = '/api/classroom/photos';
   if (path === base && request.method === 'GET') {
     const result = await env.CLASSROOM_DB.prepare('SELECT * FROM classroom_photos WHERE deleted_at IS NULL ORDER BY serial DESC LIMIT 1000').all();

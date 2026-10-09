@@ -8,9 +8,10 @@
         <section class="settings-connection" aria-labelledby="connection-title">
           <h3 id="connection-title">模型与连接</h3><p class="settings-description">选择读懂手写作品的 AI。</p>
           <div class="key-file-settings" id="key-file-settings" hidden>
-            <p class="key-file-heading">课堂密钥</p>
+            <p class="key-file-heading">课堂密码</p>
             <p class="field-hint" id="key-file-status">正在读取网站配置。</p>
-            <button id="unlock-site-key" type="button" class="key-unlock-button">输入使用密码</button>
+            <button id="unlock-site-key" type="button" class="key-unlock-button">解锁相册与 AI 评价</button>
+            <button id="change-classroom-password" type="button" class="key-unlock-button" hidden>修改课堂密码</button>
           </div>
           <label for="api-model">模型名称</label>
           <select id="api-model" required aria-describedby="api-model-hint model-catalog-note">
@@ -51,11 +52,27 @@
 
   <dialog class="key-unlock-dialog" id="key-unlock-dialog" aria-labelledby="key-unlock-title">
     <form id="key-unlock-form" autocomplete="off">
-      <h2 id="key-unlock-title">解锁课堂 AI</h2>
-      <p>已读取加密密钥，输入密码即可使用。</p>
-      <label for="key-file-password">使用密码</label>
+      <h2 id="key-unlock-title">打开我的课堂</h2>
+      <p>一个密码，解锁课堂相册与 AI 评价。首次使用请填写原来的 AI 使用密码。</p>
+      <label for="key-file-password">课堂密码</label>
       <input id="key-file-password" type="password" required maxlength="1024" autocomplete="off" placeholder="输入密码" aria-describedby="key-unlock-message">
       <p id="key-unlock-message" role="status" aria-live="polite">本次打开只需解锁一次。</p>
       <div class="key-unlock-actions"><button type="button" id="cancel-key-unlock">取消</button><button type="submit" id="submit-key-unlock">解锁并继续</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="key-unlock-dialog" id="classroom-password-dialog" aria-labelledby="classroom-password-title">
+    <form id="classroom-password-form" autocomplete="off">
+      <h2 id="classroom-password-title">修改课堂密码</h2>
+      <p>为相册与 AI 评价设置同一个密码。</p>
+      <label for="classroom-current-password">当前密码</label>
+      <input id="classroom-current-password" type="password" required maxlength="1024" autocomplete="current-password" placeholder="输入当前课堂密码">
+      <label for="classroom-new-password">新密码</label>
+      <input id="classroom-new-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="至少 8 个字符">
+      <label for="classroom-confirm-password">再输入一次新密码</label>
+      <input id="classroom-confirm-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="确认新密码">
+      <p class="password-change-note">照片会保留。保存后手机需要重新扫描相册中的二维码。</p>
+      <p id="classroom-password-message" role="status" aria-live="polite"></p>
+      <div class="key-unlock-actions"><button type="button" id="cancel-classroom-password">取消</button><button type="submit" id="save-classroom-password">保存新密码</button></div>
     </form>
   </dialog>

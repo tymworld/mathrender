@@ -177,6 +177,9 @@ export function createReviewServer({ configLoader = loadConfig, fetchImpl = fetc
         if ((canonical !== 'index.html' && !/^(assets|labs)\//.test(canonical)) || canonical.split(path.sep).some(segment => segment.startsWith('.')) || path.extname(target) !== path.extname(resource)) throw new Error('private target');
       } catch { throw new PublicError(404, '未找到页面。'); }
       let data = await readFile(target);
+      if (resource === '/labs/algebra/inequality-review.html') {
+        data = data.toString('utf8').replace('<head>', '<head><script>window.inequalityLocalPreview = true;</script>');
+      }
       if (resource === keyResource) {
         try { data = JSON.stringify(parseKeyFile(data.toString('utf8'))); }
         catch { throw new PublicError(404, '未找到有效的加密密钥文件。'); }

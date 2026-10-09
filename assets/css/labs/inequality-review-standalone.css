@@ -92,6 +92,13 @@
 #key-unlock-message[data-error="true"] { color: #a44124; }
 .key-unlock-actions { display: flex; justify-content: flex-end; gap: 12px; }
 .key-unlock-actions button { border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-size: 14px; background: #eaf0f9; color: #557197; }
-#submit-key-unlock { color: white; background: linear-gradient(115deg, #6286f1, #7a6add); }
+#submit-key-unlock, #save-classroom-password { color: white; background: linear-gradient(115deg, #6286f1, #7a6add); }
+.key-unlock-button[hidden] { display: none; }
+#classroom-password-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; box-sizing: border-box; }
+#classroom-password-dialog input + label { margin-top: 16px; }
+#classroom-password-dialog .password-change-note { margin: 16px 0 8px; font-size: 12px; }
+#classroom-password-message { min-height: 20px; margin: 8px 0 18px; }
+#classroom-password-message[data-error="true"] { color: #a44124; }
+.classroom-unavailable > .key-unlock-button { width: auto; min-width: 220px; margin: 6px 0 16px; }
 .key-unlock-dialog [disabled] { opacity: .6; cursor: wait; }
 @media print { .key-unlock-dialog { display: none !important; } }

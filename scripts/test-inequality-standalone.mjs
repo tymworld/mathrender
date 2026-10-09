@@ -26,7 +26,7 @@ const demoKey = 'sk-unit-test-only-do-not-use';
 const transcription = () => ({status:'readable', formula:fixture().formula, reasoning:'', issue:''});
 
 // Settings tests mock transcription automatically; pass null to test both API requests.
-function harness(fetchImpl = async () => providerReply(fixture()), stored = new Map(), denyStorage = false, mockTranscription = transcription(), location = {protocol:'file:',href:'file:///test/inequality-review.html'}, embeddedKeyFile = null) {
+function harness(fetchImpl = async () => providerReply(fixture()), stored = new Map(), denyStorage = false, mockTranscription = transcription(), location = {protocol:'file:',href:'file:///test/inequality-review.html'}, embeddedKeyFile = null, classroomClient = null) {
   const elements = new Map();
   const events = new Map();
   const node = id => {
@@ -67,6 +67,9 @@ function harness(fetchImpl = async () => providerReply(fixture()), stored = new 
   // Never use the teacher's actual encrypted key in fixtures; exercise the same bundled code.
   for (const script of scripts) vm.runInContext(script.replace(/^const EMBEDDED_KEY_FILE = .*;$/m,
     () => `const EMBEDDED_KEY_FILE = ${JSON.stringify(embeddedKeyFile)};`), context);
+  // Isolate direct AI tests from the cloud service; unified-auth cases inject it.
+  win.ClassroomPhotos = classroomClient;
+  win.inequalityClassroom = {acceptSession() {}, disconnect() {}};
   return {
     node, stored, api: win.inequalityReviewAPI,
     async submitKey(key = demoKey) { node('api-settings').showModal(); node('api-key').value = key; await node('api-settings-form').dispatch('submit'); },
@@ -550,7 +553,7 @@ test('website loads its fixed key file without a popup or AI request, then unloc
   app.api.configure();
   assert.equal(app.node('manual-key-settings').open, false);
   assert.equal(app.node('unlock-site-key').hidden, false);
-  assert.match(app.node('key-file-status').textContent, /无需填写 API Key/);
+  assert.match(app.node('key-file-status').textContent, /课堂密码/);
   app.node('close-api-settings').dispatch('click');
   const configured = app.api.ensureConfigured(); await settle();
   assert.equal(app.node('key-unlock-dialog').open, true);
@@ -635,7 +638,7 @@ test('embedded encrypted key unlocks on file URLs and websites without configura
     assert.equal(app.node('connection-label').textContent, 'AI 设置 · 待解锁');
     assert.equal(app.node('api-settings').open, false);
     assert.equal(app.node('key-unlock-dialog').open, false);
-    assert.match(app.node('key-file-status').textContent, /无需填写 API Key/);
+    assert.match(app.node('key-file-status').textContent, /课堂密码/);
     assert.equal(requests, 0);
     await app.node('photo-input').dispatch('change', {target:{files:[file()]}});
     const generation = app.node('generate-button').dispatch('click'); await settle();
@@ -675,4 +678,55 @@ test('history storage failure never discards a completed card or reports it as s
   assert.equal(app.node('history-button').disabled, false);
   app.node('restart-button').dispatch('click');
   assert.equal(app.node('history-save-note').hidden, true);
+});
+
+
+test('one classroom unlock initializes from the existing AI password and also unlocks evaluation', async () => {
+  const calls = [];
+  let currentToken = '';
+  const token = `teacher.${Math.floor(Date.now()/1000)+3600}.fixture.signature`;
+  const client = {setToken(value) { currentToken = value; }, async request(path, {body}) {
+    calls.push(path);
+    assert.equal(body.password,testPassword);
+    if (path === '/bootstrap') return {setupRequired:true};
+    assert.equal(path,'/initialize');
+    const proof = Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode('mathrender-classroom-initialize-v1:'+demoKey))).toString('hex');
+    assert.equal(body.proof,proof); assert.equal(await decryptKeyFile(body.keyFile,testPassword),demoKey);
+    return {token,uploadToken:'upload-fixture',keyFile:encryptedFixture};
+  }};
+  const app = harness(undefined,new Map(),false,transcription(),{protocol:'https:',href:'https://classroom.test/review.html'},encryptedFixture,client);
+  const pending = app.api.ensureClassroom(); await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(app.node('key-unlock-dialog').open,true);
+  app.node('key-file-password').value=testPassword; await app.node('key-unlock-form').dispatch('submit');
+  assert.equal((await pending).token,token); assert.equal(currentToken,token);
+  assert.equal(await app.api.ensureConfigured(),true); assert.equal((await app.api.ensureClassroom()).token,token);
+  assert.deepEqual(calls,['/bootstrap','/initialize']);
+  assert.equal(app.node('change-classroom-password').hidden,false);
+  assert.equal(app.node('key-file-password').value,'');
+  assert.ok(!JSON.stringify([...app.stored]).includes(testPassword));
+});
+
+test('password change validates confirmation, re-encrypts the original cloud key, and retains one unlocked session', async () => {
+  let password=testPassword, encrypted=encryptedFixture, changes=0;
+  const token=()=>`teacher.${Math.floor(Date.now()/1000)+3600}.version-${changes}.signature`;
+  const client={setToken() {}, async request(path,{body}) {
+    if(path==='/bootstrap') { assert.equal(body.password,password); return {token:token(),uploadToken:'upload',keyFile:encrypted}; }
+    assert.equal(path,'/password'); assert.equal(body.currentPassword,password);
+    assert.equal(await decryptKeyFile(body.keyFile,body.newPassword),demoKey);
+    password=body.newPassword; encrypted=body.keyFile; changes++;
+    return {token:token(),uploadToken:'upload-new',keyFile:encrypted};
+  }};
+  const app=harness(undefined,new Map(),false,transcription(),{protocol:'https:',href:'https://classroom.test/review.html'},encryptedFixture,client);
+  const pending=app.api.ensureConfigured(); await new Promise(resolve=>setImmediate(resolve));
+  app.node('key-file-password').value=testPassword; await app.node('key-unlock-form').dispatch('submit'); await pending;
+  app.node('change-classroom-password').dispatch('click');
+  app.node('classroom-current-password').value=testPassword;
+  app.node('classroom-new-password').value='my-new-password'; app.node('classroom-confirm-password').value='mismatch';
+  await app.node('classroom-password-form').dispatch('submit'); assert.equal(changes,0);
+  assert.match(app.node('classroom-password-message').textContent,/不一致/);
+  app.node('classroom-confirm-password').value='my-new-password'; await app.node('classroom-password-form').dispatch('submit');
+  assert.equal(changes,1); assert.equal(app.node('classroom-password-dialog').open,false);
+  assert.equal(app.api.configured,true); assert.equal((await app.api.ensureClassroom()).token,token());
+  for(const id of ['classroom-current-password','classroom-new-password','classroom-confirm-password']) assert.equal(app.node(id).value,'');
+  assert.ok(!JSON.stringify([...app.stored]).includes('my-new-password'));
 });

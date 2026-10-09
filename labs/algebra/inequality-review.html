@@ -604,7 +604,14 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 #key-unlock-message[data-error="true"] { color: #a44124; }
 .key-unlock-actions { display: flex; justify-content: flex-end; gap: 12px; }
 .key-unlock-actions button { border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-size: 14px; background: #eaf0f9; color: #557197; }
-#submit-key-unlock { color: white; background: linear-gradient(115deg, #6286f1, #7a6add); }
+#submit-key-unlock, #save-classroom-password { color: white; background: linear-gradient(115deg, #6286f1, #7a6add); }
+.key-unlock-button[hidden] { display: none; }
+#classroom-password-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; box-sizing: border-box; }
+#classroom-password-dialog input + label { margin-top: 16px; }
+#classroom-password-dialog .password-change-note { margin: 16px 0 8px; font-size: 12px; }
+#classroom-password-message { min-height: 20px; margin: 8px 0 18px; }
+#classroom-password-message[data-error="true"] { color: #a44124; }
+.classroom-unavailable > .key-unlock-button { width: auto; min-width: 220px; margin: 6px 0 16px; }
 .key-unlock-dialog [disabled] { opacity: .6; cursor: wait; }
 @media print { .key-unlock-dialog { display: none !important; } }
 
@@ -668,7 +675,10 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .classroom-empty-steps { margin-top:22px; color:#8893aa; font-size:12px; }
 .classroom-more { display:block; margin:12px auto 0; border:0; background:#f1f3fc; color:#6856bf; border-radius:9px; padding:7px 18px; font-size:13px; }
 .classroom-mode .upload-actions { margin-top:18px; padding-top:15px; border-top:1px solid #edf0f8; display:flex; gap:20px; align-items:center; }
-.classroom-selection { display:flex; align-items:center; gap:16px; flex:1; min-width:0; font-size:14px; }
+.classroom-selection { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; flex:1; min-width:0; font-size:14px; }
+.classroom-selection-actions { display:flex; gap:14px; margin-left:auto; flex-shrink:0; }
+#classroom-delete-selected { color:#a85c68; }
+.classroom-selection button:disabled { opacity:.4; cursor:default; }
 #classroom-selected-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .classroom-selection button { border:0; border-left:1px solid #dce2f3; padding:0 0 0 16px; color:#7659e4; background:none; white-space:nowrap; min-height:35px; font-size:13px; }
 .classroom-mode .generate-button { width:320px; margin:0; min-height:48px; padding:8px 16px; font-size:18px; }
@@ -808,8 +818,8 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   <div id="classroom-unavailable" class="classroom-unavailable" hidden>
     <span class="classroom-empty-icon" aria-hidden="true">⌁</span>
     <h2>打开课堂相册</h2>
-    <p id="classroom-unavailable-text">输入相册密码，连接手机上的数学想法。</p>
-    <form id="classroom-login-form"><label for="classroom-password">相册密码</label><div><input id="classroom-password" type="password" autocomplete="current-password" placeholder="输入课堂相册密码" maxlength="200"><button id="classroom-reconnect" type="submit">打开相册 →</button></div></form>
+    <p id="classroom-unavailable-text">输入一次课堂密码，同时解锁相册与 AI 评价。</p>
+    <button id="classroom-reconnect" type="button" class="key-unlock-button">解锁我的课堂 →</button>
     <small>手机扫码即可上传，无需填写密码。照片保存在云端。</small>
   </div>
   <div id="classroom-workspace" class="classroom-workspace">
@@ -835,7 +845,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 </div>
 
         <div class="upload-actions">
-        <div id="classroom-selection" class="classroom-selection" hidden><span id="classroom-selected-label">选择一张作品，开始评价</span><button id="classroom-preview" type="button" disabled>查看大图</button></div>
+        <div id="classroom-selection" class="classroom-selection" hidden><span id="classroom-selected-label">选择一张作品，开始评价</span><div class="classroom-selection-actions"><button id="classroom-preview" type="button" disabled>查看大图</button><button id="classroom-delete-selected" type="button" disabled>删除作品</button></div></div>
         <button class="generate-button" id="generate-button" type="button" disabled><span class="button-spark" aria-hidden="true">✦</span><b id="generate-label">上传并生成评价卡</b><span id="generate-arrow" aria-hidden="true">→</span></button>
         </div>
         <div class="dimension-legend" aria-label="评价维度"><span>● 科学性</span><span>● 严谨性</span><span>● 创新性</span></div>
@@ -927,9 +937,10 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
         <section class="settings-connection" aria-labelledby="connection-title">
           <h3 id="connection-title">模型与连接</h3><p class="settings-description">选择读懂手写作品的 AI。</p>
           <div class="key-file-settings" id="key-file-settings" hidden>
-            <p class="key-file-heading">课堂密钥</p>
+            <p class="key-file-heading">课堂密码</p>
             <p class="field-hint" id="key-file-status">正在读取网站配置。</p>
-            <button id="unlock-site-key" type="button" class="key-unlock-button">输入使用密码</button>
+            <button id="unlock-site-key" type="button" class="key-unlock-button">解锁相册与 AI 评价</button>
+            <button id="change-classroom-password" type="button" class="key-unlock-button" hidden>修改课堂密码</button>
           </div>
           <label for="api-model">模型名称</label>
           <select id="api-model" required aria-describedby="api-model-hint model-catalog-note">
@@ -973,12 +984,28 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 
   <dialog class="key-unlock-dialog" id="key-unlock-dialog" aria-labelledby="key-unlock-title">
     <form id="key-unlock-form" autocomplete="off">
-      <h2 id="key-unlock-title">解锁课堂 AI</h2>
-      <p>已读取加密密钥，输入密码即可使用。</p>
-      <label for="key-file-password">使用密码</label>
+      <h2 id="key-unlock-title">打开我的课堂</h2>
+      <p>一个密码，解锁课堂相册与 AI 评价。首次使用请填写原来的 AI 使用密码。</p>
+      <label for="key-file-password">课堂密码</label>
       <input id="key-file-password" type="password" required maxlength="1024" autocomplete="off" placeholder="输入密码" aria-describedby="key-unlock-message">
       <p id="key-unlock-message" role="status" aria-live="polite">本次打开只需解锁一次。</p>
       <div class="key-unlock-actions"><button type="button" id="cancel-key-unlock">取消</button><button type="submit" id="submit-key-unlock">解锁并继续</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="key-unlock-dialog" id="classroom-password-dialog" aria-labelledby="classroom-password-title">
+    <form id="classroom-password-form" autocomplete="off">
+      <h2 id="classroom-password-title">修改课堂密码</h2>
+      <p>为相册与 AI 评价设置同一个密码。</p>
+      <label for="classroom-current-password">当前密码</label>
+      <input id="classroom-current-password" type="password" required maxlength="1024" autocomplete="current-password" placeholder="输入当前课堂密码">
+      <label for="classroom-new-password">新密码</label>
+      <input id="classroom-new-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="至少 8 个字符">
+      <label for="classroom-confirm-password">再输入一次新密码</label>
+      <input id="classroom-confirm-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="确认新密码">
+      <p class="password-change-note">照片会保留。保存后手机需要重新扫描相册中的二维码。</p>
+      <p id="classroom-password-message" role="status" aria-live="polite"></p>
+      <div class="key-unlock-actions"><button type="button" id="cancel-classroom-password">取消</button><button type="submit" id="save-classroom-password">保存新密码</button></div>
     </form>
   </dialog>
 
@@ -1260,6 +1287,9 @@ let siteKeyError = '';
 let unlockPending = null;
 let finishUnlock = null;
 let unlockAttempt = 0;
+let classroomSession = null;
+const cloudClassroom = () => !window.inequalityLocalPreview && /^https?:$/.test(window.location.protocol) && Boolean(window.ClassroomPhotos);
+const hasClassroomSession = () => classroomSession && Number(classroomSession.token.split('.')[1]) > Date.now()/1000;
 const unlockDialog = field('key-unlock-dialog');
 const unlockPassword = field('key-file-password');
 
@@ -1342,8 +1372,9 @@ function updateDirectConnection() {
   keyInput.placeholder = sessionKey ? '留空保留，输入新密钥可替换' : '粘贴完整密钥';
   field('api-storage-note').textContent = storageAvailable ? '模型和 Prompt 版本保存在当前浏览器。明文密钥与密码不保存，刷新后需重新解锁。' : '当前浏览器无法保存设置，本次页面内仍可使用。明文密钥与密码不保存。';
   field('key-file-settings').hidden = !siteKeyFile && !siteKeyError;
-  field('key-file-status').textContent = siteKeyError || (sessionKey ? '当前页面已配置，可直接生成评价卡。' : '已自动读取密钥，无需填写 API Key。输入使用密码即可评价。');
-  field('unlock-site-key').hidden = !siteKeyFile || Boolean(sessionKey);
+  field('key-file-status').textContent = siteKeyError || (hasClassroomSession() ? '课堂已解锁，相册与 AI 评价可直接使用。' : sessionKey ? '当前页面已配置，可直接生成评价卡。' : '输入一次课堂密码，即可使用相册与 AI 评价。');
+  field('unlock-site-key').hidden = !siteKeyFile || Boolean(sessionKey && (!cloudClassroom() || hasClassroomSession()));
+  field('change-classroom-password').hidden = !hasClassroomSession();
   field('manual-key-summary').textContent = siteKeyFile ? '临时使用其他 API Key（可选）' : '临时填写 API Key（可选）';
 }
 function updatePromptPreview() {
@@ -1383,6 +1414,8 @@ function configure() {
 function forgetKey() {
   unlockAttempt++;
   sessionKey = '';
+  classroomSession = null;
+  window.inequalityClassroom?.disconnect();
   keyInput.value = '';
   unlockPassword.value = '';
   if (unlockDialog.open) unlockDialog.close();
@@ -1482,7 +1515,7 @@ async function loadSiteKeyFile() {
   } finally { clearTimeout(timer); updateDirectConnection(); }
 }
 function requestUnlock() {
-  if (sessionKey) return Promise.resolve(true);
+  if (sessionKey && (!cloudClassroom() || hasClassroomSession())) return Promise.resolve(true);
   if (unlockPending) return unlockPending;
   unlockPassword.value = '';
   field('key-unlock-message').textContent = '本次打开只需解锁一次。';
@@ -1500,7 +1533,7 @@ unlockDialog.addEventListener('close', () => {
   const resolve = finishUnlock;
   finishUnlock = null;
   unlockPending = null;
-  resolve?.(Boolean(sessionKey));
+  resolve?.(Boolean(sessionKey && (!cloudClassroom() || hasClassroomSession())));
 });
 field('cancel-key-unlock').addEventListener('click', () => unlockDialog.close());
 field('key-unlock-form').addEventListener('submit', async event => {
@@ -1514,11 +1547,26 @@ field('key-unlock-form').addEventListener('submit', async event => {
   field('key-unlock-message').textContent = '正在解锁…';
   field('key-unlock-message').dataset.error = 'false';
   try {
-    const key = await decryptKeyFile(siteKeyFile, password);
+    let result = null, encrypted = siteKeyFile, key;
+    if (cloudClassroom()) {
+      result = await window.ClassroomPhotos.request('/bootstrap', {method:'POST',body:{password}});
+      if (attempt !== unlockAttempt) return;
+      if (result.setupRequired) {
+        key = await decryptKeyFile(encrypted, password);
+        if (attempt !== unlockAttempt) return;
+        const proofBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('mathrender-classroom-initialize-v1:' + key));
+        const proof = Array.from(new Uint8Array(proofBytes), byte => byte.toString(16).padStart(2,'0')).join('');
+        result = await window.ClassroomPhotos.request('/initialize', {method:'POST',body:{password,proof,keyFile:encrypted}});
+      }
+      encrypted = parseKeyFile(JSON.stringify(result.keyFile || encrypted));
+    }
+    key = await decryptKeyFile(encrypted, password);
     // Closing the dialog or leaving the page cancels a pending decryption.
     if (attempt !== unlockAttempt) return;
-    activeSettings = {...activeSettings, endpoint: siteKeyFile.endpoint};
+    siteKeyFile = encrypted;
+    activeSettings = {...activeSettings, endpoint: encrypted.endpoint};
     sessionKey = key;
+    if (result) acceptClassroomSession(result);
     savePreferences();
     updateDirectConnection();
     if (settings.open) populateSettings();
@@ -1536,6 +1584,71 @@ field('key-unlock-form').addEventListener('submit', async event => {
   }
 });
 field('unlock-site-key').addEventListener('click', requestUnlock);
+function acceptClassroomSession(result) {
+  classroomSession = result;
+  window.ClassroomPhotos.setToken(result.token);
+  window.inequalityClassroom?.acceptSession(result);
+}
+async function ensureClassroom() {
+  if (!cloudClassroom()) throw new Error('请从正式网站打开课堂相册；本地页面可以使用本机上传与 AI 评价。');
+  if (hasClassroomSession()) return classroomSession;
+  await siteKeyReady;
+  if (!siteKeyFile) throw new Error(siteKeyError || '课堂 AI 配置尚未准备好，请稍后重试。');
+  return await requestUnlock() ? classroomSession : null;
+}
+const passwordDialog = field('classroom-password-dialog');
+let changingPassword = false;
+const passwordFields = ['classroom-current-password','classroom-new-password','classroom-confirm-password'];
+function clearPasswordForm() { for (const id of passwordFields) field(id).value = ''; }
+for (const id of passwordFields) field(id).addEventListener('input', () => {
+  if (!changingPassword) field('classroom-password-message').textContent = '';
+});
+field('change-classroom-password').addEventListener('click', () => {
+  clearPasswordForm();
+  field('classroom-password-message').textContent = '';
+  field('classroom-password-message').dataset.error = 'false';
+  passwordDialog.showModal(); field('classroom-current-password').focus();
+});
+field('cancel-classroom-password').addEventListener('click', () => { if (!changingPassword) passwordDialog.close(); });
+passwordDialog.addEventListener('cancel', event => { if (changingPassword) event.preventDefault(); });
+passwordDialog.addEventListener('close', clearPasswordForm);
+window.addEventListener('pagehide', clearPasswordForm);
+field('classroom-password-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (changingPassword) return;
+  const message = field('classroom-password-message');
+  const currentPassword = field('classroom-current-password').value;
+  const newPassword = field('classroom-new-password').value;
+  if (newPassword.trim().length < 8 || newPassword.length > 128) { message.textContent = '新密码请使用 8–128 个字符。'; message.dataset.error = 'true'; return; }
+  if (newPassword !== field('classroom-confirm-password').value) { message.textContent = '两次新密码不一致，请检查后再保存。'; message.dataset.error = 'true'; field('classroom-confirm-password').focus(); return; }
+  changingPassword = true;
+  for (const id of [...passwordFields,'save-classroom-password','cancel-classroom-password']) field(id).disabled = true;
+  message.textContent = '正在保存新密码…'; message.dataset.error = 'false';
+  let saving = false;
+  const attempt = unlockAttempt;
+  try {
+    const verified = await window.ClassroomPhotos.request('/bootstrap', {method:'POST',body:{password:currentPassword}});
+    if (attempt !== unlockAttempt) return;
+    const encrypted = parseKeyFile(JSON.stringify(verified.keyFile));
+    const key = await decryptKeyFile(encrypted, currentPassword);
+    const keyFile = await encryptKeyFile(key, encrypted.endpoint, newPassword);
+    if (attempt !== unlockAttempt) return;
+    window.ClassroomPhotos.setToken(verified.token);
+    saving = true;
+    const result = await window.ClassroomPhotos.request('/password', {method:'POST',body:{currentPassword,newPassword,keyFile}});
+    if (attempt !== unlockAttempt) return;
+    siteKeyFile = parseKeyFile(JSON.stringify(result.keyFile));
+    acceptClassroomSession(result);
+    updateDirectConnection(); passwordDialog.close();
+    settingsFeedback('课堂密码已更新。相册与 AI 继续可用，手机请重新扫描二维码。');
+  } catch (error) {
+    message.textContent = error.message + (saving && !error.status ? ' 若已保存成功，请刷新后用新密码解锁。' : '');
+    message.dataset.error = 'true';
+  } finally {
+    changingPassword = false; clearPasswordForm();
+    for (const id of [...passwordFields,'save-classroom-password','cancel-classroom-password']) field(id).disabled = false;
+  }
+});
 async function ensureConfigured() {
   if (sessionKey) return true;
   await siteKeyReady;
@@ -1635,7 +1748,7 @@ window.inequalityReviewAPI = Object.freeze({
   get configured() { return Boolean(sessionKey); },
   get model() { return activeSettings.model; },
   get reviewMetadata() { return {model:activeSettings.model, promptVersion:activeSettings.promptVersion, promptTitle:availablePrompts.get(activeSettings.promptVersion).title}; },
-  configure, ensureConfigured, updateConnection: updateDirectConnection, evaluate: evaluateDirect
+  configure, ensureConfigured, ensureClassroom, lockClassroom:forgetKey, updateConnection: updateDirectConnection, evaluate: evaluateDirect
 });
 populateSettings();
 const siteKeyReady = loadSiteKeyFile();
@@ -2706,7 +2819,7 @@ var qrcodegen;
         headers:{...(token ? {Authorization:'Bearer ' + token} : {}), ...(body ? {'Content-Type':'application/json'} : {})},
         body:body ? JSON.stringify(body) : undefined, signal:controller.signal});
       if (!response.ok) {
-        let message = '课堂相册暂时无法连接，请确认电脑上的服务正在运行。';
+        let message = '课堂服务暂时无法连接，请稍后重试。';
         try { message = (await response.json()).error || message; } catch {}
         const error = new Error(message); error.status = response.status; throw error;
       }
@@ -2740,7 +2853,7 @@ var qrcodegen;
   const $ = id => document.getElementById(id);
   const api = window.ClassroomPhotos;
   let active = false, locked = false, connected = false, connecting = false, selected = null;
-  let photos = [], visibleCount = 12, timer = 0, selectionRevision = 0, renderRevision = 0, refreshing = false;
+  let photos = [], visibleCount = 12, timer = 0, selectionRevision = 0, renderRevision = 0, sessionRevision = 0, refreshing = false;
   let selectFile, clearFile, link = '', pairingToken = '', fullURL = '', lastSnapshot = '';
   const thumbnails = new Map();
   function notice(text, error = false) {
@@ -2753,6 +2866,7 @@ var qrcodegen;
     $('classroom-full-photo').removeAttribute('src');
     $('classroom-selected-label').textContent = '选择一张作品，开始评价';
     $('classroom-preview').disabled = true;
+    $('classroom-delete-selected').disabled = true;
     clearFile?.();
   }
   function switchTab(next) {
@@ -2784,23 +2898,27 @@ var qrcodegen;
     for (let y = 0; y < code.size; y++) for (let x = 0; x < code.size; x++) if (code.getModule(x,y)) ctx.fillRect((x+border)*scale,(y+border)*scale,scale,scale);
     box.append(canvas); $('classroom-link-fallback').value = link;
   }
-  async function connect(password = '') {
+  function acceptSession(result) {
+    sessionRevision++;
+    pairingToken = result.uploadToken; api.setToken(result.token); connected = true;
+    qr();
+    $('classroom-unavailable').hidden = true; $('classroom-workspace').hidden = false;
+    refresh();
+  }
+  async function connect() {
     if (connecting) return;
     connecting = true;
     $('classroom-sync').textContent = '正在连接…';
     try {
       if (!/^https?:$/.test(window.location.protocol)) throw new Error('请从已部署的网站打开评价卡，连接云端课堂相册。单独打开 HTML 时可以使用“本机上传”。');
-      const result = await api.request('/bootstrap', {method:'POST',body:{password}});
-      pairingToken = result.uploadToken; api.setToken(result.token); connected = true;
-      $('classroom-password').value = '';
-      qr();
-      $('classroom-unavailable').hidden = true; $('classroom-workspace').hidden = false;
+      const result = await window.inequalityReviewAPI.ensureClassroom();
+      if (!result) throw new Error('输入一次课堂密码，即可使用相册与 AI 评价。');
+      if (!connected || pairingToken !== result.uploadToken) acceptSession(result);
       await refresh();
     } catch (error) {
       $('classroom-unavailable-text').textContent = error.message;
       $('classroom-unavailable').hidden = false; $('classroom-workspace').hidden = true;
       $('classroom-sync').textContent = '尚未连接'; $('classroom-sync').dataset.state = 'offline';
-      if (error.status === 401) $('classroom-password').focus();
     } finally { connecting = false; }
   }
   function schedule() {
@@ -2812,9 +2930,10 @@ var qrcodegen;
     if (!active || document.hidden || $('upload-screen').hidden) return;
     if (locked) { schedule(); return; }
     refreshing = true;
+    const revision = sessionRevision;
     try {
       const data = await api.request('/photos');
-      if (!active) return;
+      if (!active || revision !== sessionRevision) return;
       photos = data.photos;
       $('classroom-count').textContent = String(photos.length);
       $('classroom-total').textContent = `${photos.length} 张作品`;
@@ -2827,9 +2946,10 @@ var qrcodegen;
       }
       if ($('classroom-message').dataset.error === 'true') notice('');
     } catch (error) {
+      if (revision !== sessionRevision) return;
       $('classroom-sync').textContent = '连接中断 · 正在重连'; $('classroom-sync').dataset.state = 'offline';
       notice(error.message + ' 已显示的照片会保留。', true);
-      if (error.status === 401) { connected = false; await connect(); }
+      if (error.status === 401) { connected = false; window.inequalityReviewAPI.lockClassroom(); await connect(); }
     } finally { refreshing = false; schedule(); }
   }
   function render() {
@@ -2877,7 +2997,7 @@ var qrcodegen;
       if (!accepted) { $('classroom-selected-label').textContent = '图片无法读取，请重新上传'; notice('图片无法读取，请重新拍照上传。', true); return; }
       selected = photo; fullURL = URL.createObjectURL(blob);
       $('classroom-selected-label').textContent = '已选择：' + photo.label;
-      $('classroom-preview').disabled = false; notice(''); render();
+      $('classroom-preview').disabled = false; $('classroom-delete-selected').disabled = false; notice(''); render();
     } catch (error) {
       if (revision !== selectionRevision) return;
       $('classroom-selected-label').textContent = '选择一张作品，开始评价'; notice(error.message, true);
@@ -2887,6 +3007,7 @@ var qrcodegen;
     locked = value;
     for (const id of ['local-photo-tab','classroom-photo-tab','classroom-pending-only','classroom-delete','classroom-refresh']) $(id).disabled = value;
     $('classroom-preview').disabled = value || !selected;
+    $('classroom-delete-selected').disabled = value || !selected;
     for (const button of $('classroom-photo-grid').querySelectorAll('button')) button.disabled = value;
   }
   $('local-photo-tab').addEventListener('click', () => switchTab(false));
@@ -2897,9 +3018,9 @@ var qrcodegen;
     $(active ? 'classroom-photo-tab' : 'local-photo-tab').focus();
   });
   $('classroom-refresh').addEventListener('click', () => { lastSnapshot = ''; refresh(); });
-  $('classroom-login-form').addEventListener('submit', async event => {
-    event.preventDefault(); $('classroom-reconnect').disabled = true;
-    try { await connect($('classroom-password').value); } finally { $('classroom-reconnect').disabled = false; }
+  $('classroom-reconnect').addEventListener('click', async () => {
+    $('classroom-reconnect').disabled = true;
+    try { await connect(); } finally { $('classroom-reconnect').disabled = false; }
   });
   $('classroom-pending-only').addEventListener('change', () => { visibleCount = 12; render(); });
   $('classroom-more').addEventListener('click', () => { visibleCount += 12; render(); });
@@ -2907,12 +3028,15 @@ var qrcodegen;
     try { await navigator.clipboard.writeText(link); $('classroom-link-message').textContent = '链接已复制'; }
     catch { $('classroom-link-fallback').hidden = false; $('classroom-link-fallback').select(); $('classroom-link-message').textContent = '请复制下方链接'; }
   });
-  $('classroom-preview').addEventListener('click', () => {
-    if (!selected || !fullURL) return;
+  function openPreview(confirmDelete = false) {
+    if (!selected || !fullURL || locked) return;
     $('classroom-preview-title').textContent = selected.label; $('classroom-full-photo').src = fullURL;
-    $('classroom-preview-message').textContent = ''; $('classroom-delete-confirm').hidden = true;
+    $('classroom-preview-message').textContent = ''; $('classroom-delete-confirm').hidden = !confirmDelete;
     $('classroom-preview-dialog').showModal();
-  });
+    if (confirmDelete) $('classroom-delete-cancel').focus();
+  }
+  $('classroom-preview').addEventListener('click', () => openPreview());
+  $('classroom-delete-selected').addEventListener('click', () => openPreview(true));
   $('classroom-preview-close').addEventListener('click', () => $('classroom-preview-dialog').close());
   $('classroom-delete').addEventListener('click', () => { $('classroom-delete-confirm').hidden = false; $('classroom-delete-cancel').focus(); });
   $('classroom-delete-cancel').addEventListener('click', () => { $('classroom-delete-confirm').hidden = true; });
@@ -2928,6 +3052,8 @@ var qrcodegen;
   window.addEventListener('focus', () => { if (active && connected) refresh(); });
   window.addEventListener('pagehide', () => clearTimeout(timer));
   window.inequalityClassroom = Object.freeze({
+    acceptSession,
+    disconnect() { sessionRevision++; connected = false; clearTimeout(timer); api.setToken(''); pairingToken = ''; $('classroom-workspace').hidden = true; $('classroom-unavailable').hidden = false; },
     init({onSelect, onClear}) { selectFile = onSelect; clearFile = onClear; },
     get active() { return active; }, setBusy,
     reset() { if (active) { releaseSelection(); render(); refresh(); } },

@@ -18,6 +18,9 @@ let siteKeyError = '';
 let unlockPending = null;
 let finishUnlock = null;
 let unlockAttempt = 0;
+let classroomSession = null;
+const cloudClassroom = () => !window.inequalityLocalPreview && /^https?:$/.test(window.location.protocol) && Boolean(window.ClassroomPhotos);
+const hasClassroomSession = () => classroomSession && Number(classroomSession.token.split('.')[1]) > Date.now()/1000;
 const unlockDialog = field('key-unlock-dialog');
 const unlockPassword = field('key-file-password');
 
@@ -100,8 +103,9 @@ function updateDirectConnection() {
   keyInput.placeholder = sessionKey ? '留空保留，输入新密钥可替换' : '粘贴完整密钥';
   field('api-storage-note').textContent = storageAvailable ? '模型和 Prompt 版本保存在当前浏览器。明文密钥与密码不保存，刷新后需重新解锁。' : '当前浏览器无法保存设置，本次页面内仍可使用。明文密钥与密码不保存。';
   field('key-file-settings').hidden = !siteKeyFile && !siteKeyError;
-  field('key-file-status').textContent = siteKeyError || (sessionKey ? '当前页面已配置，可直接生成评价卡。' : '已自动读取密钥，无需填写 API Key。输入使用密码即可评价。');
-  field('unlock-site-key').hidden = !siteKeyFile || Boolean(sessionKey);
+  field('key-file-status').textContent = siteKeyError || (hasClassroomSession() ? '课堂已解锁，相册与 AI 评价可直接使用。' : sessionKey ? '当前页面已配置，可直接生成评价卡。' : '输入一次课堂密码，即可使用相册与 AI 评价。');
+  field('unlock-site-key').hidden = !siteKeyFile || Boolean(sessionKey && (!cloudClassroom() || hasClassroomSession()));
+  field('change-classroom-password').hidden = !hasClassroomSession();
   field('manual-key-summary').textContent = siteKeyFile ? '临时使用其他 API Key（可选）' : '临时填写 API Key（可选）';
 }
 function updatePromptPreview() {
@@ -141,6 +145,8 @@ function configure() {
 function forgetKey() {
   unlockAttempt++;
   sessionKey = '';
+  classroomSession = null;
+  window.inequalityClassroom?.disconnect();
   keyInput.value = '';
   unlockPassword.value = '';
   if (unlockDialog.open) unlockDialog.close();
@@ -240,7 +246,7 @@ async function loadSiteKeyFile() {
   } finally { clearTimeout(timer); updateDirectConnection(); }
 }
 function requestUnlock() {
-  if (sessionKey) return Promise.resolve(true);
+  if (sessionKey && (!cloudClassroom() || hasClassroomSession())) return Promise.resolve(true);
   if (unlockPending) return unlockPending;
   unlockPassword.value = '';
   field('key-unlock-message').textContent = '本次打开只需解锁一次。';
@@ -258,7 +264,7 @@ unlockDialog.addEventListener('close', () => {
   const resolve = finishUnlock;
   finishUnlock = null;
   unlockPending = null;
-  resolve?.(Boolean(sessionKey));
+  resolve?.(Boolean(sessionKey && (!cloudClassroom() || hasClassroomSession())));
 });
 field('cancel-key-unlock').addEventListener('click', () => unlockDialog.close());
 field('key-unlock-form').addEventListener('submit', async event => {
@@ -272,11 +278,26 @@ field('key-unlock-form').addEventListener('submit', async event => {
   field('key-unlock-message').textContent = '正在解锁…';
   field('key-unlock-message').dataset.error = 'false';
   try {
-    const key = await decryptKeyFile(siteKeyFile, password);
+    let result = null, encrypted = siteKeyFile, key;
+    if (cloudClassroom()) {
+      result = await window.ClassroomPhotos.request('/bootstrap', {method:'POST',body:{password}});
+      if (attempt !== unlockAttempt) return;
+      if (result.setupRequired) {
+        key = await decryptKeyFile(encrypted, password);
+        if (attempt !== unlockAttempt) return;
+        const proofBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('mathrender-classroom-initialize-v1:' + key));
+        const proof = Array.from(new Uint8Array(proofBytes), byte => byte.toString(16).padStart(2,'0')).join('');
+        result = await window.ClassroomPhotos.request('/initialize', {method:'POST',body:{password,proof,keyFile:encrypted}});
+      }
+      encrypted = parseKeyFile(JSON.stringify(result.keyFile || encrypted));
+    }
+    key = await decryptKeyFile(encrypted, password);
     // Closing the dialog or leaving the page cancels a pending decryption.
     if (attempt !== unlockAttempt) return;
-    activeSettings = {...activeSettings, endpoint: siteKeyFile.endpoint};
+    siteKeyFile = encrypted;
+    activeSettings = {...activeSettings, endpoint: encrypted.endpoint};
     sessionKey = key;
+    if (result) acceptClassroomSession(result);
     savePreferences();
     updateDirectConnection();
     if (settings.open) populateSettings();
@@ -294,6 +315,71 @@ field('key-unlock-form').addEventListener('submit', async event => {
   }
 });
 field('unlock-site-key').addEventListener('click', requestUnlock);
+function acceptClassroomSession(result) {
+  classroomSession = result;
+  window.ClassroomPhotos.setToken(result.token);
+  window.inequalityClassroom?.acceptSession(result);
+}
+async function ensureClassroom() {
+  if (!cloudClassroom()) throw new Error('请从正式网站打开课堂相册；本地页面可以使用本机上传与 AI 评价。');
+  if (hasClassroomSession()) return classroomSession;
+  await siteKeyReady;
+  if (!siteKeyFile) throw new Error(siteKeyError || '课堂 AI 配置尚未准备好，请稍后重试。');
+  return await requestUnlock() ? classroomSession : null;
+}
+const passwordDialog = field('classroom-password-dialog');
+let changingPassword = false;
+const passwordFields = ['classroom-current-password','classroom-new-password','classroom-confirm-password'];
+function clearPasswordForm() { for (const id of passwordFields) field(id).value = ''; }
+for (const id of passwordFields) field(id).addEventListener('input', () => {
+  if (!changingPassword) field('classroom-password-message').textContent = '';
+});
+field('change-classroom-password').addEventListener('click', () => {
+  clearPasswordForm();
+  field('classroom-password-message').textContent = '';
+  field('classroom-password-message').dataset.error = 'false';
+  passwordDialog.showModal(); field('classroom-current-password').focus();
+});
+field('cancel-classroom-password').addEventListener('click', () => { if (!changingPassword) passwordDialog.close(); });
+passwordDialog.addEventListener('cancel', event => { if (changingPassword) event.preventDefault(); });
+passwordDialog.addEventListener('close', clearPasswordForm);
+window.addEventListener('pagehide', clearPasswordForm);
+field('classroom-password-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (changingPassword) return;
+  const message = field('classroom-password-message');
+  const currentPassword = field('classroom-current-password').value;
+  const newPassword = field('classroom-new-password').value;
+  if (newPassword.trim().length < 8 || newPassword.length > 128) { message.textContent = '新密码请使用 8–128 个字符。'; message.dataset.error = 'true'; return; }
+  if (newPassword !== field('classroom-confirm-password').value) { message.textContent = '两次新密码不一致，请检查后再保存。'; message.dataset.error = 'true'; field('classroom-confirm-password').focus(); return; }
+  changingPassword = true;
+  for (const id of [...passwordFields,'save-classroom-password','cancel-classroom-password']) field(id).disabled = true;
+  message.textContent = '正在保存新密码…'; message.dataset.error = 'false';
+  let saving = false;
+  const attempt = unlockAttempt;
+  try {
+    const verified = await window.ClassroomPhotos.request('/bootstrap', {method:'POST',body:{password:currentPassword}});
+    if (attempt !== unlockAttempt) return;
+    const encrypted = parseKeyFile(JSON.stringify(verified.keyFile));
+    const key = await decryptKeyFile(encrypted, currentPassword);
+    const keyFile = await encryptKeyFile(key, encrypted.endpoint, newPassword);
+    if (attempt !== unlockAttempt) return;
+    window.ClassroomPhotos.setToken(verified.token);
+    saving = true;
+    const result = await window.ClassroomPhotos.request('/password', {method:'POST',body:{currentPassword,newPassword,keyFile}});
+    if (attempt !== unlockAttempt) return;
+    siteKeyFile = parseKeyFile(JSON.stringify(result.keyFile));
+    acceptClassroomSession(result);
+    updateDirectConnection(); passwordDialog.close();
+    settingsFeedback('课堂密码已更新。相册与 AI 继续可用，手机请重新扫描二维码。');
+  } catch (error) {
+    message.textContent = error.message + (saving && !error.status ? ' 若已保存成功，请刷新后用新密码解锁。' : '');
+    message.dataset.error = 'true';
+  } finally {
+    changingPassword = false; clearPasswordForm();
+    for (const id of [...passwordFields,'save-classroom-password','cancel-classroom-password']) field(id).disabled = false;
+  }
+});
 async function ensureConfigured() {
   if (sessionKey) return true;
   await siteKeyReady;
@@ -393,7 +479,7 @@ window.inequalityReviewAPI = Object.freeze({
   get configured() { return Boolean(sessionKey); },
   get model() { return activeSettings.model; },
   get reviewMetadata() { return {model:activeSettings.model, promptVersion:activeSettings.promptVersion, promptTitle:availablePrompts.get(activeSettings.promptVersion).title}; },
-  configure, ensureConfigured, updateConnection: updateDirectConnection, evaluate: evaluateDirect
+  configure, ensureConfigured, ensureClassroom, lockClassroom:forgetKey, updateConnection: updateDirectConnection, evaluate: evaluateDirect
 });
 populateSettings();
 const siteKeyReady = loadSiteKeyFile();

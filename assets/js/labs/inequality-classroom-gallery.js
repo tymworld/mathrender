@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const api = window.ClassroomPhotos;
   let active = false, locked = false, connected = false, connecting = false, selected = null;
-  let photos = [], visibleCount = 12, timer = 0, selectionRevision = 0, renderRevision = 0, refreshing = false;
+  let photos = [], visibleCount = 12, timer = 0, selectionRevision = 0, renderRevision = 0, sessionRevision = 0, refreshing = false;
   let selectFile, clearFile, link = '', pairingToken = '', fullURL = '', lastSnapshot = '';
   const thumbnails = new Map();
   function notice(text, error = false) {
@@ -16,6 +16,7 @@
     $('classroom-full-photo').removeAttribute('src');
     $('classroom-selected-label').textContent = '选择一张作品，开始评价';
     $('classroom-preview').disabled = true;
+    $('classroom-delete-selected').disabled = true;
     clearFile?.();
   }
   function switchTab(next) {
@@ -47,23 +48,27 @@
     for (let y = 0; y < code.size; y++) for (let x = 0; x < code.size; x++) if (code.getModule(x,y)) ctx.fillRect((x+border)*scale,(y+border)*scale,scale,scale);
     box.append(canvas); $('classroom-link-fallback').value = link;
   }
-  async function connect(password = '') {
+  function acceptSession(result) {
+    sessionRevision++;
+    pairingToken = result.uploadToken; api.setToken(result.token); connected = true;
+    qr();
+    $('classroom-unavailable').hidden = true; $('classroom-workspace').hidden = false;
+    refresh();
+  }
+  async function connect() {
     if (connecting) return;
     connecting = true;
     $('classroom-sync').textContent = '正在连接…';
     try {
       if (!/^https?:$/.test(window.location.protocol)) throw new Error('请从已部署的网站打开评价卡，连接云端课堂相册。单独打开 HTML 时可以使用“本机上传”。');
-      const result = await api.request('/bootstrap', {method:'POST',body:{password}});
-      pairingToken = result.uploadToken; api.setToken(result.token); connected = true;
-      $('classroom-password').value = '';
-      qr();
-      $('classroom-unavailable').hidden = true; $('classroom-workspace').hidden = false;
+      const result = await window.inequalityReviewAPI.ensureClassroom();
+      if (!result) throw new Error('输入一次课堂密码，即可使用相册与 AI 评价。');
+      if (!connected || pairingToken !== result.uploadToken) acceptSession(result);
       await refresh();
     } catch (error) {
       $('classroom-unavailable-text').textContent = error.message;
       $('classroom-unavailable').hidden = false; $('classroom-workspace').hidden = true;
       $('classroom-sync').textContent = '尚未连接'; $('classroom-sync').dataset.state = 'offline';
-      if (error.status === 401) $('classroom-password').focus();
     } finally { connecting = false; }
   }
   function schedule() {
@@ -75,9 +80,10 @@
     if (!active || document.hidden || $('upload-screen').hidden) return;
     if (locked) { schedule(); return; }
     refreshing = true;
+    const revision = sessionRevision;
     try {
       const data = await api.request('/photos');
-      if (!active) return;
+      if (!active || revision !== sessionRevision) return;
       photos = data.photos;
       $('classroom-count').textContent = String(photos.length);
       $('classroom-total').textContent = `${photos.length} 张作品`;
@@ -90,9 +96,10 @@
       }
       if ($('classroom-message').dataset.error === 'true') notice('');
     } catch (error) {
+      if (revision !== sessionRevision) return;
       $('classroom-sync').textContent = '连接中断 · 正在重连'; $('classroom-sync').dataset.state = 'offline';
       notice(error.message + ' 已显示的照片会保留。', true);
-      if (error.status === 401) { connected = false; await connect(); }
+      if (error.status === 401) { connected = false; window.inequalityReviewAPI.lockClassroom(); await connect(); }
     } finally { refreshing = false; schedule(); }
   }
   function render() {
@@ -140,7 +147,7 @@
       if (!accepted) { $('classroom-selected-label').textContent = '图片无法读取，请重新上传'; notice('图片无法读取，请重新拍照上传。', true); return; }
       selected = photo; fullURL = URL.createObjectURL(blob);
       $('classroom-selected-label').textContent = '已选择：' + photo.label;
-      $('classroom-preview').disabled = false; notice(''); render();
+      $('classroom-preview').disabled = false; $('classroom-delete-selected').disabled = false; notice(''); render();
     } catch (error) {
       if (revision !== selectionRevision) return;
       $('classroom-selected-label').textContent = '选择一张作品，开始评价'; notice(error.message, true);
@@ -150,6 +157,7 @@
     locked = value;
     for (const id of ['local-photo-tab','classroom-photo-tab','classroom-pending-only','classroom-delete','classroom-refresh']) $(id).disabled = value;
     $('classroom-preview').disabled = value || !selected;
+    $('classroom-delete-selected').disabled = value || !selected;
     for (const button of $('classroom-photo-grid').querySelectorAll('button')) button.disabled = value;
   }
   $('local-photo-tab').addEventListener('click', () => switchTab(false));
@@ -160,9 +168,9 @@
     $(active ? 'classroom-photo-tab' : 'local-photo-tab').focus();
   });
   $('classroom-refresh').addEventListener('click', () => { lastSnapshot = ''; refresh(); });
-  $('classroom-login-form').addEventListener('submit', async event => {
-    event.preventDefault(); $('classroom-reconnect').disabled = true;
-    try { await connect($('classroom-password').value); } finally { $('classroom-reconnect').disabled = false; }
+  $('classroom-reconnect').addEventListener('click', async () => {
+    $('classroom-reconnect').disabled = true;
+    try { await connect(); } finally { $('classroom-reconnect').disabled = false; }
   });
   $('classroom-pending-only').addEventListener('change', () => { visibleCount = 12; render(); });
   $('classroom-more').addEventListener('click', () => { visibleCount += 12; render(); });
@@ -170,12 +178,15 @@
     try { await navigator.clipboard.writeText(link); $('classroom-link-message').textContent = '链接已复制'; }
     catch { $('classroom-link-fallback').hidden = false; $('classroom-link-fallback').select(); $('classroom-link-message').textContent = '请复制下方链接'; }
   });
-  $('classroom-preview').addEventListener('click', () => {
-    if (!selected || !fullURL) return;
+  function openPreview(confirmDelete = false) {
+    if (!selected || !fullURL || locked) return;
     $('classroom-preview-title').textContent = selected.label; $('classroom-full-photo').src = fullURL;
-    $('classroom-preview-message').textContent = ''; $('classroom-delete-confirm').hidden = true;
+    $('classroom-preview-message').textContent = ''; $('classroom-delete-confirm').hidden = !confirmDelete;
     $('classroom-preview-dialog').showModal();
-  });
+    if (confirmDelete) $('classroom-delete-cancel').focus();
+  }
+  $('classroom-preview').addEventListener('click', () => openPreview());
+  $('classroom-delete-selected').addEventListener('click', () => openPreview(true));
   $('classroom-preview-close').addEventListener('click', () => $('classroom-preview-dialog').close());
   $('classroom-delete').addEventListener('click', () => { $('classroom-delete-confirm').hidden = false; $('classroom-delete-cancel').focus(); });
   $('classroom-delete-cancel').addEventListener('click', () => { $('classroom-delete-confirm').hidden = true; });
@@ -191,6 +202,8 @@
   window.addEventListener('focus', () => { if (active && connected) refresh(); });
   window.addEventListener('pagehide', () => clearTimeout(timer));
   window.inequalityClassroom = Object.freeze({
+    acceptSession,
+    disconnect() { sessionRevision++; connected = false; clearTimeout(timer); api.setToken(''); pairingToken = ''; $('classroom-workspace').hidden = true; $('classroom-unavailable').hidden = false; },
     init({onSelect, onClear}) { selectFile = onSelect; clearFile = onClear; },
     get active() { return active; }, setBusy,
     reset() { if (active) { releaseSelection(); render(); refresh(); } },
