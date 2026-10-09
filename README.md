@@ -69,6 +69,20 @@ node scripts/configure-inequality-key.mjs
 
 历史存储与列表交互位于 `assets/js/labs/inequality-review-history.js`，构建时随主脚本内嵌进 HTML。
 
+### 手机拍照与云端课堂相册
+
+线上入口：[不等式 AI 评价卡](https://mathrender.ymtang-edu.workers.dev/labs/algebra/inequality-review.html)。
+
+评价卡上传区新增 **本机上传 / 课堂照片** 两个入口。“课堂照片”输入相册密码后显示二维码；手机扫码打开独立的拍照页，选择照片后自动上传，电脑约 3 秒内更新缩略图。支持作品备注、连续拍照、断网重试、查看大图、只看待评价、已评价标记和删除确认。
+
+**手机和电脑只需联网，无需同一 Wi-Fi。** 照片由现有 Cloudflare Worker 接收，图片与缩略图存入私有 R2，照片信息和评价标记存入 D1。刷新浏览器或重新部署静态页面不会清空相册。手机端不调用 AI；在电脑端选择照片并点击“用这张生成评价卡”才进行评价。
+
+拍照页支持系统相机与相册；照片在浏览器中调整方向、缩放到最长边 2560 像素并转换为 JPEG，减少移动网络上传量；云端保存的是这份用于评价的清晰照片，并另存缩略图。未确认保存的照片可在当前页面重试，同一次上传重试不会产生重复记录；刷新或关闭未保存的页面会丢失这次待上传照片。
+
+相册密码与 AI 解锁密码相互独立。电脑管理凭证仅在页面内存中保留，有效期 12 小时；扫码链接有效期 7 天，具备查看和上传权限，不具备删除和标记评价的权限。不要将二维码发布到公开网站。默认上限为 1000 张、合计 1 GiB；照片不会自动过期。删除云端照片不删除已经保存到电脑浏览器的评价历史。
+
+新页面：`labs/algebra/inequality-upload.html`。**首次上线需要完成云端绑定与密码设置**，详见 [Cloudflare 课堂相册部署说明](docs/cloudflare-classroom.md)。普通静态文件预览以及原来的 `启动评价卡.command` 仍可使用本机上传；云端相册的本地开发使用 `wrangler dev`。
+
 ### 维护与验证
 
 - 页面结构源文件：`assets/html/inequality-review-template.html`。
@@ -158,3 +172,5 @@ node scripts/test-math.mjs
 修改公共界面主要编辑 `classroom.css` 与 `classroom.js`。修改实验目录时更新 `catalog.js` 和首页静态卡片；`check-site.mjs` 会检查首页是否覆盖全部目录条目。
 
 部署时上传 `index.html`、`labs/`、`assets/`，以及需要保留的根目录旧地址跳转文件。`archive/`、`docs/`、`scripts/` 是维护资料，不参与网站运行。
+
+Cloudflare Worker 版本使用 `node scripts/build-cloudflare.mjs` 整理公开资源到 `dist`，再由根目录 `wrangler.jsonc` 部署 `cloudflare/worker.mjs` 和静态资源。云端构建沿用已提交的独立 HTML，不重新读取本地加密密钥配置。前端源文件修改后，仍需先本地运行 `build-inequality-standalone.mjs` 并提交生成后的 HTML。

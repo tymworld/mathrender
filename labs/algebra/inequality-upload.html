@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eaf6ff">
+  <meta name="referrer" content="no-referrer">
+  <title>拍照上传 · 李老师开心课堂</title>
+  <link rel="stylesheet" href="../../assets/css/labs/inequality-review.css">
+  <link rel="stylesheet" href="../../assets/css/labs/inequality-upload.css">
+  <script defer src="../../assets/js/labs/inequality-classroom-client.js"></script>
+  <script defer src="../../assets/js/labs/inequality-upload.js"></script>
+</head>
+<body class="capture-page">
+  <div class="capture-sky" aria-hidden="true"></div>
+  <header class="capture-brand"><span class="brand-mark" aria-hidden="true">m<span>✦</span></span><div>李老师开心课堂<small>不等式创意工坊</small></div><span class="capture-header-label">手机上传</span></header>
+  <main>
+    <header class="capture-heading"><p class="capture-eyebrow">记录每一次闪光的思考</p><h1>把<span>数学想法</span>拍下来</h1><p>拍完自动保存，回到电脑即可评价</p></header>
+    <div id="capture-connection" class="capture-connection" role="status" data-state="connecting"><span aria-hidden="true">⌁</span><span id="capture-connection-text">正在连接课堂相册…</span><button id="capture-reconnect" type="button" hidden>重试</button></div>
+    <section class="capture-card" aria-labelledby="capture-title">
+      <div class="capture-card-heading"><span class="capture-camera" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><rect x="6" y="18" width="52" height="36" rx="10" fill="#b7b1ff"/><path d="M19 19l5-9h16l6 9" fill="#b7b1ff"/><rect x="9" y="20" width="46" height="30" rx="8" fill="#8170f0"/><circle cx="32" cy="35" r="12" fill="#eff1ff"/><circle cx="32" cy="35" r="8" fill="#5248ad"/><circle cx="29" cy="32" r="3" fill="#c1cfff"/><circle cx="48" cy="26" r="2" fill="#ffe391"/><path d="m52 9 3-5m3 11 5-1M8 10 4 6" stroke="#f4cd65" stroke-width="3" stroke-linecap="round"/></svg></span><div><h2 id="capture-title">拍下你的不等式作品</h2><p>拍全公式、证明与取等条件</p></div></div>
+      <label class="capture-label" for="capture-label">作品备注 <span>选填，如「第 3 组」</span></label>
+      <input id="capture-label" class="capture-label-input" maxlength="60" placeholder="留空将自动编号" autocomplete="off">
+      <input id="capture-camera-input" type="file" accept="image/*" capture="environment" hidden>
+      <input id="capture-album-input" type="file" accept="image/*" hidden>
+      <button id="capture-camera-button" class="capture-primary" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3Z"/><circle cx="12" cy="13" r="4"/></svg><span>拍照上传</span></button>
+      <button id="capture-album-button" class="capture-secondary" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m4 17 5-5 4 4 3-3 5 5"/><circle cx="15" cy="8" r="2"/></svg>从相册选择</button>
+      <p class="capture-auto-note">照片自动保存到云端课堂相册</p>
+    </section>
+    <section id="capture-transfer" class="capture-transfer" aria-labelledby="capture-transfer-title" hidden>
+      <img id="capture-preview" alt="本次上传的作品预览">
+      <div><h2 id="capture-transfer-title">正在处理照片…</h2><p id="capture-transfer-detail" role="status">请稍候</p><div id="capture-progress" class="capture-progress" role="progressbar" aria-label="正在保存照片"><span></span></div><div class="capture-transfer-actions"><button id="capture-retry" type="button" hidden>重试上传</button><button id="capture-discard" type="button" hidden>放弃本次</button></div></div>
+    </section>
+    <p id="capture-message" class="capture-message" role="status" hidden></p>
+    <section class="capture-recent" aria-labelledby="capture-recent-title"><div class="capture-recent-heading"><h2 id="capture-recent-title">最近上传</h2><span id="capture-count">0 张</span></div><div id="capture-recent-list"></div><p id="capture-list-note" class="capture-list-note">还没有照片，拍下第一份作品吧</p></section>
+    <aside class="capture-tip"><span aria-hidden="true">✦</span><p>上传成功后，可以继续拍下一份</p></aside>
+    <footer class="capture-footer">不止于解答，更在于思考！<span>手机上传 · 电脑评价</span></footer>
+  </main>
+</body>
+</html>

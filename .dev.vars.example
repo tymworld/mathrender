@@ -1,0 +1,3 @@
+# Only for wrangler dev. Production values belong in Cloudflare Worker secrets.
+CLASSROOM_ACCESS_CODE="choose-your-own-album-password"
+CLASSROOM_SECRET="replace-with-at-least-32-random-characters"

@@ -1,0 +1,13 @@
+{
+  "name": "mathrender",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-cloudflare.mjs",
+    "build:review": "node scripts/build-inequality-standalone.mjs",
+    "dev:cloudflare": "wrangler dev",
+    "test:classroom": "node --test scripts/test-classroom.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.148.0"
+  }
+}

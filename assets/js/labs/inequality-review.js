@@ -3,6 +3,7 @@
   const $ = id => document.getElementById(id);
   const directAPI = window.inequalityReviewAPI;
   const history = window.inequalityReviewHistory;
+  const classroom = window.inequalityClassroom;
   // A grade alone cannot tell which proof step or equality case is missing.
   // Keep margin notes neutral; the actual diagnosis belongs in the AI comment.
   const gradeNotes = {
@@ -12,6 +13,7 @@
   };
   let photoURL = null;
   let selectedFile = null;
+  let selectedClassroomId = null;
   let sequence = 0;
   let busy = false;
   let serverModel = '千问';
@@ -97,6 +99,7 @@
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = null;
     selectedFile = null;
+    selectedClassroomId = null;
     $('photo-preview').removeAttribute('src');
     $('result-photo').removeAttribute('src');
     $('result-photo').hidden = true;
@@ -107,7 +110,7 @@
     $('generate-button').disabled = true;
   }
 
-  async function choosePhoto(file) {
+  async function choosePhoto(file, classroomId = null) {
     if (!file || busy) return;
     const request = ++sequence;
     clearPhoto();
@@ -130,12 +133,14 @@
     if (request !== sequence) { URL.revokeObjectURL(candidate); return; }
     photoURL = candidate;
     selectedFile = file;
+    selectedClassroomId = classroomId;
     $('photo-preview').src = photoURL;
     $('photo-preview').hidden = false;
     $('replace-hint').hidden = false;
     $('upload-placeholder').hidden = true;
     $('file-name').textContent = file.name;
     $('generate-button').disabled = false;
+    return true;
   }
 
   function setBusy(value) {
@@ -143,7 +148,8 @@
     $('upload-button').disabled = value;
     $('generate-button').disabled = value || !selectedFile;
     $('generate-button').setAttribute('aria-busy', String(value));
-    $('generate-label').textContent = value ? `正在采用 ${directAPI?.model || serverModel} AI模型评价` : '上传并生成评价卡';
+    $('generate-label').textContent = value ? `正在采用 ${directAPI?.model || serverModel} AI模型评价` : classroom?.active ? '用这张生成评价卡' : '上传并生成评价卡';
+    classroom?.setBusy(value);
     $('generate-arrow').hidden = value;
     $('history-button').disabled = value;
     $('review-history-button').disabled = value;
@@ -216,6 +222,7 @@
     setBusy(true);
     const metadata = directAPI?.reviewMetadata || {model:serverModel, promptVersion:'server-default', promptTitle:'服务默认评价规则'};
     const submittedPhoto = selectedFile;
+    const submittedClassroomId = selectedClassroomId;
     message('');
     controller = new AbortController();
     const timer = setTimeout(() => controller?.abort(), 105000);
@@ -245,6 +252,10 @@
         } catch (error) {
           historyNote('评价卡已生成，但历史未保存。' + error.message, true);
         }
+        if (submittedClassroomId) {
+          try { await classroom.markReviewed(submittedClassroomId); }
+          catch { historyNote($('history-save-note').textContent + ' · 云端“已评价”标记未同步，照片仍保留。', true); }
+        }
       }
     } catch (error) {
       message(error.name === 'AbortError' ? '评价超时，请稍后重试。' : error.message === 'Failed to fetch' ? '连接失败，请确认评价服务已启动。' : error.message);
@@ -264,14 +275,16 @@
     $('result-screen').hidden = true;
     document.body.classList.remove('review-mode');
     $('upload-screen').hidden = false;
+    classroom?.reset();
     message('');
     window.scrollTo({ top: 0, behavior: 'instant' });
-    $('upload-button').focus({ preventScroll: true });
+    $(classroom?.active ? 'classroom-photo-tab' : 'upload-button').focus({ preventScroll: true });
   });
   window.addEventListener('focus', updateConnection);
   window.addEventListener('resize', scheduleFit);
   window.visualViewport?.addEventListener('resize', scheduleFit);
   document.fonts?.ready.then(scheduleFit);
   window.addEventListener('pagehide', () => controller?.abort());
+  classroom?.init({onSelect:choosePhoto, onClear:() => { sequence++; clearPhoto(); message(''); }});
   updateConnection();
 })();

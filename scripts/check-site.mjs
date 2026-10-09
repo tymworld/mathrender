@@ -12,7 +12,7 @@ assert.equal(labs.length, 20);
 assert.equal(categories.length, 4);
 assert.equal(new Set(labs.map(lab => lab.id)).size, labs.length);
 const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const pages = ['index.html', ...labs.map(lab => lab.path), ...fs.readdirSync(root).filter(file => file.endsWith('.html') && file !== 'index.html')];
+const pages = ['index.html', 'labs/algebra/inequality-upload.html', ...labs.map(lab => lab.path), ...fs.readdirSync(root).filter(file => file.endsWith('.html') && file !== 'index.html')];
 const failures = [];
 let links = 0;
 for (const file of pages) {
@@ -33,5 +33,6 @@ for (const lab of labs) {
   new vm.Script(source, { filename: lab.id });
 }
 for (const name of ['catalog', 'home', 'classroom']) new vm.Script(fs.readFileSync(path.join(root, `assets/js/${name}.js`), 'utf8'), { filename: name });
+for (const name of ['inequality-classroom-client','inequality-classroom-gallery','inequality-upload']) new vm.Script(fs.readFileSync(path.join(root, `assets/js/labs/${name}.js`), 'utf8'), {filename:name});
 assert.deepEqual(failures, []);
 console.log(`PASS: ${labs.length} activities, ${categories.length} categories, ${links} local references; JavaScript syntax and element IDs checked.`);

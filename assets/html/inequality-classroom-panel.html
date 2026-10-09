@@ -1,0 +1,29 @@
+<div id="classroom-photo-panel" role="tabpanel" aria-labelledby="classroom-photo-tab" hidden>
+  <div id="classroom-unavailable" class="classroom-unavailable" hidden>
+    <span class="classroom-empty-icon" aria-hidden="true">⌁</span>
+    <h2>打开课堂相册</h2>
+    <p id="classroom-unavailable-text">输入相册密码，连接手机上的数学想法。</p>
+    <form id="classroom-login-form"><label for="classroom-password">相册密码</label><div><input id="classroom-password" type="password" autocomplete="current-password" placeholder="输入课堂相册密码" maxlength="200"><button id="classroom-reconnect" type="submit">打开相册 →</button></div></form>
+    <small>手机扫码即可上传，无需填写密码。照片保存在云端。</small>
+  </div>
+  <div id="classroom-workspace" class="classroom-workspace">
+    <aside class="classroom-pairing">
+      <svg class="pairing-phone" viewBox="0 0 48 56" fill="none" aria-hidden="true"><rect x="12" y="4" width="26" height="44" rx="6" stroke="currentColor" stroke-width="3" transform="rotate(-8 24 28)"/><path d="m8 23 5 5 9-10" stroke="#6dbfa6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 41h4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+      <h2>手机扫码上传</h2>
+      <div id="classroom-qr" class="classroom-qr" role="img" aria-label="手机上传页二维码"><span>正在准备二维码…</span></div>
+      <p>拍完自动保存<br>电脑自动更新</p>
+      <button id="classroom-copy-link" type="button" disabled>复制上传链接</button>
+      <small>移动网络或 Wi-Fi 均可<br>本次上传链接 7 天内有效</small>
+      <p id="classroom-link-message" class="classroom-link-message" role="status"></p>
+      <input id="classroom-link-fallback" readonly aria-label="长按或复制上传链接" hidden>
+    </aside>
+    <section class="classroom-gallery" aria-label="已上传的作品">
+      <div class="classroom-gallery-heading"><div><h2>课堂相册 <span id="classroom-total">0 张作品</span></h2><p>每一个数学想法，都值得被看见</p></div><button id="classroom-refresh" type="button" aria-label="刷新课堂照片">↻</button></div>
+      <div class="classroom-gallery-tools"><span>最新上传在前</span><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
+      <p id="classroom-message" class="classroom-message" role="status" hidden></p>
+      <div id="classroom-empty" class="classroom-empty"><span class="classroom-empty-icon" aria-hidden="true">▧</span><h3>等待第一张数学作品</h3><p>用手机扫描左侧二维码，拍下手写作品<br>照片会自动出现在这里</p><span class="classroom-empty-steps">① 扫码进入　② 拍照上传　③ 电脑评价</span></div>
+      <div id="classroom-photo-grid" class="classroom-photo-grid" aria-label="选择作品照片"></div>
+      <button id="classroom-more" class="classroom-more" type="button" hidden>查看更多作品</button>
+    </section>
+  </div>
+</div>

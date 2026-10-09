@@ -5,3 +5,10 @@ inequality-ai-key.json
 .DS_Store
 ._*
 @eaDir/
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+dist/
+node_modules/
+.pnpm-store/

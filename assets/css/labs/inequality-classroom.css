@@ -1,0 +1,144 @@
+/* The shared classroom palette extends the existing upload page. */
+.photo-source-tabs { display:flex; align-items:center; gap:6px; margin:0 0 16px; text-align:left; }
+.photo-source-tabs button { border:0; border-radius:11px; background:#f3f7fd; color:#425485; padding:10px 17px; font-size:16px; font-weight:650; min-height:44px; white-space:nowrap; }
+.photo-source-tabs button[aria-selected="true"] { background:linear-gradient(115deg,#8169fb,#6c56ed); color:#fff; box-shadow:0 3px 8px #7057e823; }
+#classroom-count { font-size:11px; margin-left:6px; padding:2px 7px; border-radius:12px; background:#ffffff4f; font-weight:500; }
+.classroom-sync { margin-left:auto; font-size:12px; color:#637290; white-space:nowrap; }
+.classroom-sync::before { content:""; display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#a2aabd; }
+.classroom-sync[data-state="online"]::before { background:#30a879; box-shadow:0 0 0 3px #30a87913; }
+.classroom-sync[data-state="offline"]::before { background:#d38a31; }
+.classroom-mode .upload-layout { display:block; max-width:1150px; margin:auto; }
+.classroom-mode .upload-tips,.classroom-mode .upload-inspiration,.classroom-mode .paper-plane { display:none; }
+.classroom-mode .upload-heading { margin:8px auto 18px; }
+.classroom-mode .upload-screen h1 { font-size:clamp(34px,3.8vw,54px); }
+.classroom-mode .lead { font-size:clamp(21px,2vw,29px); }
+.classroom-mode .upload-intro { display:none; }
+.classroom-mode .upload-panel { padding:22px; text-align:left; }
+.classroom-mode .upload-student { width:150px; height:210px; bottom:0; }
+.classroom-mode .upload-landmark { width:150px; bottom:0; }
+.classroom-mode .upload-footer { min-height:44px; margin-top:15px; color:#234c8b; text-shadow:none; }
+.classroom-mode .upload-footer p { font-size:21px; }
+.classroom-workspace { display:grid; grid-template-columns:205px minmax(0,1fr); gap:22px; }
+.classroom-pairing { padding:16px 15px; background:linear-gradient(150deg,#edf8ff,#e6f2ff); border-radius:18px; text-align:center; align-self:start; }
+.pairing-phone { width:33px; height:38px; color:#7964f3; margin-bottom:0; }
+.classroom-pairing h2 { font-size:20px; margin-bottom:10px; }
+.classroom-qr { display:grid; place-items:center; aspect-ratio:1; width:160px; max-width:100%; margin:auto; padding:6px; border-radius:14px; background:#fff; color:#667495; font-size:13px; }
+.classroom-qr canvas { width:100%; height:auto; image-rendering:pixelated; }
+.classroom-pairing>p { font-size:13px; line-height:1.6; margin:9px 0; color:#465b8b; }
+.classroom-pairing button { border:1px solid #a392f8; border-radius:11px; background:#fff; color:#674fde; width:100%; padding:10px 6px; min-height:44px; font-size:14px; }
+.classroom-pairing small { display:block; color:#6e7d98; font-size:11px; margin-top:10px; line-height:1.7; }
+.classroom-pairing .classroom-link-message { font-size:12px; margin:6px 0 0; color:#4a6597; }
+#classroom-link-fallback { width:100%; border:1px solid #c9daf2; border-radius:6px; padding:7px; font:12px inherit; }
+.classroom-gallery { min-width:0; }
+.classroom-gallery-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.classroom-gallery-heading h2 { font-size:22px; font-weight:700; }
+.classroom-gallery-heading h2 span { font-size:13px; font-weight:400; margin-left:12px; color:#637594; }
+.classroom-gallery-heading p { color:#79849e; font-size:12px; margin-top:1px; }
+#classroom-refresh { width:42px; height:42px; font-size:26px; border:1px solid #e0e7f7; border-radius:50%; color:#5363a3; background:#fff; }
+.classroom-gallery-tools { display:flex; justify-content:space-between; gap:12px; color:#73809b; font-size:12px; margin:12px 0; }
+.classroom-gallery-tools label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+.classroom-gallery-tools input { accent-color:#7857ed; width:16px; height:16px; }
+.classroom-photo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-height:360px; overflow:auto; padding:2px 3px 5px; scrollbar-width:thin; scrollbar-color:#c4cfe5 transparent; }
+.classroom-photo { padding:0; display:block; min-width:0; text-align:left; background:#fff; border:2px solid #edf0f7; border-radius:12px; overflow:hidden; color:#182757; transition:border-color .15s,box-shadow .15s; }
+.classroom-photo:hover { border-color:#bbaefa; }
+.classroom-photo[aria-pressed="true"] { border-color:#8264fb; box-shadow:0 0 0 2px #8264fb13; }
+.classroom-thumbnail { display:grid; place-items:center; position:relative; aspect-ratio:2.1; background:#eef2f7; overflow:hidden; font-size:12px; color:#6f7e9b; }
+.classroom-thumbnail img { width:100%; height:100%; object-fit:contain; position:absolute; inset:0; }
+.classroom-photo-badge { position:absolute; bottom:7px; left:7px; border-radius:6px; padding:1px 7px; font-size:10px; background:#fff8dcee; color:#947023; }
+.classroom-photo-badge[data-reviewed="true"] { color:#237356; background:#e5faedee; }
+.classroom-photo-check { display:none; position:absolute; top:7px; right:7px; width:25px; height:25px; border:2px solid #fff; border-radius:50%; background:#8061f7; color:white; text-align:center; font-size:15px; line-height:21px; }
+[aria-pressed="true"] .classroom-photo-check { display:block; }
+.classroom-photo-meta { display:flex; justify-content:space-between; align-items:center; gap:4px; padding:8px; }
+.classroom-photo-meta strong { font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.classroom-photo-meta time { flex-shrink:0; font-size:10px; color:#7783a0; }
+.classroom-empty { display:grid; place-content:center; text-align:center; min-height:300px; background:linear-gradient(130deg,#fafbff,#f3f8fe); border:1px dashed #d5def0; border-radius:15px; padding:25px 15px; }
+.classroom-empty-icon { display:block; font-size:40px; color:#9a90dc; line-height:1.4; }
+.classroom-empty h3 { font-size:20px; margin:10px 0; font-weight:650; }
+.classroom-empty p { color:#75809d; font-size:14px; white-space:pre-line; }
+.classroom-empty-steps { margin-top:22px; color:#8893aa; font-size:12px; }
+.classroom-more { display:block; margin:12px auto 0; border:0; background:#f1f3fc; color:#6856bf; border-radius:9px; padding:7px 18px; font-size:13px; }
+.classroom-mode .upload-actions { margin-top:18px; padding-top:15px; border-top:1px solid #edf0f8; display:flex; gap:20px; align-items:center; }
+.classroom-selection { display:flex; align-items:center; gap:16px; flex:1; min-width:0; font-size:14px; }
+#classroom-selected-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.classroom-selection button { border:0; border-left:1px solid #dce2f3; padding:0 0 0 16px; color:#7659e4; background:none; white-space:nowrap; min-height:35px; font-size:13px; }
+.classroom-mode .generate-button { width:320px; margin:0; min-height:48px; padding:8px 16px; font-size:18px; }
+.classroom-mode .dimension-legend { display:none; }
+.classroom-message { border-radius:9px; background:#edf5ff; color:#557297; padding:8px 12px; font-size:13px; margin:8px 0; }
+.classroom-message[data-error="true"] { background:#fff5e6; color:#96662f; }
+.classroom-unavailable { text-align:center; max-width:540px; margin:15px auto 25px; padding:20px; }
+.classroom-unavailable h2 { font-size:26px; margin:8px 0; }
+.classroom-unavailable p { color:#74819d; font-size:15px; margin:10px 0 22px; }
+.classroom-unavailable small { display:block; color:#7f8ca3; font-size:12px; margin-top:20px; }
+#classroom-login-form { text-align:left; }
+#classroom-login-form label { display:block; margin-bottom:7px; color:#5b6890; font-size:13px; }
+#classroom-login-form>div { display:flex; gap:8px; }
+#classroom-password { flex:1; width:100%; min-width:0; padding:12px; border:1px solid #d6dcef; border-radius:10px; font:inherit; background:#fafbff; }
+#classroom-reconnect { border:0; background:#785af0; color:#fff; border-radius:10px; padding:10px 17px; white-space:nowrap; }
+.classroom-preview-dialog { width:min(950px,95vw); max-height:94dvh; padding:22px; border:1px solid #d9e5f7; border-radius:24px; color:#182858; background:#f7fbff; box-shadow:0 28px 90px #14215740; }
+.classroom-preview-dialog::backdrop { background:#1e315c88; backdrop-filter:blur(4px); }
+.classroom-preview-dialog header,.classroom-preview-dialog footer { display:flex; align-items:center; justify-content:space-between; gap:15px; }
+.classroom-eyebrow { color:#7d8ca7; font-size:12px; }
+.classroom-preview-dialog h2 { font-size:23px; overflow-wrap:anywhere; }
+#classroom-preview-close { background:white; border:1px solid #e0e6f3; border-radius:50%; width:44px; height:44px; font-size:26px; color:#657598; flex-shrink:0; }
+#classroom-full-photo { display:block; max-width:100%; max-height:65dvh; object-fit:contain; margin:20px auto; border-radius:10px; }
+.classroom-preview-dialog footer { font-size:12px; color:#7885a0; }
+#classroom-delete { color:#b15b62; background:transparent; border:1px solid #e8cfd3; padding:8px 12px; border-radius:8px; }
+.classroom-delete-confirm { border-radius:12px; padding:16px; margin-top:15px; background:#fff0ed; font-size:14px; color:#92535b; }
+.classroom-delete-confirm button { border:1px solid #e0c8d0; border-radius:8px; padding:8px 14px; margin:12px 8px 0 0; color:#87575f; background:white; }
+#classroom-delete-submit { background:#a45462; color:white; }
+#classroom-preview-message { color:#a1663c; font-size:13px; margin-top:10px; }
+@media(min-width:1001px) and (max-height:760px) {
+  .classroom-mode .upload-heading { margin:4px auto 12px; }
+  .classroom-mode .upload-screen h1 { font-size:38px; }
+  .classroom-mode .lead { font-size:21px; }
+  .classroom-mode .upload-panel { padding:16px 20px; }
+  .classroom-workspace { grid-template-columns:185px minmax(0,1fr); gap:20px; }
+  .classroom-pairing { padding:12px; }
+  .pairing-phone { display:none; }
+  .classroom-pairing h2 { margin-bottom:8px; font-size:18px; }
+  .classroom-qr { width:145px; }
+  .classroom-pairing>p { margin:7px 0; font-size:12px; }
+  .classroom-pairing small { margin-top:8px; font-size:11px; }
+  .classroom-photo-grid { max-height:310px; }
+  .classroom-thumbnail { aspect-ratio:2.8; }
+  .classroom-mode .upload-actions { margin-top:12px; padding-top:12px; }
+  .classroom-mode .upload-footer { margin-top:8px; min-height:30px; }
+}
+@media(max-width:800px) {
+  .classroom-workspace { grid-template-columns:155px minmax(0,1fr); gap:15px; }
+  .classroom-pairing { padding:15px 10px; }
+  .classroom-pairing h2 { font-size:17px; }
+  .classroom-photo-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .classroom-photo-meta { display:block; }
+  .classroom-photo-meta strong,.classroom-photo-meta time { display:block; }
+  .classroom-mode .generate-button { width:250px; }
+}
+@media(max-width:600px) {
+  .photo-source-tabs { flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+  .photo-source-tabs button { font-size:14px; padding:9px 11px; flex:1; }
+  #classroom-count { font-size:10px; padding:1px 5px; }
+  .classroom-sync { flex-basis:100%; text-align:right; font-size:11px; }
+  .classroom-mode .upload-heading { margin:20px auto; }
+  .classroom-mode .upload-screen h1 { font-size:clamp(27px,7vw,39px); }
+  .classroom-mode .upload-panel { padding:15px; border-radius:22px; }
+  .classroom-workspace { display:flex; flex-direction:column; }
+  .classroom-pairing { width:100%; display:grid; grid-template-columns:106px 1fr; gap:6px 15px; padding:15px; text-align:left; }
+  .pairing-phone,.classroom-pairing>p { display:none; }
+  .classroom-pairing h2 { grid-column:2; margin:0; }
+  .classroom-qr { grid-column:1; grid-row:1 / span 4; width:106px; padding:3px; }
+  .classroom-pairing button { grid-column:2; font-size:12px; padding:5px; min-height:36px; }
+  .classroom-pairing small { grid-column:2; font-size:10px; line-height:1.6; margin:0; }
+  .classroom-pairing .classroom-link-message { display:block; grid-column:1 / -1; }
+  #classroom-link-fallback { grid-column:1 / -1; }
+  .classroom-gallery-heading h2 { font-size:19px; }
+  .classroom-gallery-heading h2 span { font-size:11px; margin-left:6px; }
+  .classroom-photo-grid { gap:10px; max-height:430px; }
+  .classroom-mode .upload-actions { display:block; }
+  .classroom-selection { justify-content:space-between; margin-bottom:8px; font-size:13px; }
+  .classroom-mode .generate-button { width:100%; font-size:17px; }
+  .classroom-unavailable { padding:10px 0; }
+  .classroom-unavailable h2 { font-size:23px; }
+  #classroom-password { font-size:14px; }
+  #classroom-reconnect { font-size:13px; padding:10px; }
+  .classroom-preview-dialog { padding:16px; }
+}
