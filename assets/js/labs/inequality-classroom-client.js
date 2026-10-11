@@ -20,6 +20,7 @@
       const rotation=Number(response.headers.get('X-Photo-Rotation') || 0);
       if (orient && rotation) blob=await window.InequalityImages.transform(blob,rotation);
       blob.classroomRotation=rotation;
+      blob.classroomPhotoKey=response.headers.get('X-Photo-Key') || '';
       return blob;
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('连接超时，请检查网络后重试。');
@@ -38,8 +39,10 @@
     if (text !== undefined) node.textContent = text;
     return node;
   }
-  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
-  window.ClassroomPhotos = Object.freeze({request, uuid, make, dateLabel,
+  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  const classroomDate = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'});
+  const dayKey = value => classroomDate.format(new Date(value));
+  window.ClassroomPhotos = Object.freeze({request, uuid, make, dateLabel, dayKey,
     setToken(value) { token = value; },
     async photo(id, thumbnail = false) { return request('/photos/' + encodeURIComponent(id) + (thumbnail ? '/thumbnail' : '/image'), {binary:true, orient:true, timeout:30000}); }
   });

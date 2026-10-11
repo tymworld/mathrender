@@ -6,7 +6,7 @@
 
 - 电脑评价页：<https://mathrender.ymtanglab.com/labs/algebra/inequality-review.html>
 - R2：`mathrender-classroom-photos`，Standard，已确认 `r2.dev` 公开访问关闭。
-- D1：`mathrender-classroom`，APAC；迁移包含 `0001_classroom.sql`、`0002_classroom_credentials.sql`、`0003_review_history.sql` 和 `0004_photo_rotation.sql`。资源名称和 ID 已固定在 `wrangler.jsonc`，后续发布复用现有数据。
+- D1：`mathrender-classroom`，APAC；迁移包含 `0001_classroom.sql`、`0002_classroom_credentials.sql`、`0003_review_history.sql`、`0004_photo_rotation.sql` 和 `0005_history_photo_groups.sql`。资源名称和 ID 已固定在 `wrangler.jsonc`，后续发布复用现有数据。
 - `CLASSROOM_SECRET` 和 `CLASSROOM_UNIFIED_PROOF` 使用 Worker Secrets。首次输入原来的 AI 使用密码后自动启用统一密码，之后在 AI 设置中修改。旧的随机相册密码不再使用。手机通过电脑二维码进入，无需填写教师密码。
 - 后续维护需对当前 Cloudflare 账号登录授权。`wrangler login --device` 可在官方网页输入设备码完成授权，无需把 API Token 发到聊天中。
 
@@ -16,7 +16,7 @@
 2. 安装本项目开发依赖，执行 `npx wrangler login` 登录拥有 `mathrender` 的账号。根目录配置声明了 `CLASSROOM_PHOTOS`（R2）和 `CLASSROOM_DB`（D1）；首次部署时 Wrangler 可以自动创建资源并把具体名称、ID 写回配置。将写回后的配置提交到仓库，确保后续部署复用已有存储。如果资源由 GitHub 构建自动创建，需要从控制台把对应名称、ID补回配置。
 3. 设置至少 32 字符的随机 `CLASSROOM_SECRET`，作为 Worker Secret，不能使用开发值。
 4. 在保存原加密配置与 `.env.qwen` 的部署电脑执行 `node scripts/prepare-classroom-unified.mjs`，再执行 `npx wrangler secret bulk .wrangler/private/classroom-unified-secrets.json`。这只上传一次性迁移验证摘要，不上传明文 API Key。摘要对应的 API Key 必须与原加密文件一致。私有目录不进入 Git。
-5. 执行 `npx wrangler d1 migrations apply CLASSROOM_DB --remote`。密码表与评价历史表独立于照片表，迁移保留照片和密码。新增历史功能前须先应用 `0003_review_history.sql`；新增转正功能前须先应用 `0004_photo_rotation.sql`，再发布 Worker。
+5. 执行 `npx wrangler d1 migrations apply CLASSROOM_DB --remote`。密码表与评价历史表独立于照片表，迁移保留照片和密码。历史、转正、同图分组分别需要 `0003_review_history.sql`、`0004_photo_rotation.sql`、`0005_history_photo_groups.sql`，先应用迁移再发布 Worker。
 6. 部署后首次输入原来的 AI 使用密码：浏览器解密旧配置、证明拥有密钥，后台原子创建统一密码配置。此步骤只能成功一次；之后即便持有旧迁移证明也不能重置密码。
 7. 解锁后在“AI 设置 → 课堂密码 → 修改课堂密码”自行修改。新密码使用 8–128 个字符，需填写当前密码并重复新密码。照片保留、当前电脑继续解锁，旧电脑凭证与手机链接立即失效；手机重新扫码即可。
 
@@ -80,6 +80,10 @@ node scripts/test-math.mjs
 
 `/api/classroom/history` 仅教师凭证可用，与相册、AI 共用课堂密码；二维码上传凭证不能读取评价或原图。D1 `classroom_reviews` 保存完整评价内容与元数据，R2 `reviews/` 下独立保存原图，列表按实际评价时间分页。后台只接收规定的评价字段，不接收凭证或 API Key。
 
+新版历史使用 `?grouped=1`：每页 20 个图片组，包含该组所有评价，按组内最新时间排序，组内默认显示最近 3 次。`photo_key` 与不可变的评价 JSON、同步摘要分开保存；原图 SHA-256 用于识别相同照片，前端保留选图时的指纹，使之后手动或自动转正的评价仍归为一组。旧记录每次读取最多整理 12 张原图，页面显示进度并继续读取；缺失原图则以记录 ID 独立保留，不按公式猜测。原有逐条分页接口继续兼容，删除仍只作用于指定评价。
+
+课堂相册列表按 `Asia/Shanghai` 日期筛选：默认今天，往日入口提供日期下拉框并保留“只看待评价”。刷新不改变选中的往日日期；跨午夜自动重新计算今天。切换日期会清除选图，不清除照片。
+
 浏览器先写本机备份，再提交云端；失败时提示手动重试。旧版记录需在原设备、原浏览器和原网址点击“同步本机历史”。同步采用原记录 ID 和内容摘要保证幂等；原图缺失仍可同步文字卡。云端删除不会删除本机备份，本机备份的同步标记和服务器删除标记共同防止误恢复。清空采用打开确认前的记录序号，新生成记录不会被同时清空。
 
 本机同步不会读取其他域名或浏览器的数据。`workers.dev` 与自定义域名连接同一 Worker，因此在旧域名同步后可在正式域名查看。普通本地预览和离线 HTML 仍使用本机历史。
@@ -90,9 +94,9 @@ node scripts/test-math.mjs
 | --- | --- |
 | Worker 入口及小时清理 | `cloudflare/worker.mjs` |
 | 鉴权、上传、列表、取图、删除、评价标记 | `cloudflare/classroom-api.mjs` |
-| 数据库迁移 | `cloudflare/migrations/0001_classroom.sql`、`0002_classroom_credentials.sql`、`0003_review_history.sql`、`0004_photo_rotation.sql` |
+| 数据库迁移 | `cloudflare/migrations/0001_classroom.sql`、`0002_classroom_credentials.sql`、`0003_review_history.sql`、`0004_photo_rotation.sql`、`0005_history_photo_groups.sql` |
 | EXIF 方向解码与图像旋转 | `assets/js/labs/inequality-images.js` |
-| 云端与本机评价历史 | `assets/js/labs/inequality-review-history.js`、`inequality-review-records.mjs` |
+| 云端与本机评价历史 | `assets/js/labs/inequality-review-history.js`、`inequality-review-records.mjs`、`inequality-history-groups.mjs` |
 | 电脑相册结构与样式 | `assets/html/inequality-classroom-panel.html`、`assets/css/labs/inequality-classroom.css` |
 | 电脑相册交互 | `assets/js/labs/inequality-classroom-gallery.js` |
 | 手机上传页 | `labs/algebra/inequality-upload.html`、`assets/css/labs/inequality-upload.css`、`assets/js/labs/inequality-upload.js` |
@@ -121,3 +125,5 @@ GitHub 自动构建在上一版本出现失败，当前发布采用本机 Wrangl
 2026-10-11 紧凑响应式布局已发布，版本 `e1f9aec9-a290-4272-9382-b039a38e5a6c`。顶部留白收紧；电脑端相册列表独立滚动，生成操作保持可见；评价卡默认一屏显示，可切换放大阅读。8 种窗口尺寸的浏览器布局检查及 56 项前端、评价回归通过；本次不修改后台数据结构。
 
 2026-10-11 课堂投屏与照片方向更新已发布，版本 `68a4f1a8-76a0-40e8-a73c-c7fff939a744`。上传页标志和主要文字放大，删除发送提示；评价卡模型说明居中，标题与插画分别占位，“严谨性”统一显示为“完备性”。生产库已应用 `0004_photo_rotation.sql`，保留原有记录和密码。74 项自动化检查、9 种窗口布局检查、8 种 EXIF 方向检查及本地真实后台浏览器回归通过；验证了手动旋转、模拟 AI 转正、相册同步和删除相册后仍可跨浏览器查看已转正的历史原图。正式域名发布的 HTML 与通过测试的本机产物一致；没有调用真实 AI 或修改教师的作品与密码。
+
+2026-10-11 历史同图分组与课堂照片按日期筛选已发布，版本 `03180258-6d4b-4742-9478-040925dc4f96`。生产库应用 `0005_history_photo_groups.sql`。78 项自动化检查、9 种窗口布局及两套本地浏览器回归通过；新增检查覆盖模型标签、展开较早评价、独立查看和删除、旧本机记录归组、不同照片不因公式相同而合并、缺失原图记录保留、完整图片组分页，以及北京时间午夜边界、往日日期筛选、只看待评价和切换日期后清除选图。运行 `CLASSROOM_TEST_URL=http://127.0.0.1:8788 node scripts/test-history-gallery-browser.mjs` 可复查新交互；截图为 `docs/qa/history-grouped-*.png`、`classroom-today-desktop.png`、`classroom-past-mobile.png`。测试不调用真实 AI。

@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {handleClassroom, cleanupDeleted} from '../cloudflare/classroom-api.mjs';
 import {encryptKeyFile, decryptKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
 
-const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql','0003_review_history.sql','0004_photo_rotation.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
+const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql','0003_review_history.sql','0004_photo_rotation.sql','0005_history_photo_groups.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJFoAAAAASUVORK5CYII=';
 const jpeg = 'data:image/jpeg;base64,'+Buffer.from([255,216,255,224,1,2,255,217]).toString('base64');
 const origin = 'https://mathrender.test';
@@ -205,6 +205,53 @@ test('concurrent password edits have one winner and reject malformed replacement
 });
 
 const reviewPayload = (createdAt = new Date().toISOString()) => ({entry:{id:'card-'+crypto.randomUUID(),createdAt,model:'qwen3.8-max',promptVersion:'math-check-v2',promptTitle:'数学核验',result:{status:'valid',formula:'|a+b|≤|a|+|b|',verdict:'结论正确。',scientific:{grade:'A',comment:'恒成立。'},rigor:{grade:'A',comment:'推导完整。'},creativity:{grade:'B',comment:'有效变式。'},highlight:'代换清楚。',suggestion:'可尝试推广。'}},image:png});
+
+test('same-photo history groups retain every model and independent card; matching formulas alone do not merge',async()=>{
+  const app=environment(),{token,uploadToken}=await app.login();
+  const values=[reviewPayload(),reviewPayload(),{...reviewPayload(),image:jpeg}];
+  values[1].entry.model='qwen3.7-plus'; values[1].entry.result.formula='不同识别结果';
+  for(const body of values) assert.equal((await app.request('/history',{method:'POST',body,token})).status,201);
+  assert.equal((await app.request('/history?grouped=1',{token:uploadToken})).status,403);
+  const data=await (await app.request('/history?grouped=1',{token})).json();
+  assert.equal(data.total,3); assert.equal(data.groupTotal,2);
+  const entries=new Map(data.entries.map(entry=>[entry.id,entry]));
+  assert.equal(entries.get(values[0].entry.id).photoKey,entries.get(values[1].entry.id).photoKey);
+  assert.notEqual(entries.get(values[0].entry.id).photoKey,entries.get(values[2].entry.id).photoKey);
+  assert.equal(entries.get(values[1].entry.id).model,'qwen3.7-plus');
+  await app.request('/history/'+values[0].entry.id,{method:'DELETE',token});
+  const after=await (await app.request('/history?grouped=1',{token})).json();
+  assert.equal(after.total,2); assert.equal(after.groupTotal,2);
+  assert.equal((await app.request('/history/'+values[1].entry.id+'/image',{token})).status,200);
+});
+
+test('legacy grouping indexes bounded batches without changing retry identity, and missing originals stay separate',async()=>{
+  const app=environment(),{token}=await app.login(),values=[];
+  for(let i=0;i<15;i++) {const body=reviewPayload();values.push(body);await app.request('/history',{method:'POST',body,token});}
+  app.db.exec("UPDATE classroom_reviews SET photo_key = ''");
+  const first=await (await app.request('/history?grouped=1',{token})).json();assert.equal(first.indexingRemaining,3);
+  const second=await (await app.request('/history?grouped=1',{token})).json();assert.equal(second.indexingRemaining,0);assert.equal(second.groupTotal,1);assert.equal(second.entries.length,15);
+  assert.equal((await app.request('/history',{method:'POST',body:values[0],token})).status,201);
+  for(let i=0;i<2;i++) await app.request('/history',{method:'POST',body:{...reviewPayload(),image:null},token});
+  const third=await (await app.request('/history?grouped=1',{token})).json();assert.equal(third.groupTotal,3);
+  assert.equal(third.entries.length,17);
+});
+
+test('group pagination never splits versions of a photo across pages and retains the original key after rotation',async()=>{
+  const app=environment(),{token}=await app.login();
+  const shared='sha256:'+'a'.repeat(64);
+  for(let i=0;i<24;i++) {
+    const body={...reviewPayload(new Date(Date.UTC(2026,9,1+i)).toISOString()),photoKey:'sha256:'+i.toString(16).padStart(64,'0')};
+    await app.request('/history',{method:'POST',body,token});
+  }
+  for(const image of [png,jpeg]) await app.request('/history',{method:'POST',body:{...reviewPayload(),image,photoKey:shared},token});
+  const first=await (await app.request('/history?grouped=1',{token})).json();
+  assert.equal(first.groupTotal,25); assert.equal(first.entries.length,21);
+  assert.equal(first.entries.filter(entry=>entry.photoKey===shared).length,2);
+  const second=await (await app.request('/history?grouped=1&before='+encodeURIComponent(first.nextCursor),{token})).json();
+  assert.equal(second.entries.length,5);assert.equal(second.nextCursor,null);
+  assert.equal(new Set([...first.entries,...second.entries].map(entry=>entry.id)).size,26);
+  assert.equal((await app.request('/history?grouped=1&before=invalid',{token})).status,400);
+});
 
 test('cloud history is teacher-only, independently retains the image, and retries are idempotent',async () => {
   const app=environment(), first=await app.login(), body=reviewPayload();

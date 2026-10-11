@@ -548,17 +548,28 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .history-empty > span { font: 48px/1.6 Georgia, serif; color: #889ce9; }
 .history-empty h3 { color: #415779; font-size: 20px; font-weight: 500; margin: 8px 0; }
 .history-empty p { font-size: 14px; color: #7889a4; }
-.history-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; border: 1px solid #e2e9f6; border-radius: 16px; background: white; padding: 18px 21px; margin-bottom: 12px; }
-.history-entry-meta { color: #7889a4; font-size: 12px; }
-.history-formula { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; border: 0; padding: 8px 0 10px; text-align: left; background: none; width: 100%; font-size: 20px; line-height: 1.55; color: #253855; white-space: pre-wrap; overflow-wrap: anywhere; }
+.history-group { border: 1px solid #dfe6f4; border-radius: 16px; background: white; margin-bottom: 14px; overflow: hidden; }
+.history-group-header { display: flex; gap: 18px; align-items: center; justify-content: space-between; padding: 13px 18px 9px; background: linear-gradient(120deg,#f1f5ff,#f8fbff); }
+.history-group-identity { min-width: 0; flex: 1; }
+.history-group-count { color: #6575b3; font-size: 12px; font-weight: 600; }
+.history-original { border: 1px solid #dce3f4; border-radius: 9px; background: white; color: #596fb2; padding: 7px 11px; font-size: 13px; flex-shrink: 0; }
+.history-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; padding: 12px 18px; border-top: 1px solid #edf0f6; }
+.history-entry-content { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 3px 12px; }
+.history-entry-content .history-grades { justify-content: flex-end; }
+.history-entry-content .history-prompt { grid-column: 1 / -1; }
+.history-entry-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; color: #7889a4; font-size: 12px; margin-bottom: 7px; }
+.history-model { color: #4f58a0; font-size: 15px; font-weight: 650; }
+.history-latest { color: #338267; background: #eaf7f0; border-radius: 4px; padding: 1px 5px; font-size: 10px; }
+.history-group-more { display: block; width: 100%; padding: 10px; font-size: 13px; color: #6873b7; background: #fbfcff; border: 0; border-top: 1px solid #edf0f6; }
+.history-formula { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; border: 0; padding: 5px 0; text-align: left; background: none; width: 100%; font-size: 19px; line-height: 1.5; color: #253855; white-space: pre-wrap; overflow-wrap: anywhere; }
 .history-formula:hover { color: #526ecc; }
 .history-grades { display: flex; flex-wrap: wrap; gap: 7px; }
 .history-grade { font-size: 12px; border-radius: 7px; padding: 3px 9px; }
 .history-grade.scientific { color: #6554ab; background: #f1edff; }
 .history-grade.rigor { color: #27745b; background: #eaf6ef; }
 .history-grade.creativity { color: #a36923; background: #fff3df; }
-.history-prompt { color: #8a98ac; font-size: 11px; margin-top: 8px; }
-.history-entry-actions { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.history-prompt { color: #8a98ac; font-size: 11px; margin-top: 5px; }
+.history-entry-actions { display: flex; align-items: center; justify-content: center; gap: 5px; }
 .history-entry-actions button { border: 0; border-radius: 8px; background: #edf2ff; color: #526cba; font-size: 13px; padding: 7px 13px; white-space: nowrap; }
 .history-entry-actions .history-delete { background: none; color: #a56d7b; font-size: 12px; }
 .history-more { display: block; margin: 12px auto 0; color: #5975b8; background: white; border: 1px solid #dce5f6; border-radius: 9px; padding: 9px 22px; font-size: 13px; }
@@ -578,8 +589,13 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   .history-header h2 { font-size: 24px; }
   .history-toolbar { padding: 12px 20px 5px; }
   .history-content { padding: 10px 14px 18px; }
-  .history-entry { grid-template-columns: minmax(0, 1fr); padding: 15px; gap: 10px; }
-  .history-entry-actions { flex-direction: row; justify-content: flex-start; }
+  .history-group-header { gap: 10px; padding: 12px; }
+  .history-original { padding: 7px 8px; font-size: 12px; }
+  .history-entry { grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 8px; }
+  .history-entry-content { display: block; }
+  .history-entry-content .history-grades { justify-content: flex-start; }
+  .history-entry-actions { justify-content: flex-end; }
+  .history-entry-meta { gap: 4px 8px; }
   .history-formula { font-size: 18px; }
   .history-footer { font-size: 11px; padding: 12px; }
   .history-confirm { flex-wrap: wrap; padding: 14px 20px; }
@@ -705,10 +721,6 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .photo-source-tabs button { border:0; border-radius:11px; background:#f3f7fd; color:#425485; padding:10px 17px; font-size:16px; font-weight:650; min-height:44px; white-space:nowrap; }
 .photo-source-tabs button[aria-selected="true"] { background:linear-gradient(115deg,#8169fb,#6c56ed); color:#fff; box-shadow:0 3px 8px #7057e823; }
 #classroom-count { font-size:11px; margin-left:6px; padding:2px 7px; border-radius:12px; background:#ffffff4f; font-weight:500; }
-.classroom-sync { font-size:12px; color:#637290; white-space:nowrap; }
-.classroom-sync::before { content:""; display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#a2aabd; }
-.classroom-sync[data-state="online"]::before { background:#30a879; box-shadow:0 0 0 3px #30a87913; }
-.classroom-sync[data-state="offline"]::before { background:#d38a31; }
 .classroom-mode .upload-layout { display:block; max-width:1150px; margin:auto; }
 .classroom-mode .upload-tips,.classroom-mode .upload-inspiration { display:none; }
 .classroom-mode .upload-panel { padding:22px; text-align:left; }
@@ -736,6 +748,9 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .classroom-gallery-tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; color:#73809b; font-size:12px; margin:12px 0; }
 .classroom-gallery-tools label { display:flex; align-items:center; gap:6px; margin-left:auto; cursor:pointer; }
 .classroom-gallery-tools input { accent-color:#7857ed; width:16px; height:16px; }
+#classroom-past-toggle { border:1px solid #dce3f3; border-radius:8px; padding:6px 11px; color:#6570ae; background:#f6f8ff; font-size:13px; }
+#classroom-date-control { margin-left:0; }
+#classroom-date { max-width:150px; border:1px solid #dce3f3; border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; color:#596d96; background:white; }
 .classroom-photo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-height:360px; overflow:auto; padding:2px 3px 5px; scrollbar-width:thin; scrollbar-color:#c4cfe5 transparent; }
 .classroom-photo { padding:0; display:block; min-width:0; text-align:left; background:#fff; border:2px solid #edf0f7; border-radius:12px; overflow:hidden; color:#182757; transition:border-color .15s,box-shadow .15s; }
 .classroom-photo:hover { border-color:#bbaefa; }
@@ -815,7 +830,6 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   .photo-source-tabs { flex-wrap:wrap; gap:5px; margin-bottom:14px; }
   .photo-source-tabs button { font-size:14px; padding:9px 11px; flex:1; }
   #classroom-count { font-size:10px; padding:1px 5px; }
-  .classroom-sync { font-size:11px; }
   .classroom-mode .upload-panel { padding:15px; border-radius:22px; }
   .classroom-workspace { display:flex; flex-direction:column; }
   .classroom-pairing { width:100%; display:grid; grid-template-columns:106px 1fr; gap:6px 15px; padding:15px; text-align:left; }
@@ -960,8 +974,8 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
       <input id="classroom-link-fallback" readonly aria-label="长按或复制上传链接" hidden>
     </aside>
     <section class="classroom-gallery" aria-label="已上传的作品">
-      <div class="classroom-gallery-heading"><div><h2>课堂相册 <span id="classroom-total">0 张作品</span></h2><p>每一个数学想法，都值得被看见</p></div><button id="classroom-refresh" type="button" aria-label="刷新课堂照片">↻</button></div>
-      <div class="classroom-gallery-tools"><span>最新上传在前</span><span id="classroom-sync" class="classroom-sync" role="status" hidden>正在连接…</span><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
+      <div class="classroom-gallery-heading"><div><h2>课堂相册 <span id="classroom-total">今天 0 张</span></h2></div><button id="classroom-refresh" type="button" aria-label="刷新课堂照片">↻</button></div>
+      <div class="classroom-gallery-tools"><button id="classroom-past-toggle" type="button" aria-expanded="false">查看往日照片</button><label id="classroom-date-control" hidden><select id="classroom-date" aria-label="上传日期"><option value="">全部往日</option></select></label><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
       <p id="classroom-message" class="classroom-message" role="status" hidden></p>
       <div id="classroom-empty" class="classroom-empty"><span class="classroom-empty-icon" aria-hidden="true">▧</span><h3>等待第一张数学作品</h3><p>用手机扫描左侧二维码，拍下手写作品<br>照片会自动出现在这里</p><span class="classroom-empty-steps">① 扫码进入　② 拍照上传　③ 电脑评价</span></div>
       <div id="classroom-photo-grid" class="classroom-photo-grid" aria-label="选择作品照片"></div>
@@ -1047,7 +1061,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
     <p id="classroom-preview-message" role="status"></p>
   </dialog>
   <dialog class="history-dialog" id="history-dialog" aria-labelledby="history-title">
-    <header class="history-header"><div><p class="history-eyebrow">数学教学实验室 · 李老师开心课堂</p><h2 id="history-title">评价历史</h2><p>回看每一次思考与发现</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
+    <header class="history-header"><div><p class="history-eyebrow">数学教学实验室 · 李老师开心课堂</p><h2 id="history-title">评价历史</h2><p>同图评价归在一起，按模型回看每一次生成</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
     <div class="history-sources" role="tablist" aria-label="历史记录来源"><button id="history-cloud-tab" type="button" role="tab" aria-selected="true">云端历史</button><button id="history-local-tab" type="button" role="tab" aria-selected="false">本机记录</button></div>
     <div class="history-toolbar"><span id="history-count">暂无记录</span><div><button id="history-sync" type="button">同步本机历史</button><button id="history-refresh" type="button">刷新</button><button id="clear-history" type="button" disabled>清空记录</button></div></div>
     <div id="history-cloud-unlock" class="history-cloud-unlock" hidden><p>输入课堂密码，查看所有设备保存的评价卡与原图。</p><button id="history-unlock" class="key-unlock-button" type="button">解锁云端历史</button></div>
@@ -1903,6 +1917,8 @@ const siteKeyReady = loadSiteKeyFile();
   let previewURL = null;
   let revision = 0;
   let visibleCount = 20, source = 'cloud', nextCursor = null, total = 0, latest = null, syncing = false;
+  let groupTotal = 0;
+  const expandedGroups = new Set();
   const cloudAvailable = () => /^https?:$/.test(window.location.protocol) && !window.inequalityLocalPreview && Boolean(window.ClassroomPhotos);
   const cloudReady = () => cloudAvailable() && window.inequalityReviewAPI?.classroomConfigured;
   const localCards = () => transaction(['cards'], 'readonly', (tx,done) => {
@@ -1911,7 +1927,7 @@ const siteKeyReady = loadSiteKeyFile();
   async function markSynced(entry) {
     await transaction(['cards'],'readwrite',tx => {
       const store=tx.objectStore('cards'), request=store.get(entry.id);
-      request.onsuccess=()=>{ if(request.result) store.put({...validateHistoryEntry(entry),cloudSynced:true}); };
+      request.onsuccess=()=>{ if(request.result) store.put({...validateHistoryEntry(entry),photoKey:validPhotoKey(entry.photoKey || request.result.photoKey),cloudSynced:true}); };
     });
   }
   async function dataURL(photo) {
@@ -1921,7 +1937,7 @@ const siteKeyReady = loadSiteKeyFile();
     return `data:${photo.type};base64,${btoa(binary)}`;
   }
   async function uploadEntry(entry,photo) {
-    return window.ClassroomPhotos.request('/history',{method:'POST',body:{entry:validateHistoryEntry(entry),image:await dataURL(photo)},timeout:60000});
+    return window.ClassroomPhotos.request('/history',{method:'POST',body:{entry:validateHistoryEntry(entry),photoKey:validPhotoKey(entry.photoKey),image:await dataURL(photo)},timeout:60000});
   }
   async function removeLocal(ids) {
     await transaction(['cards','photos'],'readwrite',tx => {
@@ -1990,9 +2006,29 @@ function validateHistoryEntry(entry) {
       promptVersion:text(entry.promptVersion ?? '',100,true), promptTitle:text(entry.promptTitle ?? '',200,true)};
   }
 
-  async function save(result, {photo, model = '', promptVersion = '', promptTitle = ''} = {}) {
+function validPhotoKey(value) {
+  return typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value) ? value : '';
+}
+async function photoFingerprint(photo) {
+  if (!(photo instanceof Blob)) return '';
+  const bytes = await crypto.subtle.digest('SHA-256', await photo.arrayBuffer());
+  return 'sha256:' + Array.from(new Uint8Array(bytes), x => x.toString(16).padStart(2, '0')).join('');
+}
+function groupHistoryEntries(entries) {
+  const groups = new Map();
+  const ordered = [...entries].sort((a,b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id));
+  for (const entry of ordered) {
+    const key = validPhotoKey(entry.photoKey) || 'record:' + entry.id;
+    if (!groups.has(key)) groups.set(key, {key, entries:[]});
+    groups.get(key).entries.push(entry);
+  }
+  return [...groups.values()];
+}
+
+  async function save(result, {photo, photoKey = '', model = '', promptVersion = '', promptTitle = ''} = {}) {
     const entry = validateHistoryEntry({id:'card-' + crypto.randomUUID(), createdAt:new Date().toISOString(), result, model, promptVersion, promptTitle});
     if (!(photo instanceof Blob) || !['image/jpeg','image/png','image/webp'].includes(photo.type) || photo.size > 10 * 1024 * 1024) throw new Error('原图无法保存，评价卡仍可查看。');
+    entry.photoKey = validPhotoKey(photoKey) || await photoFingerprint(photo).catch(() => '');
     let local = false, localError;
     try {
       await transaction(['cards','photos'], 'readwrite', tx => {
@@ -2013,7 +2049,7 @@ function validateHistoryEntry(entry) {
     if (!local) throw localError;
     return {...entry,pendingSync:cloudAvailable(),saveMessage:cloudAvailable() ? '已保存在本机，解锁课堂后可同步到云端历史。' : '已保存到本机历史'};
   }
-  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   function notice(value, error = false) {
     $('history-message').textContent = value;
     $('history-message').dataset.error = String(error);
@@ -2067,34 +2103,57 @@ function validateHistoryEntry(entry) {
       if (previewURL) URL.revokeObjectURL(previewURL);
       previewURL = URL.createObjectURL(photo);
       $('history-photo').src = previewURL;
-      $('history-photo-date').textContent = dateLabel(entry.createdAt);
+    $('history-photo-date').textContent = `${dateLabel(entry.createdAt)} · ${entry.model || '模型未记录'}`;
       photoDialog.showModal();
     } catch (error) { if (current === revision) notice(error.message, true); }
   }
   function renderList() {
     const list = $('history-list');
     list.replaceChildren();
-    $('history-count').textContent = (source === 'cloud' ? total : entries.length) ? `${source === 'cloud' ? total : entries.length} 条评价` : '暂无记录';
+    const groups = groupHistoryEntries(entries);
+    const count = source === 'cloud' ? total : entries.length;
+    $('history-count').textContent = count ? `${source === 'cloud' ? groupTotal : groups.length} 组作品 · ${count} 次评价` : '暂无记录';
     $('history-empty').hidden = entries.length > 0;
     $('clear-history').disabled = entries.length === 0 || syncing;
-    $('history-more').hidden = source === 'cloud' ? !nextCursor : entries.length <= visibleCount;
-    for (const entry of entries.slice(0, source === 'cloud' ? entries.length : visibleCount)) {
-      const row = make('article', 'history-entry');
-      const content = make('div', 'history-entry-content');
-      content.append(make('p', 'history-entry-meta', `${dateLabel(entry.createdAt)} · ${entry.model || 'AI 评价'}${source === 'local' ? (entry.cloudSynced ? ' · 本机备份' : ' · 待同步') : ''}`));
-      const open = make('button', 'history-formula', entry.result.formula || '待补充的作品');
-      open.type = 'button'; open.addEventListener('click', () => showEntry(entry));
-      content.append(open);
-      const grades = make('div', 'history-grades');
-      dimensions.forEach((key, i) => grades.append(make('span', `history-grade ${key}`, `${labels[i]} ${entry.result[key].grade || '待完善'}`)));
-      content.append(grades);
-      content.append(make('p', 'history-prompt', entry.promptTitle || entry.promptVersion || '默认评价规则'));
-      const actions = make('div', 'history-entry-actions');
-      for (const [label, action] of [['查看评价',() => showEntry(entry)], ['查看原图',() => showPhoto(entry)], ['删除',() => askDelete(entry)]]) {
-        const button = make('button', label === '删除' ? 'history-delete' : '', label);
-        button.type = 'button'; button.disabled = syncing; button.addEventListener('click', action); actions.append(button);
+    $('history-more').hidden = source === 'cloud' ? !nextCursor : groups.length <= visibleCount;
+    for (const group of groups.slice(0, source === 'cloud' ? groups.length : visibleCount)) {
+      const card = make('section', 'history-group');
+      const latestEntry = group.entries[0];
+      const header = make('header', 'history-group-header');
+      const identity = make('div', 'history-group-identity');
+      identity.append(make('p', 'history-group-count', `同图评价 · ${group.entries.length} 次`));
+      const formula = make('button', 'history-formula', latestEntry.result.formula || '待补充的作品');
+      formula.type = 'button'; formula.title = '查看最新评价';
+      formula.addEventListener('click', () => showEntry(latestEntry)); identity.append(formula);
+      const original = make('button', 'history-original', '查看原图'); original.type = 'button'; original.disabled = syncing;
+      original.addEventListener('click', () => showPhoto(latestEntry));
+      header.append(identity,original); card.append(header);
+      const expanded = expandedGroups.has(group.key);
+      for (const entry of group.entries.slice(0, expanded ? group.entries.length : 3)) {
+        const row = make('article', 'history-entry');
+        row.dataset.entryId = entry.id;
+        const content = make('div', 'history-entry-content');
+        const meta = make('div', 'history-entry-meta');
+        meta.append(make('strong', 'history-model', entry.model || '模型未记录'),make('time','',dateLabel(entry.createdAt)));
+        if (entry === latestEntry && group.entries.length > 1) meta.append(make('span','history-latest','最新'));
+        content.append(meta);
+        const grades = make('div', 'history-grades');
+        dimensions.forEach((key, i) => grades.append(make('span', `history-grade ${key}`, `${labels[i]} ${entry.result[key].grade || '待完善'}`)));
+        content.append(grades);
+        content.append(make('p', 'history-prompt', (entry.promptTitle || entry.promptVersion || '默认评价规则') + (source === 'local' ? (entry.cloudSynced ? ' · 本机备份' : ' · 待同步') : '')));
+        const actions = make('div', 'history-entry-actions');
+        for (const [label, action] of [['查看评价',() => showEntry(entry)], ['删除',() => askDelete(entry)]]) {
+          const button = make('button', label === '删除' ? 'history-delete' : '', label);
+          button.type = 'button'; button.disabled = syncing; button.addEventListener('click', action); actions.append(button);
+        }
+        row.append(content, actions); card.append(row);
       }
-      row.append(content, actions); list.append(row);
+      if (group.entries.length > 3) {
+        const more = make('button', 'history-group-more', expanded ? '收起较早评价' : `展开其余 ${group.entries.length-3} 次评价`);
+        more.type = 'button'; more.setAttribute('aria-expanded',String(expanded));
+        more.addEventListener('click',()=>{expanded ? expandedGroups.delete(group.key) : expandedGroups.add(group.key);renderList();}); card.append(more);
+      }
+      list.append(card);
     }
   }
   function updateSource() {
@@ -2110,20 +2169,41 @@ function validateHistoryEntry(entry) {
   }
   async function refresh(append = false) {
     const current = ++revision;
+    if (!entries.length) renderList();
     updateSource(); notice('正在读取历史记录…');
     try {
       if (source === 'cloud') {
         if (!cloudReady()) { entries=[]; total=0; nextCursor=null; renderList(); $('history-empty').hidden=true; notice(''); return; }
-        const data = await window.ClassroomPhotos.request('/history'+(append && nextCursor ? '?before='+encodeURIComponent(nextCursor) : ''));
+        let data;
+        do {
+          data = await window.ClassroomPhotos.request('/history?grouped=1'+(append && nextCursor ? '&before='+encodeURIComponent(nextCursor) : ''),{timeout:60000});
+          if (current !== revision || !dialog.open) return;
+          if (data.indexingRemaining) notice(`正在整理同图评价 · 还剩 ${data.indexingRemaining} 条`);
+        } while (data.indexingRemaining);
         if (current !== revision || !dialog.open) return;
-        const incoming = data.entries.map(validateHistoryEntry);
+        const incoming = data.entries.map(value=>({...validateHistoryEntry(value),photoKey:validPhotoKey(value.photoKey)}));
         entries = append ? [...entries,...incoming.filter(item=>!entries.some(old=>old.id===item.id))] : incoming;
-        total=data.total; latest=data.latest; nextCursor=data.nextCursor; renderList(); notice('');
+        total=data.total; groupTotal=data.groupTotal; latest=data.latest; nextCursor=data.nextCursor; renderList(); notice('');
       } else {
         const saved = await localCards();
         if (current !== revision || !dialog.open) return;
         let invalid = 0;
-        entries = saved.flatMap(value => { try { return [{...validateHistoryEntry(value),cloudSynced:Boolean(value.cloudSynced)}]; } catch { invalid++; return []; } });
+        const prepared = [];
+        for (const value of saved) {
+          try {
+            const entry = {...validateHistoryEntry(value),photoKey:validPhotoKey(value.photoKey),cloudSynced:Boolean(value.cloudSynced)};
+            if (!entry.photoKey) {
+              entry.photoKey = await photoFingerprint(await getPhoto(entry.id)).catch(() => '');
+              if (entry.photoKey) await transaction(['cards'],'readwrite',tx=>{
+                const store=tx.objectStore('cards'), request=store.get(entry.id);
+                request.onsuccess=()=>{if(request.result) store.put({...entry,cloudSynced:Boolean(request.result.cloudSynced)});};
+              }).catch(() => {});
+            }
+            prepared.push(entry);
+          } catch { invalid++; }
+          if (current !== revision || !dialog.open) return;
+        }
+        entries = prepared;
         entries.sort((a,b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id));
         renderList(); notice(invalid ? `${invalid} 条记录格式异常，已暂时隐藏；原数据仍保留。` : '', invalid > 0);
       }
@@ -2149,7 +2229,7 @@ function validateHistoryEntry(entry) {
       for (const raw of saved) {
         if (raw.cloudSynced) continue;
         let entry;
-        try { entry=validateHistoryEntry(raw); } catch { skipped++; continue; }
+        try { entry={...validateHistoryEntry(raw),photoKey:validPhotoKey(raw.photoKey)}; } catch { skipped++; continue; }
         notice(`正在同步本机历史 · 已完成 ${completed} 条`);
         try { await uploadEntry(entry,await getPhoto(entry.id)); await markSynced(entry); completed++; }
         catch (error) {
@@ -2167,6 +2247,7 @@ function validateHistoryEntry(entry) {
   }
   async function open(onSelect) {
     selectCard=onSelect; visibleCount=20; source=cloudAvailable() ? 'cloud' : 'local';
+    expandedGroups.clear();
     entries=[]; total=0; nextCursor=null; cancelDelete();
     if (!dialog.open) dialog.showModal();
     await refresh();
@@ -2199,7 +2280,7 @@ function validateHistoryEntry(entry) {
     if (previewURL) URL.revokeObjectURL(previewURL);
     previewURL = null; $('history-photo').removeAttribute('src');
   });
-  window.inequalityReviewHistory = Object.freeze({save, open});
+  window.inequalityReviewHistory = Object.freeze({save, open, fingerprint:photoFingerprint});
 })();
 
 /* Bake the camera's EXIF orientation once, then rotate in pixel coordinates. */
@@ -3095,6 +3176,7 @@ var qrcodegen;
       const rotation=Number(response.headers.get('X-Photo-Rotation') || 0);
       if (orient && rotation) blob=await window.InequalityImages.transform(blob,rotation);
       blob.classroomRotation=rotation;
+      blob.classroomPhotoKey=response.headers.get('X-Photo-Key') || '';
       return blob;
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('连接超时，请检查网络后重试。');
@@ -3113,8 +3195,10 @@ var qrcodegen;
     if (text !== undefined) node.textContent = text;
     return node;
   }
-  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
-  window.ClassroomPhotos = Object.freeze({request, uuid, make, dateLabel,
+  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  const classroomDate = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'});
+  const dayKey = value => classroomDate.format(new Date(value));
+  window.ClassroomPhotos = Object.freeze({request, uuid, make, dateLabel, dayKey,
     setToken(value) { token = value; },
     async photo(id, thumbnail = false) { return request('/photos/' + encodeURIComponent(id) + (thumbnail ? '/thumbnail' : '/image'), {binary:true, orient:true, timeout:30000}); }
   });
@@ -3127,6 +3211,7 @@ var qrcodegen;
   let active = false, locked = false, connected = false, connecting = false, selected = null;
   let photos = [], visibleCount = 12, timer = 0, selectionRevision = 0, renderRevision = 0, sessionRevision = 0, refreshing = false;
   let selectFile, clearFile, link = '', pairingToken = '', fullURL = '', lastSnapshot = '';
+  let showPast = false;
   const thumbnails = new Map();
   function notice(text, error = false) {
     $('classroom-message').textContent = text; $('classroom-message').hidden = !text;
@@ -3148,7 +3233,6 @@ var qrcodegen;
     $('local-photo-panel').hidden = active;
     $('classroom-photo-panel').hidden = !active;
     $('classroom-selection').hidden = !active;
-    $('classroom-sync').hidden = !active;
     for (const [id, state] of [['local-photo-tab', !active], ['classroom-photo-tab', active]]) {
       $(id).setAttribute('aria-selected', String(state)); $(id).tabIndex = state ? 0 : -1;
     }
@@ -3180,7 +3264,6 @@ var qrcodegen;
   async function connect() {
     if (connecting) return;
     connecting = true;
-    $('classroom-sync').textContent = '正在连接…';
     try {
       if (!/^https?:$/.test(window.location.protocol)) throw new Error('请从已部署的网站打开评价卡，连接云端课堂相册。单独打开 HTML 时可以使用“本机上传”。');
       const result = await window.inequalityReviewAPI.ensureClassroom();
@@ -3190,7 +3273,6 @@ var qrcodegen;
     } catch (error) {
       $('classroom-unavailable-text').textContent = error.message;
       $('classroom-unavailable').hidden = false; $('classroom-workspace').hidden = true;
-      $('classroom-sync').textContent = '尚未连接'; $('classroom-sync').dataset.state = 'offline';
     } finally { connecting = false; }
   }
   function schedule() {
@@ -3212,10 +3294,7 @@ var qrcodegen;
         }
       }
       photos = data.photos;
-      $('classroom-count').textContent = String(photos.length);
-      $('classroom-total').textContent = `${photos.length} 张作品`;
-      $('classroom-sync').textContent = '自动更新'; $('classroom-sync').dataset.state = 'online';
-      const snapshot = JSON.stringify(photos);
+      const snapshot = api.dayKey(Date.now()) + JSON.stringify(photos);
       if (snapshot !== lastSnapshot) {
         lastSnapshot = snapshot;
         if (selected && !photos.some(p => p.id === selected.id)) { releaseSelection(); notice('所选照片已被删除，请选择另一张作品。'); }
@@ -3227,7 +3306,6 @@ var qrcodegen;
       if ($('classroom-message').dataset.error === 'true') notice('');
     } catch (error) {
       if (revision !== sessionRevision) return;
-      $('classroom-sync').textContent = '连接中断 · 正在重连'; $('classroom-sync').dataset.state = 'offline';
       notice(error.message + ' 已显示的照片会保留。', true);
       if (error.status === 401) { connected = false; window.inequalityReviewAPI.lockClassroom(); await connect(); }
     } finally { refreshing = false; schedule(); }
@@ -3237,11 +3315,28 @@ var qrcodegen;
     const list = $('classroom-photo-grid');
     const focused = document.activeElement?.dataset.photoId;
     list.replaceChildren();
-    const filtered = photos.filter(p => !$('classroom-pending-only').checked || !p.reviewedAt);
+    const today = api.dayKey(Date.now());
+    const days = [...new Set(photos.map(p=>api.dayKey(p.createdAt)).filter(day=>day<today))].sort().reverse();
+    const dateSelect = $('classroom-date'), chosenDate = dateSelect.value;
+    const allDates = api.make('option','','全部往日'); allDates.value = '';
+    dateSelect.replaceChildren(allDates,...days.map(day=>{const option=api.make('option','',day);option.value=day;return option;}));
+    dateSelect.value = days.includes(chosenDate) ? chosenDate : '';
+    $('classroom-date-control').hidden = !showPast;
+    $('classroom-past-toggle').textContent = showPast ? '返回今天' : '查看往日照片';
+    $('classroom-past-toggle').setAttribute('aria-expanded',String(showPast));
+    const inPeriod = photos.filter(p=>{
+      const day=api.dayKey(p.createdAt);
+      return showPast ? day<today && (!dateSelect.value || day===dateSelect.value) : day===today;
+    });
+    const filtered = inPeriod.filter(p => !$('classroom-pending-only').checked || !p.reviewedAt);
+    $('classroom-count').textContent = String(photos.filter(p=>api.dayKey(p.createdAt)===today).length);
+    $('classroom-total').textContent = `${showPast ? dateSelect.value || '往日' : '今天'} ${filtered.length} 张`;
+    if(selected && !filtered.some(p=>p.id===selected.id)) releaseSelection();
     const visible = filtered.slice(0, visibleCount);
     $('classroom-empty').hidden = filtered.length > 0;
-    $('classroom-empty').querySelector('h3').textContent = photos.length ? '待评价的作品都看完了' : '等待第一张数学作品';
-    $('classroom-empty').querySelector('p').textContent = photos.length ? '取消“只看待评价”，可以回看之前的作品。' : '用手机扫描二维码，拍下手写作品\n照片会自动出现在这里';
+    $('classroom-photo-grid').hidden = filtered.length === 0;
+    $('classroom-empty').querySelector('h3').textContent = inPeriod.length ? '待评价的作品都看完了' : showPast ? '暂无往日照片' : '今天还没有上传作品';
+    $('classroom-empty').querySelector('p').textContent = inPeriod.length ? '取消“只看待评价”，可以回看这些作品。' : showPast ? '换一个日期，或返回今天继续评价。' : '手机扫码拍照后，作品会自动出现在这里。\n以前的作品可从“查看往日照片”进入。';
     $('classroom-more').hidden = filtered.length <= visibleCount;
     for (const [id, url] of thumbnails) if (!visible.some(p => p.id === id)) { URL.revokeObjectURL(url); thumbnails.delete(id); }
     for (const photo of visible) {
@@ -3273,6 +3368,7 @@ var qrcodegen;
       if (revision !== selectionRevision || !active) return;
       const file = new File([blob], photo.label + ({'image/png':'.png', 'image/webp':'.webp'}[blob.type] || '.jpg'), {type:blob.type});
       file.classroomRotation=blob.classroomRotation || 0;
+      file.classroomPhotoKey=blob.classroomPhotoKey || '';
       const accepted = await selectFile(file, photo.id);
       if (revision !== selectionRevision || !active) return;
       if (!accepted) { $('classroom-selected-label').textContent = '图片无法读取，请重新上传'; notice('图片无法读取，请重新拍照上传。', true); return; }
@@ -3286,7 +3382,7 @@ var qrcodegen;
   }
   function setBusy(value) {
     locked = value;
-    for (const id of ['local-photo-tab','classroom-photo-tab','classroom-pending-only','classroom-delete','classroom-refresh']) $(id).disabled = value;
+    for (const id of ['local-photo-tab','classroom-photo-tab','classroom-pending-only','classroom-delete','classroom-refresh','classroom-past-toggle','classroom-date']) $(id).disabled = value;
     $('classroom-preview').disabled = value || !selected;
     $('classroom-delete-selected').disabled = value || !selected;
     for (const button of $('classroom-photo-grid').querySelectorAll('button')) button.disabled = value;
@@ -3304,6 +3400,8 @@ var qrcodegen;
     try { await connect(); } finally { $('classroom-reconnect').disabled = false; }
   });
   $('classroom-pending-only').addEventListener('change', () => { visibleCount = 12; render(); });
+  $('classroom-past-toggle').addEventListener('click',()=>{if(locked)return;showPast=!showPast;visibleCount=12;releaseSelection();render();});
+  $('classroom-date').addEventListener('change',()=>{visibleCount=12;releaseSelection();render();});
   $('classroom-more').addEventListener('click', () => { visibleCount += 12; render(); });
   $('classroom-copy-link').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(link); $('classroom-link-message').textContent = '链接已复制'; }
@@ -3369,6 +3467,7 @@ var qrcodegen;
   };
   let photoURL = null;
   let selectedFile = null;
+  let selectedPhotoKey = '';
   let selectedClassroomId = null;
   let sequence = 0;
   let busy = false;
@@ -3478,6 +3577,7 @@ var qrcodegen;
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = null;
     selectedFile = null;
+    selectedPhotoKey = '';
     selectedClassroomId = null;
     $('photo-adjustments').hidden = true;
     $('photo-preview').removeAttribute('src');
@@ -3508,6 +3608,8 @@ var qrcodegen;
       } catch (error) { if(request===sequence) message(error.message || '无法读取图片，请重新上传。'); return; }
       if(request!==sequence) return;
     }
+    const photoKey = file.classroomPhotoKey || await history.fingerprint(file).catch(() => '');
+    if (request !== sequence) return;
     const candidate = URL.createObjectURL(file);
     const probe = new Image();
     probe.src = candidate;
@@ -3520,6 +3622,7 @@ var qrcodegen;
     if (request !== sequence) { URL.revokeObjectURL(candidate); return; }
     photoURL = candidate;
     selectedFile = file;
+    selectedPhotoKey = photoKey;
     selectedClassroomId = classroomId;
     $('photo-preview').src = photoURL;
     $('photo-preview').hidden = false;
@@ -3628,6 +3731,7 @@ var qrcodegen;
     const metadata = directAPI?.reviewMetadata || {model:serverModel, promptVersion:'server-default', promptTitle:'服务默认评价规则'};
     let submittedPhoto = selectedFile, orientationNotice = '';
     const submittedClassroomId = selectedClassroomId;
+    const submittedPhotoKey = selectedPhotoKey;
     message('');
     controller = new AbortController();
     const timer = setTimeout(() => controller?.abort(), 105000);
@@ -3655,7 +3759,7 @@ var qrcodegen;
         renderCard(result, photoURL, metadata.model);
         message('');
         try {
-          const saved = await history.save(result, {...metadata, photo:submittedPhoto});
+          const saved = await history.save(result, {...metadata, photo:submittedPhoto, photoKey:submittedPhotoKey});
           historyNote((saved?.saveMessage || '已保存到历史记录')+orientationNotice, Boolean(saved?.pendingSync));
         } catch (error) {
           historyNote('评价卡已生成，但历史未保存。' + error.message, true);

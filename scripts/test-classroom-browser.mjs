@@ -165,7 +165,7 @@ try {
   await historyPage.setViewportSize({width:390,height:844});
   assert.ok(await historyPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await historyPage.screenshot({path:'docs/qa/history-cloud-mobile.png',fullPage:true});
-  const oldRow=historyPage.locator('.history-entry').filter({hasText:'旧浏览器记录'});
+  const oldRow=historyPage.locator(`[data-entry-id="${oldEntry.id}"]`);
   await oldRow.getByRole('button',{name:'删除',exact:true}).click(); await historyPage.locator('#confirm-history-delete').click();
   await historyPage.waitForFunction(()=>document.querySelectorAll('.history-entry').length===2);
   await historyPage.locator('#history-sync').click(); await historyPage.waitForFunction(()=>document.getElementById('history-sync').disabled===false);

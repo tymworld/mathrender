@@ -50,7 +50,8 @@ export async function buildStandalone() {
   // It is never selectable or sent as the current version's evaluation prompt.
   const historyScript = `const BUILTIN_PROMPT_HISTORY = ${JSON.stringify(JSON.parse(promptHistory))};`;
   const records = (await read('assets/js/labs/inequality-review-records.mjs')).replace(/^export /gm, '');
-  const bundledHistory = history.replace('// HISTORY_RECORD_VALIDATION', records);
+  const groups = (await read('assets/js/labs/inequality-history-groups.mjs')).replace(/^export /gm, '');
+  const bundledHistory = history.replace('// HISTORY_RECORD_VALIDATION', records + '\n' + groups);
   const bundledProtocol = protocol.replace(/^import \{ DEFAULT_EVALUATION_PROMPT \} from '\.\/inequality-review-prompts\.mjs';\n/m, '').replace(/^export /gm, '');
   const directScript = `(() => {\n'use strict';\n${prompts.replace(/^export /gm, '')}\n${bundledProtocol}\n${modelScript}\n${historyScript}\n${keyConfigScript}\n${keyfile.replace(/^export /gm, '')}\n${direct}\n})();`;
   const images = await read('assets/js/labs/inequality-images.js');

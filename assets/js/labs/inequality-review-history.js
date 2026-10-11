@@ -12,6 +12,8 @@
   let previewURL = null;
   let revision = 0;
   let visibleCount = 20, source = 'cloud', nextCursor = null, total = 0, latest = null, syncing = false;
+  let groupTotal = 0;
+  const expandedGroups = new Set();
   const cloudAvailable = () => /^https?:$/.test(window.location.protocol) && !window.inequalityLocalPreview && Boolean(window.ClassroomPhotos);
   const cloudReady = () => cloudAvailable() && window.inequalityReviewAPI?.classroomConfigured;
   const localCards = () => transaction(['cards'], 'readonly', (tx,done) => {
@@ -20,7 +22,7 @@
   async function markSynced(entry) {
     await transaction(['cards'],'readwrite',tx => {
       const store=tx.objectStore('cards'), request=store.get(entry.id);
-      request.onsuccess=()=>{ if(request.result) store.put({...validateHistoryEntry(entry),cloudSynced:true}); };
+      request.onsuccess=()=>{ if(request.result) store.put({...validateHistoryEntry(entry),photoKey:validPhotoKey(entry.photoKey || request.result.photoKey),cloudSynced:true}); };
     });
   }
   async function dataURL(photo) {
@@ -30,7 +32,7 @@
     return `data:${photo.type};base64,${btoa(binary)}`;
   }
   async function uploadEntry(entry,photo) {
-    return window.ClassroomPhotos.request('/history',{method:'POST',body:{entry:validateHistoryEntry(entry),image:await dataURL(photo)},timeout:60000});
+    return window.ClassroomPhotos.request('/history',{method:'POST',body:{entry:validateHistoryEntry(entry),photoKey:validPhotoKey(entry.photoKey),image:await dataURL(photo)},timeout:60000});
   }
   async function removeLocal(ids) {
     await transaction(['cards','photos'],'readwrite',tx => {
@@ -76,9 +78,10 @@
     });
   }
   // HISTORY_RECORD_VALIDATION
-  async function save(result, {photo, model = '', promptVersion = '', promptTitle = ''} = {}) {
+  async function save(result, {photo, photoKey = '', model = '', promptVersion = '', promptTitle = ''} = {}) {
     const entry = validateHistoryEntry({id:'card-' + crypto.randomUUID(), createdAt:new Date().toISOString(), result, model, promptVersion, promptTitle});
     if (!(photo instanceof Blob) || !['image/jpeg','image/png','image/webp'].includes(photo.type) || photo.size > 10 * 1024 * 1024) throw new Error('原图无法保存，评价卡仍可查看。');
+    entry.photoKey = validPhotoKey(photoKey) || await photoFingerprint(photo).catch(() => '');
     let local = false, localError;
     try {
       await transaction(['cards','photos'], 'readwrite', tx => {
@@ -99,7 +102,7 @@
     if (!local) throw localError;
     return {...entry,pendingSync:cloudAvailable(),saveMessage:cloudAvailable() ? '已保存在本机，解锁课堂后可同步到云端历史。' : '已保存到本机历史'};
   }
-  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const dateLabel = value => new Date(value).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
   function notice(value, error = false) {
     $('history-message').textContent = value;
     $('history-message').dataset.error = String(error);
@@ -153,34 +156,57 @@
       if (previewURL) URL.revokeObjectURL(previewURL);
       previewURL = URL.createObjectURL(photo);
       $('history-photo').src = previewURL;
-      $('history-photo-date').textContent = dateLabel(entry.createdAt);
+    $('history-photo-date').textContent = `${dateLabel(entry.createdAt)} · ${entry.model || '模型未记录'}`;
       photoDialog.showModal();
     } catch (error) { if (current === revision) notice(error.message, true); }
   }
   function renderList() {
     const list = $('history-list');
     list.replaceChildren();
-    $('history-count').textContent = (source === 'cloud' ? total : entries.length) ? `${source === 'cloud' ? total : entries.length} 条评价` : '暂无记录';
+    const groups = groupHistoryEntries(entries);
+    const count = source === 'cloud' ? total : entries.length;
+    $('history-count').textContent = count ? `${source === 'cloud' ? groupTotal : groups.length} 组作品 · ${count} 次评价` : '暂无记录';
     $('history-empty').hidden = entries.length > 0;
     $('clear-history').disabled = entries.length === 0 || syncing;
-    $('history-more').hidden = source === 'cloud' ? !nextCursor : entries.length <= visibleCount;
-    for (const entry of entries.slice(0, source === 'cloud' ? entries.length : visibleCount)) {
-      const row = make('article', 'history-entry');
-      const content = make('div', 'history-entry-content');
-      content.append(make('p', 'history-entry-meta', `${dateLabel(entry.createdAt)} · ${entry.model || 'AI 评价'}${source === 'local' ? (entry.cloudSynced ? ' · 本机备份' : ' · 待同步') : ''}`));
-      const open = make('button', 'history-formula', entry.result.formula || '待补充的作品');
-      open.type = 'button'; open.addEventListener('click', () => showEntry(entry));
-      content.append(open);
-      const grades = make('div', 'history-grades');
-      dimensions.forEach((key, i) => grades.append(make('span', `history-grade ${key}`, `${labels[i]} ${entry.result[key].grade || '待完善'}`)));
-      content.append(grades);
-      content.append(make('p', 'history-prompt', entry.promptTitle || entry.promptVersion || '默认评价规则'));
-      const actions = make('div', 'history-entry-actions');
-      for (const [label, action] of [['查看评价',() => showEntry(entry)], ['查看原图',() => showPhoto(entry)], ['删除',() => askDelete(entry)]]) {
-        const button = make('button', label === '删除' ? 'history-delete' : '', label);
-        button.type = 'button'; button.disabled = syncing; button.addEventListener('click', action); actions.append(button);
+    $('history-more').hidden = source === 'cloud' ? !nextCursor : groups.length <= visibleCount;
+    for (const group of groups.slice(0, source === 'cloud' ? groups.length : visibleCount)) {
+      const card = make('section', 'history-group');
+      const latestEntry = group.entries[0];
+      const header = make('header', 'history-group-header');
+      const identity = make('div', 'history-group-identity');
+      identity.append(make('p', 'history-group-count', `同图评价 · ${group.entries.length} 次`));
+      const formula = make('button', 'history-formula', latestEntry.result.formula || '待补充的作品');
+      formula.type = 'button'; formula.title = '查看最新评价';
+      formula.addEventListener('click', () => showEntry(latestEntry)); identity.append(formula);
+      const original = make('button', 'history-original', '查看原图'); original.type = 'button'; original.disabled = syncing;
+      original.addEventListener('click', () => showPhoto(latestEntry));
+      header.append(identity,original); card.append(header);
+      const expanded = expandedGroups.has(group.key);
+      for (const entry of group.entries.slice(0, expanded ? group.entries.length : 3)) {
+        const row = make('article', 'history-entry');
+        row.dataset.entryId = entry.id;
+        const content = make('div', 'history-entry-content');
+        const meta = make('div', 'history-entry-meta');
+        meta.append(make('strong', 'history-model', entry.model || '模型未记录'),make('time','',dateLabel(entry.createdAt)));
+        if (entry === latestEntry && group.entries.length > 1) meta.append(make('span','history-latest','最新'));
+        content.append(meta);
+        const grades = make('div', 'history-grades');
+        dimensions.forEach((key, i) => grades.append(make('span', `history-grade ${key}`, `${labels[i]} ${entry.result[key].grade || '待完善'}`)));
+        content.append(grades);
+        content.append(make('p', 'history-prompt', (entry.promptTitle || entry.promptVersion || '默认评价规则') + (source === 'local' ? (entry.cloudSynced ? ' · 本机备份' : ' · 待同步') : '')));
+        const actions = make('div', 'history-entry-actions');
+        for (const [label, action] of [['查看评价',() => showEntry(entry)], ['删除',() => askDelete(entry)]]) {
+          const button = make('button', label === '删除' ? 'history-delete' : '', label);
+          button.type = 'button'; button.disabled = syncing; button.addEventListener('click', action); actions.append(button);
+        }
+        row.append(content, actions); card.append(row);
       }
-      row.append(content, actions); list.append(row);
+      if (group.entries.length > 3) {
+        const more = make('button', 'history-group-more', expanded ? '收起较早评价' : `展开其余 ${group.entries.length-3} 次评价`);
+        more.type = 'button'; more.setAttribute('aria-expanded',String(expanded));
+        more.addEventListener('click',()=>{expanded ? expandedGroups.delete(group.key) : expandedGroups.add(group.key);renderList();}); card.append(more);
+      }
+      list.append(card);
     }
   }
   function updateSource() {
@@ -196,20 +222,41 @@
   }
   async function refresh(append = false) {
     const current = ++revision;
+    if (!entries.length) renderList();
     updateSource(); notice('正在读取历史记录…');
     try {
       if (source === 'cloud') {
         if (!cloudReady()) { entries=[]; total=0; nextCursor=null; renderList(); $('history-empty').hidden=true; notice(''); return; }
-        const data = await window.ClassroomPhotos.request('/history'+(append && nextCursor ? '?before='+encodeURIComponent(nextCursor) : ''));
+        let data;
+        do {
+          data = await window.ClassroomPhotos.request('/history?grouped=1'+(append && nextCursor ? '&before='+encodeURIComponent(nextCursor) : ''),{timeout:60000});
+          if (current !== revision || !dialog.open) return;
+          if (data.indexingRemaining) notice(`正在整理同图评价 · 还剩 ${data.indexingRemaining} 条`);
+        } while (data.indexingRemaining);
         if (current !== revision || !dialog.open) return;
-        const incoming = data.entries.map(validateHistoryEntry);
+        const incoming = data.entries.map(value=>({...validateHistoryEntry(value),photoKey:validPhotoKey(value.photoKey)}));
         entries = append ? [...entries,...incoming.filter(item=>!entries.some(old=>old.id===item.id))] : incoming;
-        total=data.total; latest=data.latest; nextCursor=data.nextCursor; renderList(); notice('');
+        total=data.total; groupTotal=data.groupTotal; latest=data.latest; nextCursor=data.nextCursor; renderList(); notice('');
       } else {
         const saved = await localCards();
         if (current !== revision || !dialog.open) return;
         let invalid = 0;
-        entries = saved.flatMap(value => { try { return [{...validateHistoryEntry(value),cloudSynced:Boolean(value.cloudSynced)}]; } catch { invalid++; return []; } });
+        const prepared = [];
+        for (const value of saved) {
+          try {
+            const entry = {...validateHistoryEntry(value),photoKey:validPhotoKey(value.photoKey),cloudSynced:Boolean(value.cloudSynced)};
+            if (!entry.photoKey) {
+              entry.photoKey = await photoFingerprint(await getPhoto(entry.id)).catch(() => '');
+              if (entry.photoKey) await transaction(['cards'],'readwrite',tx=>{
+                const store=tx.objectStore('cards'), request=store.get(entry.id);
+                request.onsuccess=()=>{if(request.result) store.put({...entry,cloudSynced:Boolean(request.result.cloudSynced)});};
+              }).catch(() => {});
+            }
+            prepared.push(entry);
+          } catch { invalid++; }
+          if (current !== revision || !dialog.open) return;
+        }
+        entries = prepared;
         entries.sort((a,b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id));
         renderList(); notice(invalid ? `${invalid} 条记录格式异常，已暂时隐藏；原数据仍保留。` : '', invalid > 0);
       }
@@ -235,7 +282,7 @@
       for (const raw of saved) {
         if (raw.cloudSynced) continue;
         let entry;
-        try { entry=validateHistoryEntry(raw); } catch { skipped++; continue; }
+        try { entry={...validateHistoryEntry(raw),photoKey:validPhotoKey(raw.photoKey)}; } catch { skipped++; continue; }
         notice(`正在同步本机历史 · 已完成 ${completed} 条`);
         try { await uploadEntry(entry,await getPhoto(entry.id)); await markSynced(entry); completed++; }
         catch (error) {
@@ -253,6 +300,7 @@
   }
   async function open(onSelect) {
     selectCard=onSelect; visibleCount=20; source=cloudAvailable() ? 'cloud' : 'local';
+    expandedGroups.clear();
     entries=[]; total=0; nextCursor=null; cancelDelete();
     if (!dialog.open) dialog.showModal();
     await refresh();
@@ -285,5 +333,5 @@
     if (previewURL) URL.revokeObjectURL(previewURL);
     previewURL = null; $('history-photo').removeAttribute('src');
   });
-  window.inequalityReviewHistory = Object.freeze({save, open});
+  window.inequalityReviewHistory = Object.freeze({save, open, fingerprint:photoFingerprint});
 })();

@@ -70,7 +70,6 @@ try {
       document.getElementById('classroom-workspace').hidden=false;
       document.getElementById('classroom-empty').hidden=true;
       document.getElementById('classroom-photo-grid').hidden=false;
-      document.getElementById('classroom-sync').hidden=true;
       document.getElementById('classroom-total').textContent='24 张作品';
       const grid=document.getElementById('classroom-photo-grid');grid.replaceChildren();
       for(let i=0;i<24;i++) {

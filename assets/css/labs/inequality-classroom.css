@@ -3,10 +3,6 @@
 .photo-source-tabs button { border:0; border-radius:11px; background:#f3f7fd; color:#425485; padding:10px 17px; font-size:16px; font-weight:650; min-height:44px; white-space:nowrap; }
 .photo-source-tabs button[aria-selected="true"] { background:linear-gradient(115deg,#8169fb,#6c56ed); color:#fff; box-shadow:0 3px 8px #7057e823; }
 #classroom-count { font-size:11px; margin-left:6px; padding:2px 7px; border-radius:12px; background:#ffffff4f; font-weight:500; }
-.classroom-sync { font-size:12px; color:#637290; white-space:nowrap; }
-.classroom-sync::before { content:""; display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#a2aabd; }
-.classroom-sync[data-state="online"]::before { background:#30a879; box-shadow:0 0 0 3px #30a87913; }
-.classroom-sync[data-state="offline"]::before { background:#d38a31; }
 .classroom-mode .upload-layout { display:block; max-width:1150px; margin:auto; }
 .classroom-mode .upload-tips,.classroom-mode .upload-inspiration { display:none; }
 .classroom-mode .upload-panel { padding:22px; text-align:left; }
@@ -34,6 +30,9 @@
 .classroom-gallery-tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; color:#73809b; font-size:12px; margin:12px 0; }
 .classroom-gallery-tools label { display:flex; align-items:center; gap:6px; margin-left:auto; cursor:pointer; }
 .classroom-gallery-tools input { accent-color:#7857ed; width:16px; height:16px; }
+#classroom-past-toggle { border:1px solid #dce3f3; border-radius:8px; padding:6px 11px; color:#6570ae; background:#f6f8ff; font-size:13px; }
+#classroom-date-control { margin-left:0; }
+#classroom-date { max-width:150px; border:1px solid #dce3f3; border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; color:#596d96; background:white; }
 .classroom-photo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-height:360px; overflow:auto; padding:2px 3px 5px; scrollbar-width:thin; scrollbar-color:#c4cfe5 transparent; }
 .classroom-photo { padding:0; display:block; min-width:0; text-align:left; background:#fff; border:2px solid #edf0f7; border-radius:12px; overflow:hidden; color:#182757; transition:border-color .15s,box-shadow .15s; }
 .classroom-photo:hover { border-color:#bbaefa; }
@@ -113,7 +112,6 @@
   .photo-source-tabs { flex-wrap:wrap; gap:5px; margin-bottom:14px; }
   .photo-source-tabs button { font-size:14px; padding:9px 11px; flex:1; }
   #classroom-count { font-size:10px; padding:1px 5px; }
-  .classroom-sync { font-size:11px; }
   .classroom-mode .upload-panel { padding:15px; border-radius:22px; }
   .classroom-workspace { display:flex; flex-direction:column; }
   .classroom-pairing { width:100%; display:grid; grid-template-columns:106px 1fr; gap:6px 15px; padding:15px; text-align:left; }

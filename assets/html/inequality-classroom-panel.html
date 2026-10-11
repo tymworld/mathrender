@@ -18,8 +18,8 @@
       <input id="classroom-link-fallback" readonly aria-label="长按或复制上传链接" hidden>
     </aside>
     <section class="classroom-gallery" aria-label="已上传的作品">
-      <div class="classroom-gallery-heading"><div><h2>课堂相册 <span id="classroom-total">0 张作品</span></h2><p>每一个数学想法，都值得被看见</p></div><button id="classroom-refresh" type="button" aria-label="刷新课堂照片">↻</button></div>
-      <div class="classroom-gallery-tools"><span>最新上传在前</span><span id="classroom-sync" class="classroom-sync" role="status" hidden>正在连接…</span><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
+      <div class="classroom-gallery-heading"><div><h2>课堂相册 <span id="classroom-total">今天 0 张</span></h2></div><button id="classroom-refresh" type="button" aria-label="刷新课堂照片">↻</button></div>
+      <div class="classroom-gallery-tools"><button id="classroom-past-toggle" type="button" aria-expanded="false">查看往日照片</button><label id="classroom-date-control" hidden><select id="classroom-date" aria-label="上传日期"><option value="">全部往日</option></select></label><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
       <p id="classroom-message" class="classroom-message" role="status" hidden></p>
       <div id="classroom-empty" class="classroom-empty"><span class="classroom-empty-icon" aria-hidden="true">▧</span><h3>等待第一张数学作品</h3><p>用手机扫描左侧二维码，拍下手写作品<br>照片会自动出现在这里</p><span class="classroom-empty-steps">① 扫码进入　② 拍照上传　③ 电脑评价</span></div>
       <div id="classroom-photo-grid" class="classroom-photo-grid" aria-label="选择作品照片"></div>

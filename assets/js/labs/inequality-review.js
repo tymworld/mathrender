@@ -13,6 +13,7 @@
   };
   let photoURL = null;
   let selectedFile = null;
+  let selectedPhotoKey = '';
   let selectedClassroomId = null;
   let sequence = 0;
   let busy = false;
@@ -122,6 +123,7 @@
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = null;
     selectedFile = null;
+    selectedPhotoKey = '';
     selectedClassroomId = null;
     $('photo-adjustments').hidden = true;
     $('photo-preview').removeAttribute('src');
@@ -152,6 +154,8 @@
       } catch (error) { if(request===sequence) message(error.message || '无法读取图片，请重新上传。'); return; }
       if(request!==sequence) return;
     }
+    const photoKey = file.classroomPhotoKey || await history.fingerprint(file).catch(() => '');
+    if (request !== sequence) return;
     const candidate = URL.createObjectURL(file);
     const probe = new Image();
     probe.src = candidate;
@@ -164,6 +168,7 @@
     if (request !== sequence) { URL.revokeObjectURL(candidate); return; }
     photoURL = candidate;
     selectedFile = file;
+    selectedPhotoKey = photoKey;
     selectedClassroomId = classroomId;
     $('photo-preview').src = photoURL;
     $('photo-preview').hidden = false;
@@ -272,6 +277,7 @@
     const metadata = directAPI?.reviewMetadata || {model:serverModel, promptVersion:'server-default', promptTitle:'服务默认评价规则'};
     let submittedPhoto = selectedFile, orientationNotice = '';
     const submittedClassroomId = selectedClassroomId;
+    const submittedPhotoKey = selectedPhotoKey;
     message('');
     controller = new AbortController();
     const timer = setTimeout(() => controller?.abort(), 105000);
@@ -299,7 +305,7 @@
         renderCard(result, photoURL, metadata.model);
         message('');
         try {
-          const saved = await history.save(result, {...metadata, photo:submittedPhoto});
+          const saved = await history.save(result, {...metadata, photo:submittedPhoto, photoKey:submittedPhotoKey});
           historyNote((saved?.saveMessage || '已保存到历史记录')+orientationNotice, Boolean(saved?.pendingSync));
         } catch (error) {
           historyNote('评价卡已生成，但历史未保存。' + error.message, true);

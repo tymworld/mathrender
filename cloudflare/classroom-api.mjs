@@ -1,5 +1,6 @@
 import {parseKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
 import {validateHistoryEntry} from '../assets/js/labs/inequality-review-records.mjs';
+import {validPhotoKey} from '../assets/js/labs/inequality-history-groups.mjs';
 
 // Pictures stay in a private R2 bucket; D1 publishes a photo only after
 // both image writes succeed.
@@ -198,7 +199,7 @@ async function route(request, env, url) {
   if (request.method === 'GET' && ['image','thumbnail'].includes(action)) {
     const object = await env.CLASSROOM_PHOTOS.get(row.storage_key+'/'+action);
     if (!object) throw new HttpError(404, '照片文件不可用，请重新上传。');
-    return new Response(object.body, {headers:{'Content-Type':action === 'thumbnail' ? 'image/jpeg' : row.type,'X-Photo-Rotation':String(row.rotation || 0)}});
+    return new Response(object.body, {headers:{'Content-Type':action === 'thumbnail' ? 'image/jpeg' : row.type,'X-Photo-Rotation':String(row.rotation || 0),'X-Photo-Key':'sha256:'+row.digest}});
   }
   if (role !== 'teacher') throw new HttpError(403, '请在电脑端管理课堂照片。');
   if (request.method === 'POST' && action === 'rotation') {
@@ -227,6 +228,29 @@ async function route(request, env, url) {
 async function historyRoute(request, env, url) {
   const base = '/api/classroom/history';
   const byId = id => env.CLASSROOM_DB.prepare('SELECT * FROM classroom_reviews WHERE id = ?').bind(id).first();
+  if (url.pathname === base && request.method === 'GET' && url.searchParams.get('grouped') === '1') {
+    // Index legacy images in bounded batches, without rewriting cards or retry digests.
+    const pending = await env.CLASSROOM_DB.prepare("SELECT id,storage_key FROM classroom_reviews WHERE deleted_at IS NULL AND photo_key = '' LIMIT 12").all();
+    for (const row of pending.results) {
+      const object = row.storage_key ? await env.CLASSROOM_PHOTOS.get(row.storage_key) : null;
+      const key = object ? 'sha256:'+await digest(await new Response(object.body).arrayBuffer()) : 'record:'+row.id;
+      await env.CLASSROOM_DB.prepare("UPDATE classroom_reviews SET photo_key = ? WHERE id = ? AND photo_key = '' AND deleted_at IS NULL").bind(key,row.id).run();
+    }
+    const count = await env.CLASSROOM_DB.prepare("SELECT COUNT(*) AS total, MAX(serial) AS latest, COUNT(DISTINCT photo_key) AS groupTotal, SUM(photo_key = '') AS indexingRemaining FROM classroom_reviews WHERE deleted_at IS NULL").first();
+    if (count.indexingRemaining) return json({...count,entries:[],nextCursor:null});
+    let before = ['9999-12-31T23:59:59.999Z','~'];
+    if (url.searchParams.has('before')) {
+      try { before = JSON.parse(url.searchParams.get('before')); } catch { throw new HttpError(400,'历史记录分页无效。'); }
+      if (!Array.isArray(before) || before.length !== 2 || !Number.isFinite(Date.parse(before[0])) || typeof before[1] !== 'string' || before[1].length > 110) throw new HttpError(400,'历史记录分页无效。');
+    }
+    const {results} = await env.CLASSROOM_DB.prepare(`SELECT photo_key,MAX(created_at) AS last_created FROM classroom_reviews WHERE deleted_at IS NULL
+      GROUP BY photo_key HAVING MAX(created_at) < ? OR (MAX(created_at) = ? AND photo_key < ?)
+      ORDER BY last_created DESC,photo_key DESC LIMIT 21`).bind(before[0],before[0],before[1]).all();
+    const groups = results.slice(0,20);
+    const rows = groups.length ? (await env.CLASSROOM_DB.prepare(`SELECT entry_json,photo_key FROM classroom_reviews WHERE deleted_at IS NULL AND photo_key IN (${groups.map(()=>'?').join(',')}) ORDER BY created_at DESC,serial DESC`).bind(...groups.map(row=>row.photo_key)).all()).results : [];
+    return json({...count,entries:rows.map(row=>({...JSON.parse(row.entry_json),photoKey:row.photo_key})),
+      nextCursor:results.length>20 ? JSON.stringify([groups.at(-1).last_created,groups.at(-1).photo_key]) : null});
+  }
   if (url.pathname === base && request.method === 'GET') {
     const cursor = url.searchParams.get('before');
     const parts = cursor ? cursor.split('|') : ['9999-12-31T23:59:59.999Z',String(Number.MAX_SAFE_INTEGER)];
@@ -245,8 +269,10 @@ async function historyRoute(request, env, url) {
     let entry;
     try { entry = validateHistoryEntry(body?.entry); } catch { throw new HttpError(400, '评价记录不完整，请检查后重试。'); }
     const image = body.image == null ? null : imageData(body.image, MAX_IMAGE);
+    const imageHash = image ? await digest(image.bytes) : 'no-photo';
+    const photoKey = image ? validPhotoKey(body.photoKey) || 'sha256:'+imageHash : 'record:'+entry.id;
     const serialized = JSON.stringify(entry);
-    const hash = await digest(serialized + ':' + (image ? await digest(image.bytes) : 'no-photo'));
+    const hash = await digest(serialized + ':' + imageHash);
     const existing = await byId(entry.id);
     const check = row => {
       if (row.deleted_at) throw new HttpError(410, '这条云端记录已删除，不会因同步而重新出现。');
@@ -260,11 +286,11 @@ async function historyRoute(request, env, url) {
       if (image) await env.CLASSROOM_PHOTOS.put(key,image.bytes,{httpMetadata:{contentType:image.type}});
       const size = (image?.bytes.length || 0) + encoder.encode(serialized).length;
       attempted = true;
-      await env.CLASSROOM_DB.prepare(`INSERT INTO classroom_reviews (id,created_at,entry_json,type,bytes,digest,storage_key)
-        SELECT ?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM classroom_reviews WHERE deleted_at IS NULL) < 2000
+      await env.CLASSROOM_DB.prepare(`INSERT INTO classroom_reviews (id,created_at,entry_json,type,bytes,digest,storage_key,photo_key)
+        SELECT ?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM classroom_reviews WHERE deleted_at IS NULL) < 2000
         AND (SELECT COALESCE(SUM(bytes),0) FROM classroom_photos WHERE deleted_at IS NULL)
           + (SELECT COALESCE(SUM(bytes),0) FROM classroom_reviews WHERE deleted_at IS NULL) + ? <= 1073741824
-        ON CONFLICT(id) DO NOTHING`).bind(entry.id,entry.createdAt,serialized,image?.type || '',size,hash,key,size).run();
+        ON CONFLICT(id) DO NOTHING`).bind(entry.id,entry.createdAt,serialized,image?.type || '',size,hash,key,photoKey,size).run();
       const saved = await byId(entry.id);
       if (!saved) throw new HttpError(507, '云端历史或照片空间已满，本机记录仍会保留。');
       published = saved.storage_key === key;
@@ -340,7 +366,7 @@ export async function handleClassroom(request, env) {
     response.headers.set('Access-Control-Allow-Origin',origin); response.headers.set('Vary','Origin');
     response.headers.set('Access-Control-Allow-Methods','GET, POST, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers','Authorization, Content-Type');
-    response.headers.set('Access-Control-Expose-Headers','X-Photo-Rotation');
+    response.headers.set('Access-Control-Expose-Headers','X-Photo-Rotation, X-Photo-Key');
   }
   return response;
 }
