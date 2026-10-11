@@ -185,7 +185,7 @@ test('browser separates image transcription from grading and renders the fixed o
     assert.equal(options.redirect, 'error');
     assert.equal(options.mode, 'cors');
     const body = JSON.parse(options.body);
-    assert.equal(body.model, 'qwen3.5-plus');
+    assert.equal(body.model, DEFAULT_QWEN_MODEL);
     assert.equal(body.enable_thinking, false);
     const content = body.messages[0].content;
     if (calls === 1) {
@@ -288,7 +288,7 @@ test('old built-in text preferences upgrade to the recommended version while pre
     assert.equal(sent.temperature, 0.3);
     assert.equal(sent.max_tokens, 3200);
     const saved = JSON.parse(stored.get(storageKey));
-    assert.equal(saved.version, 2);
+    assert.equal(saved.version, 3);
     assert.equal(saved.promptVersion, DEFAULT_PROMPT_VERSION);
     assert.ok(!('prompt' in saved));
   }
@@ -312,11 +312,11 @@ test('a past teacher edit survives as a read-only historical option across versi
   assert.equal(reopened.node('api-prompt').value, custom);
 });
 
-test('the original twelve rubric clauses are retained verbatim', () => {
+test('the twelve rubric clauses are preserved with the requested dimension label', () => {
   const original = previousDefaults[0].split('【正式评价标准】')[1].split('【执行量表时的判定规则】')[0].trim();
   for (const {prompt} of PROMPT_VERSIONS) {
     const updated = prompt.split('\n【正式评价标准】\n')[1].split('【量表边界与证据要求】')[0].trim();
-    assert.equal(updated, original);
+    assert.equal(updated, original.replaceAll('科学性','正确性'));
     assert.equal(updated.match(/^[ABCD]：/gm).length, 12);
   }
 });
@@ -454,7 +454,7 @@ test('invalid addresses, prompts and numeric limits cannot overwrite active sett
 
 test('blocked storage and corrupt saved preferences retain usable defaults', async () => {
   for (const app of [harness(undefined, new Map(), true), harness(undefined,new Map([[storageKey,'bad json']]))]) {
-    assert.equal(app.node('api-model').value, 'qwen3.5-plus');
+    assert.equal(app.node('api-model').value, DEFAULT_QWEN_MODEL);
     await app.submitKey();
     assert.equal((await app.api.evaluate(file())).scientific.grade, 'A');
   }
@@ -729,4 +729,14 @@ test('password change validates confirmation, re-encrypts the original cloud key
   assert.equal(app.api.configured,true); assert.equal((await app.api.ensureClassroom()).token,token());
   for(const id of ['classroom-current-password','classroom-new-password','classroom-confirm-password']) assert.equal(app.node(id).value,'');
   assert.ok(!JSON.stringify([...app.stored]).includes('my-new-password'));
+});
+
+
+test('new default migrates the previous default once and preserves later explicit model choices', async () => {
+  assert.equal(DEFAULT_QWEN_MODEL,'qwen3.8-max');
+  const key='mathrender-inequality-ai-settings-v1';
+  const stored=new Map([[key,JSON.stringify({version:2,endpoint:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',model:'qwen3.5-plus',promptVersion:'math-check-v2',temperature:0.1,maxTokens:2400})]]);
+  const app=harness(undefined,stored); assert.equal(app.api.model,'qwen3.8-max');
+  app.api.configure(); app.node('api-model').value='qwen3.5-plus'; await app.node('api-settings-form').dispatch('submit');
+  assert.equal(harness(undefined,stored).api.model,'qwen3.5-plus');
 });

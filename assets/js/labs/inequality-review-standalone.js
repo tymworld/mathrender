@@ -60,7 +60,7 @@ function loadSettings() {
   catch { storageAvailable = false; return { ...DEFAULT_SETTINGS }; }
   try {
     const saved = JSON.parse(raw || 'null');
-    if (saved?.version === 1 || saved?.version === 2) {
+    if (saved?.version === 1 || saved?.version === 2 || saved?.version === 3) {
       const supported = availableModels.has(saved.model);
       let promptVersion;
       if (saved.version === 1) {
@@ -74,7 +74,7 @@ function loadSettings() {
         if (oldBuiltin && saved.promptVersion === 'legacy-local') promptMigrationNote = '原内容是旧内置 Prompt，已更新为当前推荐版本。';
         else if (promptVersion !== saved.promptVersion) promptMigrationNote = '原 Prompt 版本已不可用，已选择当前推荐版本。';
       }
-      const preferences = validateSettings({ ...saved, model: supported ? saved.model : DEFAULT_QWEN_MODEL, promptVersion });
+      const preferences = validateSettings({ ...saved, model: supported && !(saved.version < 3 && saved.model === 'qwen3.5-plus') ? saved.model : DEFAULT_QWEN_MODEL, promptVersion });
       modelRestored = !supported;
       return preferences;
     }
@@ -86,7 +86,7 @@ function savePreferences() {
   try {
     // Explicit allowlist: credentials and uploaded work never enter browser storage.
     const { endpoint, model, promptVersion, temperature, maxTokens } = activeSettings;
-    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({version: 2, endpoint, model, promptVersion, temperature, maxTokens,
+    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({version: 3, endpoint, model, promptVersion, temperature, maxTokens,
       ...(legacyPrompt ? {legacyPrompt} : {})}));
     storageAvailable = true;
   } catch { storageAvailable = false; }
@@ -479,6 +479,7 @@ window.inequalityReviewAPI = Object.freeze({
   get configured() { return Boolean(sessionKey); },
   get model() { return activeSettings.model; },
   get reviewMetadata() { return {model:activeSettings.model, promptVersion:activeSettings.promptVersion, promptTitle:availablePrompts.get(activeSettings.promptVersion).title}; },
+  get classroomConfigured() { return Boolean(hasClassroomSession()); },
   configure, ensureConfigured, ensureClassroom, lockClassroom:forgetKey, updateConnection: updateDirectConnection, evaluate: evaluateDirect
 });
 populateSettings();

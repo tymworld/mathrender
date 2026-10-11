@@ -27,7 +27,7 @@ test('grading cannot rewrite even an incorrect original; complete original text 
       stages.push(stage);
       if (stage === 'recognition') {
         assert.equal(content[0].text, RECOGNITION_PROMPT);
-        assert.doesNotMatch(content[0].text, /科学性|严谨性|a=1.5/);
+        assert.doesNotMatch(content[0].text, /正确性|严谨性|a=1.5/);
         return original;
       }
       assert.equal(content.some(part => part.type === 'image_url'), false);

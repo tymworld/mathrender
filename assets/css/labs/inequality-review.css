@@ -452,6 +452,16 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .history-header h2 + p { color: #7685a0; font-size: 13px; margin-top: 3px; }
 #close-history, #close-history-photo { border: 0; background: #eaf0fa; color: #6880a2; width: 36px; height: 36px; border-radius: 50%; font-size: 26px; line-height: 1; }
 .history-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px 8px; font-size: 13px; color: #637795; }
+.history-toolbar > div { display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end; }
+.history-toolbar button { font:inherit; border:0; background:none; color:#526cba; padding:6px 0; }
+.history-sources { display:flex; gap:8px; padding:16px 30px 0; }
+.history-sources button { border:0; background:#eaf0fa; color:#657b9e; border-radius:10px; padding:9px 18px; font:inherit; font-size:14px; }
+.history-sources button[aria-selected="true"] { background:#6c72e9; color:white; }
+.history-cloud-unlock { margin:14px 30px; padding:20px; border-radius:16px; background:#edf2ff; text-align:center; color:#657b9e; font-size:14px; }
+.history-cloud-unlock p { margin-bottom:14px; }
+.history-cloud-unlock .key-unlock-button { width:auto; }
+.history-dialog button:disabled { opacity:.45; cursor:default; }
+@media(max-width:600px) { .history-toolbar { flex-wrap:wrap; gap:8px; } .history-sources { padding-left:18px; padding-right:18px; } }
 #clear-history { border: 0; background: none; color: #9e6271; font-size: 12px; padding: 5px 0 5px 12px; }
 #clear-history:disabled { color: #a7b2c2; }
 .history-content { overflow: auto; flex: 1; min-height: 0; padding: 10px 30px 24px; }

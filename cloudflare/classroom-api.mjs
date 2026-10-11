@@ -1,4 +1,5 @@
 import {parseKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
+import {validateHistoryEntry} from '../assets/js/labs/inequality-review-records.mjs';
 
 // Pictures stay in a private R2 bucket; D1 publishes a photo only after
 // both image writes succeed.
@@ -126,6 +127,10 @@ async function route(request, env, url) {
     return json(await session(env, saved));
   }
   const role = await authorize(request, env, record);
+  if (path === '/api/classroom/history' || path.startsWith('/api/classroom/history/')) {
+    if (role !== 'teacher') throw new HttpError(403, '请使用课堂密码解锁历史评价，手机上传链接不能查看。');
+    return historyRoute(request, env, url);
+  }
   if (path === '/api/classroom/password' && request.method === 'POST') {
     if (role !== 'teacher') throw new HttpError(403, '请在电脑端修改课堂密码。');
     await rateLimit(request, env, 'login', 10);
@@ -168,7 +173,8 @@ async function route(request, env, url) {
       commitAttempted = true;
       await env.CLASSROOM_DB.prepare(`INSERT INTO classroom_photos (id,label,created_at,type,bytes,digest,storage_key)
         SELECT ?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM classroom_photos WHERE deleted_at IS NULL) < 1000
-        AND (SELECT COALESCE(SUM(bytes),0) FROM classroom_photos WHERE deleted_at IS NULL) + ? <= 1073741824
+        AND (SELECT COALESCE(SUM(bytes),0) FROM classroom_photos WHERE deleted_at IS NULL)
+          + (SELECT COALESCE(SUM(bytes),0) FROM classroom_reviews WHERE deleted_at IS NULL) + ? <= 1073741824
         ON CONFLICT(id) DO NOTHING`).bind(body.id, body.label.trim().replace(/[\u0000-\u001f]/g,''),new Date().toISOString(),image.type,bytes,hash,key,bytes).run();
       const saved = await rowById(env, body.id);
       if (!saved) throw new HttpError(507, '课堂相册已满，请在电脑端删除不需要的照片后重试。');
@@ -209,6 +215,91 @@ async function route(request, env, url) {
   throw new HttpError(405, '不支持的请求方式。');
 }
 
+async function historyRoute(request, env, url) {
+  const base = '/api/classroom/history';
+  const byId = id => env.CLASSROOM_DB.prepare('SELECT * FROM classroom_reviews WHERE id = ?').bind(id).first();
+  if (url.pathname === base && request.method === 'GET') {
+    const cursor = url.searchParams.get('before');
+    const parts = cursor ? cursor.split('|') : ['9999-12-31T23:59:59.999Z',String(Number.MAX_SAFE_INTEGER)];
+    const before = Number(parts[1]);
+    if (parts.length !== 2 || !Number.isSafeInteger(before) || before < 1 || !Number.isFinite(Date.parse(parts[0]))) throw new HttpError(400, '历史记录分页无效。');
+    const {results} = await env.CLASSROOM_DB.prepare(`SELECT serial,created_at,entry_json FROM classroom_reviews WHERE deleted_at IS NULL
+      AND (created_at < ? OR (created_at = ? AND serial < ?)) ORDER BY created_at DESC, serial DESC LIMIT 21`).bind(parts[0],parts[0],before).all();
+    const count = await env.CLASSROOM_DB.prepare('SELECT COUNT(*) AS total, MAX(serial) AS latest FROM classroom_reviews WHERE deleted_at IS NULL').first();
+    const rows = results.slice(0,20);
+    return json({entries:rows.map(row => JSON.parse(row.entry_json)), total:count.total, latest:count.latest,
+      nextCursor:results.length > 20 ? rows.at(-1).created_at+'|'+rows.at(-1).serial : null});
+  }
+  if (url.pathname === base && request.method === 'POST') {
+    await rateLimit(request, env, 'history-write', 120);
+    const body = await readJSON(request);
+    let entry;
+    try { entry = validateHistoryEntry(body?.entry); } catch { throw new HttpError(400, '评价记录不完整，请检查后重试。'); }
+    const image = body.image == null ? null : imageData(body.image, MAX_IMAGE);
+    const serialized = JSON.stringify(entry);
+    const hash = await digest(serialized + ':' + (image ? await digest(image.bytes) : 'no-photo'));
+    const existing = await byId(entry.id);
+    const check = row => {
+      if (row.deleted_at) throw new HttpError(410, '这条云端记录已删除，不会因同步而重新出现。');
+      if (row.digest !== hash) throw new HttpError(409, '此记录编号已存在不同内容，请保留本机记录并检查。');
+      return json({entry:JSON.parse(row.entry_json)},201);
+    };
+    if (existing) return check(existing);
+    const key = image ? 'reviews/' + crypto.randomUUID() : '';
+    let published = false, attempted = false;
+    try {
+      if (image) await env.CLASSROOM_PHOTOS.put(key,image.bytes,{httpMetadata:{contentType:image.type}});
+      const size = (image?.bytes.length || 0) + encoder.encode(serialized).length;
+      attempted = true;
+      await env.CLASSROOM_DB.prepare(`INSERT INTO classroom_reviews (id,created_at,entry_json,type,bytes,digest,storage_key)
+        SELECT ?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM classroom_reviews WHERE deleted_at IS NULL) < 2000
+        AND (SELECT COALESCE(SUM(bytes),0) FROM classroom_photos WHERE deleted_at IS NULL)
+          + (SELECT COALESCE(SUM(bytes),0) FROM classroom_reviews WHERE deleted_at IS NULL) + ? <= 1073741824
+        ON CONFLICT(id) DO NOTHING`).bind(entry.id,entry.createdAt,serialized,image?.type || '',size,hash,key,size).run();
+      const saved = await byId(entry.id);
+      if (!saved) throw new HttpError(507, '云端历史或照片空间已满，本机记录仍会保留。');
+      published = saved.storage_key === key;
+      return check(saved);
+    } finally {
+      let safe = !attempted;
+      if (key && !published && attempted) { try { safe = (await byId(entry.id))?.storage_key !== key; } catch {} }
+      if (key && !published && safe) await env.CLASSROOM_PHOTOS.delete(key).catch(() => {});
+    }
+  }
+  if (url.pathname === base + '/clear' && request.method === 'POST') {
+    const {through} = await readJSON(request,1024);
+    if (!Number.isSafeInteger(through) || through < 1) throw new HttpError(400, '请重新打开历史记录后再清空。');
+    // Only the set visible when confirmation was opened; later saves survive.
+    await env.CLASSROOM_DB.prepare('UPDATE classroom_reviews SET deleted_at = ? WHERE serial <= ? AND deleted_at IS NULL').bind(new Date().toISOString(),through).run();
+    await cleanupHistory(env);
+    return json({ok:true});
+  }
+  const match = /^\/api\/classroom\/history\/([a-zA-Z0-9-]{1,100})(\/image)?$/.exec(url.pathname);
+  if (!match) throw new HttpError(404, '未找到这条历史记录。');
+  const row = await byId(match[1]);
+  if (!row || (row.deleted_at && request.method !== 'DELETE')) throw new HttpError(404, '这条云端历史已删除或不存在。');
+  if (request.method === 'GET' && match[2]) {
+    if (!row.storage_key) throw new HttpError(404, '原图未保存，评价卡仍可查看。');
+    const object = await env.CLASSROOM_PHOTOS.get(row.storage_key);
+    if (!object) throw new HttpError(404, '原图暂不可用，评价卡仍可查看。');
+    return new Response(object.body,{headers:{'Content-Type':row.type}});
+  }
+  if (request.method === 'DELETE' && !match[2]) {
+    await env.CLASSROOM_DB.prepare('UPDATE classroom_reviews SET deleted_at = COALESCE(deleted_at,?) WHERE id = ?').bind(new Date().toISOString(),row.id).run();
+    if (row.storage_key) await env.CLASSROOM_PHOTOS.delete(row.storage_key);
+    await env.CLASSROOM_DB.prepare("UPDATE classroom_reviews SET storage_key = '', entry_json = '{}' WHERE id = ? AND deleted_at IS NOT NULL").bind(row.id).run();
+    return json({ok:true});
+  }
+  throw new HttpError(405, '不支持的请求方式。');
+}
+async function cleanupHistory(env) {
+  const {results} = await env.CLASSROOM_DB.prepare("SELECT id,storage_key FROM classroom_reviews WHERE deleted_at IS NOT NULL AND (storage_key <> '' OR entry_json <> '{}') LIMIT 100").all();
+  for (const row of results) {
+    if (row.storage_key) await env.CLASSROOM_PHOTOS.delete(row.storage_key);
+    await env.CLASSROOM_DB.prepare("UPDATE classroom_reviews SET storage_key = '', entry_json = '{}' WHERE id = ? AND deleted_at IS NOT NULL").bind(row.id).run();
+  }
+}
+
 export async function cleanupDeleted(env) {
   if (!env.CLASSROOM_DB || !env.CLASSROOM_PHOTOS) return;
   const {results} = await env.CLASSROOM_DB.prepare("SELECT id,storage_key FROM classroom_photos WHERE deleted_at IS NOT NULL AND storage_key <> '' LIMIT 10").all();
@@ -216,6 +307,7 @@ export async function cleanupDeleted(env) {
     await env.CLASSROOM_PHOTOS.delete([row.storage_key+'/image',row.storage_key+'/thumbnail']);
     await env.CLASSROOM_DB.prepare("UPDATE classroom_photos SET storage_key = '' WHERE id = ? AND deleted_at IS NOT NULL").bind(row.id).run();
   }
+  await cleanupHistory(env);
   await env.CLASSROOM_DB.prepare('DELETE FROM classroom_limits WHERE reset_at < ?').bind(Math.floor(Date.now()/1000)-3600).run();
 }
 

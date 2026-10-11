@@ -1,4 +1,4 @@
-# Cloudflare 课堂相册
+# Cloudflare 课堂相册与评价历史
 
 现有部署是 Worker `mathrender`，由 `tymworld/mathrender` 的 GitHub 更新触发构建。此次在同一 Worker 增加 `/api/classroom/*`，其他路径继续走静态资源 `ASSETS`。手机打开网站内的 `labs/algebra/inequality-upload.html`，无需本地服务或相同网络。
 
@@ -6,7 +6,7 @@
 
 - 电脑评价页：<https://mathrender.ymtanglab.com/labs/algebra/inequality-review.html>
 - R2：`mathrender-classroom-photos`，Standard，已确认 `r2.dev` 公开访问关闭。
-- D1：`mathrender-classroom`，APAC；已执行 `0001_classroom.sql` 和 `0002_classroom_credentials.sql`。资源名称和 ID 已固定在 `wrangler.jsonc`，后续发布复用现有数据。
+- D1：`mathrender-classroom`，APAC；迁移包含 `0001_classroom.sql`、`0002_classroom_credentials.sql` 和 `0003_review_history.sql`。资源名称和 ID 已固定在 `wrangler.jsonc`，后续发布复用现有数据。
 - `CLASSROOM_SECRET` 和 `CLASSROOM_UNIFIED_PROOF` 使用 Worker Secrets。首次输入原来的 AI 使用密码后自动启用统一密码，之后在 AI 设置中修改。旧的随机相册密码不再使用。手机通过电脑二维码进入，无需填写教师密码。
 - 后续维护需对当前 Cloudflare 账号登录授权。`wrangler login --device` 可在官方网页输入设备码完成授权，无需把 API Token 发到聊天中。
 
@@ -16,7 +16,7 @@
 2. 安装本项目开发依赖，执行 `npx wrangler login` 登录拥有 `mathrender` 的账号。根目录配置声明了 `CLASSROOM_PHOTOS`（R2）和 `CLASSROOM_DB`（D1）；首次部署时 Wrangler 可以自动创建资源并把具体名称、ID 写回配置。将写回后的配置提交到仓库，确保后续部署复用已有存储。如果资源由 GitHub 构建自动创建，需要从控制台把对应名称、ID补回配置。
 3. 设置至少 32 字符的随机 `CLASSROOM_SECRET`，作为 Worker Secret，不能使用开发值。
 4. 在保存原加密配置与 `.env.qwen` 的部署电脑执行 `node scripts/prepare-classroom-unified.mjs`，再执行 `npx wrangler secret bulk .wrangler/private/classroom-unified-secrets.json`。这只上传一次性迁移验证摘要，不上传明文 API Key。摘要对应的 API Key 必须与原加密文件一致。私有目录不进入 Git。
-5. 执行 `npx wrangler d1 migrations apply CLASSROOM_DB --remote`。密码表独立于照片表，迁移保留照片。
+5. 执行 `npx wrangler d1 migrations apply CLASSROOM_DB --remote`。密码表与评价历史表独立于照片表，迁移保留照片和密码。新增历史功能前须先应用 `0003_review_history.sql`，再发布 Worker。
 6. 部署后首次输入原来的 AI 使用密码：浏览器解密旧配置、证明拥有密钥，后台原子创建统一密码配置。此步骤只能成功一次；之后即便持有旧迁移证明也不能重置密码。
 7. 解锁后在“AI 设置 → 课堂密码 → 修改课堂密码”自行修改。新密码使用 8–128 个字符，需填写当前密码并重复新密码。照片保留、当前电脑继续解锁，旧电脑凭证与手机链接立即失效；手机重新扫码即可。
 
@@ -59,19 +59,27 @@ node scripts/check-site.mjs
 node scripts/test-math.mjs
 ```
 
-安装 Playwright 并有 Chrome 后，还可运行 `scripts/test-classroom-browser.mjs`，它只允许访问 localhost/127.0.0.1。指定 `CLASSROOM_TEST_URL=http://127.0.0.1:8788`；测试密码默认 `classroom-local-check`，测试只在浏览器拦截页面替换为虚构的 AI 配置，不改动实际加密文件。`PLAYWRIGHT_MODULE` 可指向已有 Playwright 模块。浏览器测试在独立手机和电脑上下文中跑真实 Worker/D1/R2；AI 接口使用模拟响应，不产生 AI 费用。测试会清除自身上传的照片，并保存实际页面截图到 `docs/qa/classroom-*.png`。
+安装 Playwright 并有 Chrome 后，还可运行 `scripts/test-classroom-browser.mjs`，它只允许访问 localhost/127.0.0.1。指定 `CLASSROOM_TEST_URL=http://127.0.0.1:8788`；测试密码默认 `classroom-local-check`，测试只在浏览器拦截页面替换为虚构的 AI 配置，不改动实际加密文件。`PLAYWRIGHT_MODULE` 可指向已有 Playwright 模块。浏览器测试在独立手机和电脑上下文中跑真实 Worker/D1/R2；AI 接口使用模拟响应，不产生 AI 费用。测试会清除自身上传的照片与评价，并保存实际页面截图到 `docs/qa/classroom-*.png` 和 `docs/qa/history-cloud-*.png`。
 
 ## 保存与权限
 
-- 相册是本网站的一份共享课堂相册，刷新、关闭页面、Worker 重启和静态更新不会清空。默认最多 1000 张、总计 1 GiB。
+- 相册是本网站的一份共享课堂相册，刷新、关闭页面、Worker 重启和静态更新不会清空。相册最多 1000 张，云端评价最多 2000 条，合计容量 1 GiB。
 - 照片最长边缩放到 2560 像素，转为 JPEG；缩略图最长边 360 像素。原始拍摄文件不额外保留。
 - 两个 R2 对象写入成功后，D1 才发布照片记录。上传 ID 在重试中保持不变，并验证内容摘要；并发重试不会产生多份可见照片。
 - 电脑凭证与手机上传凭证分别签名。前者有效期 12 小时，后者 7 天。相册密码和签名密钥不会发给手机。凭证不存入浏览器持久存储，手机上传凭证位于链接 fragment，不出现在 HTTP URL 或 Referer 中。
-- 手机链接允许查看相册和上传，不允许删除或标记评价。所有图片请求使用授权头；R2 没有公开图片地址。
-- 删除先隐藏 D1 记录，再删除图片与缩略图；保留无图片的删除标记，防止迟到重试恢复照片。每小时清理最多 10 条尚未完成物理删除的记录。电脑本地评价历史独立保留。
+- 手机链接允许查看相册和上传，不允许读取评价历史、删除或标记评价。所有图片请求使用授权头；R2 没有公开图片地址。
+- 删除先隐藏 D1 记录，再删除图片与缩略图；保留无图片的删除标记，防止迟到重试恢复照片。每小时清理最多 10 条相册、100 条评价尚未完成的物理删除。评价内容清除后保留最小删除标记，阻止旧浏览器补同步时恢复已删记录。课堂相册、云端评价原图和本机备份独立保留。
 - 密码配置在 D1 中保存加盐的 HMAC 校验值（签名密钥只在 Worker Secret 中）、凭证版本和 AES-GCM 加密的 AI 配置，不保存明文密码或 AI Key。PBKDF2 加解密在浏览器中完成。修改密码通过版本条件更新，避免并发修改相互覆盖；所有照片访问都核对最新凭证版本。
 - 密码登录和上传有按来源计数的速率限制。图片大小、格式、备注长度、同源访问和总容量在后台检查。
 - 在 R2 已写入而 D1 状态无法确认的极端故障下，后台优先保留对象，避免损坏可能已经提交的记录；可能产生少量不可见孤立对象，需运维核对清理。原图与元数据不跨服务强行宣称事务一致。
+
+## 云端历史升级
+
+`/api/classroom/history` 仅教师凭证可用，与相册、AI 共用课堂密码；二维码上传凭证不能读取评价或原图。D1 `classroom_reviews` 保存完整评价内容与元数据，R2 `reviews/` 下独立保存原图，列表按实际评价时间分页。后台只接收规定的评价字段，不接收凭证或 API Key。
+
+浏览器先写本机备份，再提交云端；失败时提示手动重试。旧版记录需在原设备、原浏览器和原网址点击“同步本机历史”。同步采用原记录 ID 和内容摘要保证幂等；原图缺失仍可同步文字卡。云端删除不会删除本机备份，本机备份的同步标记和服务器删除标记共同防止误恢复。清空采用打开确认前的记录序号，新生成记录不会被同时清空。
+
+本机同步不会读取其他域名或浏览器的数据。`workers.dev` 与自定义域名连接同一 Worker，因此在旧域名同步后可在正式域名查看。普通本地预览和离线 HTML 仍使用本机历史。
 
 ## 维护位置
 
@@ -79,7 +87,8 @@ node scripts/test-math.mjs
 | --- | --- |
 | Worker 入口及小时清理 | `cloudflare/worker.mjs` |
 | 鉴权、上传、列表、取图、删除、评价标记 | `cloudflare/classroom-api.mjs` |
-| 数据库初始化 | `cloudflare/migrations/0001_classroom.sql`、`0002_classroom_credentials.sql` |
+| 数据库迁移 | `cloudflare/migrations/0001_classroom.sql`、`0002_classroom_credentials.sql`、`0003_review_history.sql` |
+| 云端与本机评价历史 | `assets/js/labs/inequality-review-history.js`、`inequality-review-records.mjs` |
 | 电脑相册结构与样式 | `assets/html/inequality-classroom-panel.html`、`assets/css/labs/inequality-classroom.css` |
 | 电脑相册交互 | `assets/js/labs/inequality-classroom-gallery.js` |
 | 手机上传页 | `labs/algebra/inequality-upload.html`、`assets/css/labs/inequality-upload.css`、`assets/js/labs/inequality-upload.js` |
@@ -100,3 +109,7 @@ node scripts/test-math.mjs
 GitHub 自动构建在上一版本出现失败，当前发布采用本机 Wrangler。自动构建日志的读取授权尚未具备，应在 Cloudflare 控制台核查构建命令与错误；不能以本机部署成功推断自动构建已经恢复。
 
 2026-10-09 统一密码已在正式域名部署并完成首次启用（只查询初始化状态，不读取密码）；页面与访问控制已检查。相册选图栏新增直接的“删除作品”入口，保留原图预览、保留照片和确认删除步骤。
+
+2026-10-11：72 项自动化检查通过，并用两个独立浏览器、不同本地站点地址验证云端评价及原图共享、旧记录同步去重、断网后补同步、删除不复活和手机布局。两个 AI 阶段均验证默认发送 `qwen3.8-max`；此次使用模拟 AI 响应，没有产生 AI 调用费用。
+
+2026-10-11 云端历史已上线，版本 `a676788e-11b5-409b-a0b8-cf79d49758f0`。生产库已应用 `0003_review_history.sql`；正式域名与 workers.dev 的 HTML 均与本机产物一致，历史接口匿名访问返回 401。生产核查未读取或修改教师的历史记录。

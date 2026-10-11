@@ -247,8 +247,8 @@
         renderCard(result);
         message('');
         try {
-          await history.save(result, {...metadata, photo:submittedPhoto});
-          historyNote('已保存到历史记录');
+          const saved = await history.save(result, {...metadata, photo:submittedPhoto});
+          historyNote(saved?.saveMessage || '已保存到历史记录', Boolean(saved?.pendingSync));
         } catch (error) {
           historyNote('评价卡已生成，但历史未保存。' + error.message, true);
         }

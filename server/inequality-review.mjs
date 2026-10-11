@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {DEFAULT_QWEN_MODEL} from '../assets/js/labs/inequality-review-models.mjs';
 import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +26,7 @@ export async function loadConfig() {
   return {
     apiKey: get('DASHSCOPE_API_KEY'),
     baseURL: get('QWEN_BASE_URL') || DEFAULT_BASE_URL,
-    model: get('QWEN_MODEL') || 'qwen3.5-plus'
+    model: get('QWEN_MODEL') || DEFAULT_QWEN_MODEL
   };
 }
 

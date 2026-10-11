@@ -49,10 +49,12 @@ export async function buildStandalone() {
   // Archived built-in text is used only to migrate old text-based preferences.
   // It is never selectable or sent as the current version's evaluation prompt.
   const historyScript = `const BUILTIN_PROMPT_HISTORY = ${JSON.stringify(JSON.parse(promptHistory))};`;
+  const records = (await read('assets/js/labs/inequality-review-records.mjs')).replace(/^export /gm, '');
+  const bundledHistory = history.replace('// HISTORY_RECORD_VALIDATION', records);
   const bundledProtocol = protocol.replace(/^import \{ DEFAULT_EVALUATION_PROMPT \} from '\.\/inequality-review-prompts\.mjs';\n/m, '').replace(/^export /gm, '');
   const directScript = `(() => {\n'use strict';\n${prompts.replace(/^export /gm, '')}\n${bundledProtocol}\n${modelScript}\n${historyScript}\n${keyConfigScript}\n${keyfile.replace(/^export /gm, '')}\n${direct}\n})();`;
   const safeScript = source => source.replace(/<\/script/gi, '<\\/script');
-  html = html.replace('</body>', `${settingsDialog}\n<script>\n${safeScript(directScript)}\n</script>\n<script>\n${safeScript(history)}\n${safeScript(qr)}\n${safeScript(classroomClient)}\n${safeScript(classroomGallery)}\n${safeScript(ui)}\n</script>\n</body>`);
+  html = html.replace('</body>', `${settingsDialog}\n<script>\n${safeScript(directScript)}\n</script>\n<script>\n${safeScript(bundledHistory)}\n${safeScript(qr)}\n${safeScript(classroomClient)}\n${safeScript(classroomGallery)}\n${safeScript(ui)}\n</script>\n</body>`);
   await writeFile(outputPath, html);
   return { outputPath, bytes: Buffer.byteLength(html) };
 }

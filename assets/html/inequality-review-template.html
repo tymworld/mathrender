@@ -23,7 +23,7 @@
       <header class="upload-heading">
         <h1 id="upload-title">上传你的<span class="title-accent">不等式</span>作品</h1>
         <p class="lead">拍下手写作品，让 AI 帮你评价！</p>
-        <p class="upload-intro">支持拍照上传，自动识别并从科学性、严谨性、创新性三个维度进行评价。</p>
+        <p class="upload-intro">支持拍照上传，自动识别并从正确性、严谨性、创新性三个维度进行评价。</p>
         <svg class="paper-plane" viewBox="0 0 150 115" fill="none" aria-hidden="true"><path d="M3 104c39 0 62-44 42-42s-8 34 23 8c13-11 19-21 25-33" stroke="#94caff" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"/><path d="m72 24 71-21-35 56-12-20-15 9Z" fill="#71c5ff" stroke="#4baeff" stroke-width="2" stroke-linejoin="round"/><path d="m82 48 61-45-47 36" fill="#158bff"/><path d="m96 39 47-36-35 56" fill="#9bdcff"/></svg>
       </header>
       <div class="upload-layout">
@@ -63,7 +63,7 @@
         <div id="classroom-selection" class="classroom-selection" hidden><span id="classroom-selected-label">选择一张作品，开始评价</span><div class="classroom-selection-actions"><button id="classroom-preview" type="button" disabled>查看大图</button><button id="classroom-delete-selected" type="button" disabled>删除作品</button></div></div>
         <button class="generate-button" id="generate-button" type="button" disabled><span class="button-spark" aria-hidden="true">✦</span><b id="generate-label">上传并生成评价卡</b><span id="generate-arrow" aria-hidden="true">→</span></button>
         </div>
-        <div class="dimension-legend" aria-label="评价维度"><span>● 科学性</span><span>● 严谨性</span><span>● 创新性</span></div>
+        <div class="dimension-legend" aria-label="评价维度"><span>● 正确性</span><span>● 严谨性</span><span>● 创新性</span></div>
       </div>
         <aside class="upload-inspiration" aria-hidden="true">
           <p class="inspiration-motto">用不等式<br><span>表达你的思考！</span></p>
@@ -98,8 +98,8 @@
           </div>
           <div class="scores" aria-label="三维评价">
             <section class="score-scientific">
-              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="19" ry="8"/><ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3" fill="currentColor" stroke="none"/></svg></span><h2>科学性<small>结论是否成立</small></h2></div>
-              <p class="score-comment" id="scientific-comment"></p><div class="grade" aria-label="科学性等级"><strong id="scientific-grade">—</strong><span id="scientific-level">等级</span></div><p class="dimension-note" id="scientific-note"></p>
+              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="19" ry="8"/><ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3" fill="currentColor" stroke="none"/></svg></span><h2>正确性<small>结论是否成立</small></h2></div>
+              <p class="score-comment" id="scientific-comment"></p><div class="grade" aria-label="正确性等级"><strong id="scientific-grade">—</strong><span id="scientific-level">等级</span></div><p class="dimension-note" id="scientific-note"></p>
             </section>
             <section class="score-rigor">
               <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M25 9H11a3 3 0 0 0-3 3v25a3 3 0 0 0 3 3h25a3 3 0 0 0 3-3V23"/><path d="m16 23 8 8L40 13" stroke-width="4"/></svg></span><h2>严谨性<small>论证是否完整</small></h2></div>
@@ -131,15 +131,17 @@
     <header><div><p class="classroom-eyebrow">课堂相册 · 手写原稿</p><h2 id="classroom-preview-title">作品预览</h2></div><button id="classroom-preview-close" type="button" aria-label="关闭作品预览">×</button></header>
     <img id="classroom-full-photo" alt="所选作品的完整照片">
     <footer><span>双指缩放或放大浏览器查看细节</span><button id="classroom-delete" type="button">删除这张照片</button></footer>
-    <div id="classroom-delete-confirm" class="classroom-delete-confirm" hidden><p>删除后台保存的这张照片？已有的本机评价历史会保留。</p><button id="classroom-delete-cancel" type="button">保留照片</button><button id="classroom-delete-submit" type="button">确认删除</button></div>
+    <div id="classroom-delete-confirm" class="classroom-delete-confirm" hidden><p>删除后台保存的这张照片？已有的评价历史会保留。</p><button id="classroom-delete-cancel" type="button">保留照片</button><button id="classroom-delete-submit" type="button">确认删除</button></div>
     <p id="classroom-preview-message" role="status"></p>
   </dialog>
   <dialog class="history-dialog" id="history-dialog" aria-labelledby="history-title">
     <header class="history-header"><div><p class="history-eyebrow">李老师开心课堂 · MathRender</p><h2 id="history-title">评价历史</h2><p>回看每一次思考与发现</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
-    <div class="history-toolbar"><span id="history-count">暂无记录</span><button id="clear-history" type="button" disabled>清空记录</button></div>
+    <div class="history-sources" role="tablist" aria-label="历史记录来源"><button id="history-cloud-tab" type="button" role="tab" aria-selected="true">云端历史</button><button id="history-local-tab" type="button" role="tab" aria-selected="false">本机记录</button></div>
+    <div class="history-toolbar"><span id="history-count">暂无记录</span><div><button id="history-sync" type="button">同步本机历史</button><button id="history-refresh" type="button">刷新</button><button id="clear-history" type="button" disabled>清空记录</button></div></div>
+    <div id="history-cloud-unlock" class="history-cloud-unlock" hidden><p>输入课堂密码，查看所有设备保存的评价卡与原图。</p><button id="history-unlock" class="key-unlock-button" type="button">解锁云端历史</button></div>
     <div class="history-content"><p id="history-message" role="status" hidden></p><div id="history-empty" class="history-empty"><span aria-hidden="true">✎</span><h3>第一张评价卡，从这里开始</h3><p>生成后会自动保存原图与评价，随时回来查看。</p></div><div id="history-list"></div><button id="history-more" class="history-more" type="button" hidden>加载更多</button></div>
     <div id="history-confirm" class="history-confirm" hidden><p id="history-confirm-text"></p><div><button id="cancel-history-delete" type="button">取消</button><button id="confirm-history-delete" type="button">确认删除</button></div></div>
-    <footer class="history-footer">仅保存在当前浏览器 · 不上传历史记录 · 清除浏览器数据会移除记录</footer>
+    <footer id="history-storage-note" class="history-footer">云端历史跨设备共享 · 原有记录请在保存它们的浏览器和网址中点击“同步本机历史”</footer>
   </dialog>
   <dialog id="history-photo-dialog" class="history-photo-dialog" aria-labelledby="history-photo-title"><header><div><h2 id="history-photo-title">手写原稿</h2><p id="history-photo-date"></p></div><button id="close-history-photo" type="button" aria-label="关闭原图">×</button></header><img id="history-photo" alt="这条历史记录的手写原稿"></dialog>
 </body>

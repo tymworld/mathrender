@@ -7,7 +7,8 @@ const base = process.env.CLASSROOM_TEST_URL || 'http://127.0.0.1:8787';
 assert.ok(['localhost','127.0.0.1'].includes(new URL(base).hostname), 'Browser tests may only write to a local preview.');
 const password = process.env.CLASSROOM_TEST_PASSWORD || 'classroom-local-check';
 const browser = await chromium.launch({headless:true,channel:process.env.PLAYWRIGHT_CHANNEL || 'chrome'});
-const errors = [], ids = [];
+const errors = [], ids = [], historyIds = [];
+let cloudHistoryContext;
 let auth = {}, currentPassword = password;
 const fixtureKey = 'sk-unified-browser-fixture';
 const keyFile = await encryptKeyFile(fixtureKey,'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',password);
@@ -73,6 +74,7 @@ try {
   let aiCalls=0;
   await desktop.route('https://dashscope.aliyuncs.com/**',async route => {
     aiCalls++;
+    assert.equal(JSON.parse(route.request().postData()).model,'qwen3.8-max');
     const value = aiCalls%2 ? {status:'readable',formula:'|2x−1|+|x+2|≥|3x+1|',reasoning:'由三角不等式得证。',issue:''} : {
       status:'valid',formula:'|2x−1|+|x+2|≥|3x+1|',verdict:'结论成立，论证清楚。',
       scientific:{grade:'A',comment:'正确运用了三角不等式。'},rigor:{grade:'A',comment:'推导完整，取等条件正确。'},creativity:{grade:'B',comment:'构造了有意义的变式。'},highlight:'变量代换清楚。',suggestion:'继续尝试三项之和。'};
@@ -110,6 +112,56 @@ try {
   await mobile.locator('#capture-retry').waitFor({state:'visible'});
   assert.equal(await mobile.locator('#capture-camera-button').isDisabled(),true);
   await mobile.locator('#capture-discard').click(); await mobileContext.setOffline(false);
+  // A different browser AND a different origin must see the same cloud card.
+  cloudHistoryContext=await browser.newContext({viewport:{width:1440,height:950}});
+  const historyPage=await cloudHistoryContext.newPage(); historyPage.on('pageerror',error=>errors.push(error.message));
+  let unintendedAI=0;
+  await historyPage.route('https://dashscope.aliyuncs.com/**',async route=>{unintendedAI++;await route.abort();});
+  const otherOrigin=base.replace('127.0.0.1','localhost');
+  await historyPage.goto(otherOrigin+'/labs/algebra/inequality-review.html');
+  await historyPage.locator('#history-button').click(); await historyPage.locator('#history-unlock').click();
+  await historyPage.locator('#key-file-password').fill(password); await historyPage.locator('#submit-key-unlock').click();
+  await historyPage.locator('.history-entry').waitFor();
+  assert.ok((await historyPage.locator('.history-grades').innerText()).includes('正确性'));
+  assert.ok(!(await historyPage.locator('.history-grades').innerText()).includes('科学性'));
+  await historyPage.getByRole('button',{name:'查看原图',exact:true}).click();
+  await historyPage.waitForFunction(()=>document.getElementById('history-photo').naturalWidth>0);
+  await historyPage.locator('#close-history-photo').click();
+  await historyPage.getByRole('button',{name:'查看评价',exact:true}).click();
+  await historyPage.locator('#result-screen').waitFor({state:'visible'}); assert.equal(unintendedAI,0);
+  await historyPage.locator('#review-history-button').click();
+  const oldEntry={id:'card-'+crypto.randomUUID(),createdAt:'2026-09-01T08:00:00.000Z',result:{status:'valid',formula:'旧浏览器记录 · |x| ≥ 0',verdict:'恒成立。',scientific:{grade:'A',comment:'结论成立。'},rigor:{grade:'A',comment:'论证完整。'},creativity:{grade:'C',comment:'基础变式。'},highlight:'表达清楚。',suggestion:'可尝试拓展。'}};
+  await historyPage.evaluate(async ({entry,picture})=>{
+    const db=await new Promise((resolve,reject)=>{const request=indexedDB.open('mathrender-inequality-history',1);request.onupgradeneeded=()=>{request.result.createObjectStore('cards',{keyPath:'id'});request.result.createObjectStore('photos',{keyPath:'id'});};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+    const bytes=Uint8Array.from(atob(picture),c=>c.charCodeAt(0));
+    await new Promise((resolve,reject)=>{const tx=db.transaction(['cards','photos'],'readwrite');tx.objectStore('cards').put(entry);tx.objectStore('photos').put({id:entry.id,blob:new Blob([bytes],{type:'image/png'})});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);}); db.close();
+  },{entry:oldEntry,picture});
+  await historyPage.locator('#history-local-tab').click(); await historyPage.locator('#history-sync').click();
+  await historyPage.waitForFunction(()=>document.querySelectorAll('.history-entry').length===2 && document.getElementById('history-sync').disabled===false);
+  await historyPage.locator('#history-sync').click();
+  await historyPage.waitForFunction(()=>document.getElementById('history-sync').disabled===false);
+  assert.equal(await historyPage.locator('.history-entry').count(),2);
+  await cloudHistoryContext.setOffline(true);
+  const fallback=await historyPage.evaluate(async ({entry,picture})=>{
+    const bytes=Uint8Array.from(atob(picture),c=>c.charCodeAt(0));
+    return window.inequalityReviewHistory.save({...entry.result,formula:'断网记录 · |y| ≥ 0'},{photo:new Blob([bytes],{type:'image/png'}),model:'qwen3.8-max'});
+  },{entry:oldEntry,picture});
+  assert.equal(fallback.pendingSync,true);
+  await cloudHistoryContext.setOffline(false); await historyPage.locator('#history-sync').click();
+  await historyPage.waitForFunction(()=>document.querySelectorAll('.history-entry').length===3 && document.getElementById('history-sync').disabled===false);
+  await historyPage.screenshot({path:'docs/qa/history-cloud-desktop.png',fullPage:true});
+  await historyPage.setViewportSize({width:390,height:844});
+  assert.ok(await historyPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await historyPage.screenshot({path:'docs/qa/history-cloud-mobile.png',fullPage:true});
+  const oldRow=historyPage.locator('.history-entry').filter({hasText:'旧浏览器记录'});
+  await oldRow.getByRole('button',{name:'删除',exact:true}).click(); await historyPage.locator('#confirm-history-delete').click();
+  await historyPage.waitForFunction(()=>document.querySelectorAll('.history-entry').length===2);
+  await historyPage.locator('#history-sync').click(); await historyPage.waitForFunction(()=>document.getElementById('history-sync').disabled===false);
+  assert.equal(await historyPage.locator('.history-entry').count(),2,'deleted cloud cards must not resurrect from a local backup');
+  const cloudRows=await (await fetch(base+'/api/classroom/history',{headers:auth})).json();
+  historyIds.push(...cloudRows.entries.map(row=>row.id));
+  assert.equal(cloudRows.entries.length,2); assert.equal(unintendedAI,0); assert.equal(aiCalls,2);
+  await cloudHistoryContext.close(); cloudHistoryContext=null;
   const oldLink=await desktop.locator('#classroom-link-fallback').inputValue();
   await desktop.locator('#connection-label').click(); await desktop.locator('#change-classroom-password').click();
   await desktop.locator('#classroom-current-password').fill(password);
@@ -143,8 +195,10 @@ try {
   const restored=await fetch(base+'/api/classroom/password',{method:'POST',headers:{...auth,'Content-Type':'application/json'},body:JSON.stringify({currentPassword,newPassword:password,keyFile})});
   assert.equal(restored.status,200); auth={Authorization:'Bearer '+(await restored.json()).token};
   assert.deepEqual(errors,[]);
-  console.log('PASS: separate phone/desktop sessions; lost-response retry; compression; auto-refresh; preview; mocked AI evaluation; reviewed filter; deletion; reload persistence; offline recovery; responsive layout; shared AI/album unlock; password mismatch; password rotation; old token revocation; fresh-page login with new password.');
+  console.log('PASS: separate phone/desktop sessions; lost-response retry; compression; auto-refresh; preview; mocked AI evaluation; reviewed filter; deletion; reload persistence; offline recovery; responsive layout; shared AI/album unlock; password mismatch; password rotation; old token revocation; fresh-page login with new password; cross-browser cloud history and original photos; legacy sync deduplication; offline fallback; deleted-history protection; qwen3.8-max default.');
 } finally {
+  if(cloudHistoryContext) await cloudHistoryContext.close();
+  for(const id of historyIds) await fetch(base+'/api/classroom/history/'+id,{method:'DELETE',headers:auth});
   for(const id of ids) await fetch(base+'/api/classroom/photos/'+id,{method:'DELETE',headers:auth});
   await browser.close();
 }

@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {handleClassroom, cleanupDeleted} from '../cloudflare/classroom-api.mjs';
 import {encryptKeyFile, decryptKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
 
-const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
+const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql','0003_review_history.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJFoAAAAASUVORK5CYII=';
 const jpeg = 'data:image/jpeg;base64,'+Buffer.from([255,216,255,224,1,2,255,217]).toString('base64');
 const origin = 'https://mathrender.test';
@@ -181,4 +181,71 @@ test('concurrent password edits have one winner and reject malformed replacement
   const results = await Promise.all([1,2].map(() => app.request('/password',{method:'POST',body,token:first.token})));
   assert.equal(results.filter(r => r.status === 200).length,1);
   assert.ok(results.some(r => [401,409].includes(r.status)));
+});
+
+const reviewPayload = (createdAt = new Date().toISOString()) => ({entry:{id:'card-'+crypto.randomUUID(),createdAt,model:'qwen3.8-max',promptVersion:'math-check-v2',promptTitle:'数学核验',result:{status:'valid',formula:'|a+b|≤|a|+|b|',verdict:'结论正确。',scientific:{grade:'A',comment:'恒成立。'},rigor:{grade:'A',comment:'推导完整。'},creativity:{grade:'B',comment:'有效变式。'},highlight:'代换清楚。',suggestion:'可尝试推广。'}},image:png});
+
+test('cloud history is teacher-only, independently retains the image, and retries are idempotent',async () => {
+  const app=environment(), first=await app.login(), body=reviewPayload();
+  assert.equal((await app.request('/history')).status,401);
+  for(const method of ['GET','POST']) assert.equal((await app.request('/history',{method,body:method==='POST'?body:undefined,token:first.uploadToken})).status,403);
+  const results=await Promise.all([1,2].map(()=>app.request('/history',{method:'POST',body,token:first.token})));
+  assert.deepEqual(results.map(r=>r.status),[201,201]); assert.equal(app.objects.size,1);
+  const second=await app.login();
+  const list=await (await app.request('/history',{token:second.token})).json();
+  assert.equal(list.total,1); assert.deepEqual(list.entries,[body.entry]);
+  assert.equal((await app.request('/history/'+body.entry.id+'/image',{token:second.token})).status,200);
+  assert.equal((await app.request('/history/'+body.entry.id+'/image',{token:first.uploadToken})).status,403);
+  const album=payload(); await app.request('/photos',{method:'POST',body:album,token:first.token});
+  await app.request('/photos/'+album.id,{method:'DELETE',token:first.token});
+  assert.equal((await app.request('/history/'+body.entry.id+'/image',{token:second.token})).status,200);
+  assert.equal((await app.request('/history',{method:'POST',body:{...body,entry:{...body.entry,model:'another-model'}},token:first.token})).status,409);
+});
+
+test('history pagination follows evaluation time, clear preserves later saves, and deletion cannot resurrect on sync',async () => {
+  const app=environment(),{token}=await app.login();
+  const values=[];
+  for(let i=0;i<25;i++) {
+    const body=reviewPayload(new Date(Date.UTC(2026,9,1+(i%4),0,i)).toISOString()); values.push(body);
+    assert.equal((await app.request('/history',{method:'POST',body,token})).status,201);
+  }
+  const first=await (await app.request('/history',{token})).json(); assert.equal(first.entries.length,20); assert.equal(first.total,25);
+  const second=await (await app.request('/history?before='+encodeURIComponent(first.nextCursor),{token})).json(); assert.equal(second.entries.length,5); assert.equal(second.nextCursor,null);
+  const ordered=[...first.entries,...second.entries]; assert.equal(new Set(ordered.map(x=>x.id)).size,25);
+  assert.deepEqual(ordered.map(x=>x.createdAt),values.map(x=>x.entry.createdAt).sort().reverse());
+  const newer=reviewPayload(); await app.request('/history',{method:'POST',body:newer,token});
+  assert.equal((await app.request('/history/clear',{method:'POST',body:{through:first.latest},token})).status,200);
+  const remaining=await (await app.request('/history',{token})).json(); assert.deepEqual(remaining.entries,[newer.entry]);
+  assert.equal(app.objects.size,1);
+  assert.equal((await app.request('/history',{method:'POST',body:values[0],token})).status,410);
+  assert.equal((await app.request('/history/'+newer.entry.id,{method:'DELETE',token})).status,200);
+  assert.equal((await app.request('/history/'+newer.entry.id+'/image',{token})).status,404);
+  assert.equal(app.objects.size,0);
+});
+
+test('cloud history saves the card even when an older local record has no image, and rejects unsafe input',async () => {
+  const app=environment(),{token}=await app.login(),body=reviewPayload(); body.image=null; body.entry.apiKey='never-store';
+  assert.equal((await app.request('/history',{method:'POST',body,token})).status,201);
+  const list=await (await app.request('/history',{token})).json(); assert.equal(list.entries[0].apiKey,undefined);
+  assert.equal((await app.request('/history/'+body.entry.id+'/image',{token})).status,404);
+  assert.equal(app.objects.size,0);
+  for(const bad of [{...reviewPayload(),entry:{...body.entry,id:'../escape'}},{...reviewPayload(),image:'data:image/png;base64,eHl6'}]) {
+    assert.ok([400,415].includes((await app.request('/history',{method:'POST',body:bad,token})).status));
+  }
+});
+
+test('history storage failures preserve saved data and use the shared photo quota',async () => {
+  const app=environment(),{token}=await app.login(),body=reviewPayload();
+  const prepare=app.env.CLASSROOM_DB.prepare;
+  app.env.CLASSROOM_DB.prepare=sql=>{const statement=prepare(sql); if(sql.startsWith('INSERT INTO classroom_reviews')) { const run=statement.run; statement.run=async()=>{await run();throw new Error('response lost');}; } return statement;};
+  assert.equal((await app.request('/history',{method:'POST',body,token})).status,503); assert.equal(app.objects.size,1);
+  app.env.CLASSROOM_DB.prepare=prepare;
+  assert.equal((await app.request('/history',{method:'POST',body,token})).status,201);
+  const remove=app.env.CLASSROOM_PHOTOS.delete; app.env.CLASSROOM_PHOTOS.delete=async()=>{throw new Error('unavailable');};
+  assert.equal((await app.request('/history/'+body.entry.id,{method:'DELETE',token})).status,503);
+  assert.equal((await (await app.request('/history',{token})).json()).total,0);
+  app.env.CLASSROOM_PHOTOS.delete=remove; await cleanupDeleted(app.env); assert.equal(app.objects.size,0);
+  app.db.prepare("INSERT INTO classroom_reviews (id,created_at,entry_json,type,bytes,digest,storage_key) VALUES ('quota','now','{}','',1073741824,'','')").run();
+  assert.equal((await app.request('/history',{method:'POST',body:reviewPayload(),token})).status,507);
+  assert.equal((await app.request('/photos',{method:'POST',body:payload(),token})).status,507);
 });
