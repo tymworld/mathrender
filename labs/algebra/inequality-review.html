@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#eaf6ff">
-  <title>李老师开心课堂 · 不等式评价卡</title>
+  <title>不等式 AI 评价卡 · 数学教学实验室 · 李老师开心课题</title>
   <style>
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -24,10 +24,11 @@ h1, h2, p, figure { margin: 0; }
 .sky-shapes { width: 100%; height: 100%; opacity: .78; }
 .bottom-waves { position: absolute; bottom: 0; left: 0; width: 100%; height: clamp(170px, 28vh, 280px); }
 .topbar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: clamp(17px, 2.5vh, 28px) 3.5vw 8px; width: 100%; max-width: 1800px; margin: 0 auto; }
-.brand { display: flex; align-items: center; gap: 13px; color: #202152; font-size: clamp(17px, 1.65vw, 24px); font-weight: 750; text-decoration: none; line-height: 1.45; }
-.brand small { display: block; margin-top: 2px; font-size: clamp(10px, 1.03vw, 15px); color: #6e73a0; font-weight: 400; }
-.brand-mark { display: grid; place-items: center; position: relative; width: clamp(43px, 4vw, 60px); aspect-ratio: 1; background: linear-gradient(145deg, #8866ff, #6038f3); color: #fff; border-radius: 17px; font: italic bold clamp(30px, 3vw, 43px)/1 Georgia, serif; box-shadow: 0 5px 0 #d2caff, inset 0 1px 2px #bdb0ff; }
-.brand-mark>span { position: absolute; right: -8px; top: -12px; color: #ffcd43; font: 31px/1 sans-serif; }
+.brand { display: flex; align-items: center; gap: 10px; color: #17245a; font-size: clamp(17px, 1.65vw, 24px); font-weight: 750; text-decoration: none; line-height: 1.45; }
+.brand-name { white-space: nowrap; }
+.brand-name strong { display: block; font-weight: inherit; letter-spacing: .35px; }
+.brand small { display: block; margin-top: 2px; font-size: clamp(10px, .94vw, 14px); color: #657293; font-weight: 500; letter-spacing: 1.3px; }
+.brand-mark { display: block; width: clamp(50px, 4.4vw, 68px); height: auto; aspect-ratio: 1; flex-shrink: 0; }
 .connection-label { font-size: clamp(12px, 1.12vw, 16px); color: #3e538a; background: #ffffffbc; border: 1px solid #fff; border-radius: 99px; padding: 7px 19px; white-space: nowrap; }
 body:not(.review-mode) main { position: relative; display: flex; flex: 1; padding: 0 3.1vw; }
 .upload-screen { position: relative; isolation: isolate; width: 100%; max-width: 1650px; margin: auto; text-align: center; padding: 0 0 14px; }
@@ -92,7 +93,7 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 @media (min-width: 1001px) and (max-height: 760px) {
   .topbar { padding-top: 15px; padding-bottom: 8px; }
   .brand { font-size: 18px; }
-  .brand-mark { width: 44px; font-size: 32px; }
+  .brand-mark { width: 50px; }
   .brand small { font-size: 11px; }
   .upload-screen h1 { font-size: clamp(42px, 4.3vw, 65px); }
   .lead { margin-top: 5px; font-size: 28px; }
@@ -121,7 +122,7 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 }
 @media (min-width: 1001px) and (max-height: 650px) {
   .topbar { padding-top: 9px; padding-bottom: 5px; }
-  .brand-mark { width: 37px; font-size: 28px; border-radius: 13px; }
+  .brand-mark { width: 44px; }
   .upload-screen { padding-bottom: 8px; }
   .upload-screen h1 { font-size: 49px; }
   .lead { font-size: 24px; margin-top: 4px; }
@@ -171,8 +172,7 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .topbar { padding: 20px 19px 10px; gap: 8px; }
   .brand { font-size: 16px; gap: 10px; }
   .brand small { font-size: 9px; }
-  .brand-mark { width: 37px; font-size: 27px; border-radius: 12px; }
-  .brand-mark>span { font-size: 23px; right: -7px; top: -8px; }
+  .brand-mark { width: 44px; }
   .connection-label { padding: 5px 9px; font-size: 10px; }
   body:not(.review-mode) main { padding: 0 18px; }
   .upload-screen { padding-bottom: 13px; }
@@ -781,7 +781,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
     <svg class="bottom-waves" viewBox="0 0 1600 240" preserveAspectRatio="none"><defs><linearGradient id="uploadWave" x2="1" y2="1"><stop stop-color="#78c7ff"/><stop offset="1" stop-color="#2485ff"/></linearGradient></defs><path d="M0 20c172 39 224 166 470 142s292 59 489 32 398-154 641-115v161H0Z" fill="#afE5ff"/><path d="M0 66c238 11 285 35 499 10s337 15 486 22 369-47 615-18v160H0Z" fill="url(#uploadWave)"/></svg>
   </div>
   <header class="topbar">
-    <a class="brand" href="../../index.html#algebra" aria-label="李老师开心课堂 · 返回实验目录"><span class="brand-mark" aria-hidden="true">m<span>✦</span></span><span>李老师开心课堂<small>不等式创意工坊 · 让数学想法发光</small></span></a>
+    <a class="brand" href="../../index.html#algebra" aria-label="数学教学实验室 · 李老师开心课题 · 返回实验目录"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxhYi1wdXJwbGUiIHgxPSI2IiB5MT0iOCIgeDI9IjU0IiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agc3RvcC1jb2xvcj0iIzg5NjlmNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1YzQzY2UiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjIiIHk9IjEyIiB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHJ4PSIxNiIgZmlsbD0iI2RkZDVmYSIvPgogIDxyZWN0IHg9IjIiIHk9IjgiIHdpZHRoPSI1MiIgaGVpZ2h0PSI1MiIgcng9IjE2IiBmaWxsPSJ1cmwoI2xhYi1wdXJwbGUpIi8+CiAgPHBhdGggZD0iTTE0IDIwdjMwaDMzbS0zNi0yNyAzLTMgMyAzbTI3IDI0IDMgMy0zIDMiIHN0cm9rZT0iI2Q4Y2JmZiIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xOSAyOFEzMCA1OSA0NiAyNSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSIzNS44NSIgcj0iNCIgZmlsbD0iI2ZmZDY1YyIgc3Ryb2tlPSIjNzA1MWRiIiBzdHJva2Utd2lkdGg9IjEuOCIvPgogIDxwYXRoIGQ9Im01MyAwIDMuMyA4LjdMNjQgMTJsLTcuNyAzLjNMNTMgMjRsLTMuMy04LjdMNDIgMTJsNy43LTMuM1oiIGZpbGw9IiNmZmQ2NWMiLz4KPC9zdmc+Cg==" width="64" height="64" alt="" aria-hidden="true"><span class="brand-name"><strong>数学教学实验室</strong><small>李老师开心课题</small></span></a>
     <div class="topbar-actions"><button id="history-button" type="button" class="connection-label" aria-haspopup="dialog" aria-controls="history-dialog">历史记录</button><button class="connection-label" id="connection-label" type="button" aria-haspopup="dialog" aria-controls="api-settings">AI 设置 · 待配置</button></div>
   </header>
   <main>
@@ -930,7 +930,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
     <p id="classroom-preview-message" role="status"></p>
   </dialog>
   <dialog class="history-dialog" id="history-dialog" aria-labelledby="history-title">
-    <header class="history-header"><div><p class="history-eyebrow">李老师开心课堂 · MathRender</p><h2 id="history-title">评价历史</h2><p>回看每一次思考与发现</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
+    <header class="history-header"><div><p class="history-eyebrow">数学教学实验室 · 李老师开心课题</p><h2 id="history-title">评价历史</h2><p>回看每一次思考与发现</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
     <div class="history-sources" role="tablist" aria-label="历史记录来源"><button id="history-cloud-tab" type="button" role="tab" aria-selected="true">云端历史</button><button id="history-local-tab" type="button" role="tab" aria-selected="false">本机记录</button></div>
     <div class="history-toolbar"><span id="history-count">暂无记录</span><div><button id="history-sync" type="button">同步本机历史</button><button id="history-refresh" type="button">刷新</button><button id="clear-history" type="button" disabled>清空记录</button></div></div>
     <div id="history-cloud-unlock" class="history-cloud-unlock" hidden><p>输入课堂密码，查看所有设备保存的评价卡与原图。</p><button id="history-unlock" class="key-unlock-button" type="button">解锁云端历史</button></div>
@@ -942,7 +942,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   <dialog class="api-dialog" id="api-settings" aria-labelledby="api-settings-title">
     <form id="api-settings-form" autocomplete="off">
       <header class="settings-header">
-        <div class="settings-title"><span class="settings-mark" aria-hidden="true">✦</span><div><p class="settings-eyebrow">李老师开心课堂 · MathRender</p><h2 id="api-settings-title">AI 设置</h2></div></div>
+        <div class="settings-title"><span class="settings-mark" aria-hidden="true">✦</span><div><p class="settings-eyebrow">数学教学实验室 · 李老师开心课题</p><h2 id="api-settings-title">AI 设置</h2></div></div>
         <button class="settings-close" id="close-api-settings" type="button" aria-label="关闭设置，返回评价卡">×</button>
       </header>
       <div class="settings-content">

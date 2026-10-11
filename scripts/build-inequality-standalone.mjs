@@ -26,7 +26,6 @@ export async function buildStandalone() {
   const keyConfigScript = `const EMBEDDED_KEY_FILE = ${JSON.stringify(encryptedKeyFile)};`;
   let html = template
     .replace('<!-- CLASSROOM_PANEL -->', classroomHTML)
-    .replace('<title>不等式评价卡 · MathRender</title>', '<title>李老师开心课堂 · 不等式评价卡</title>')
     .replace('<link rel="stylesheet" href="../../assets/css/labs/inequality-review.css">', `<style>\n${css}\n${settingsCSS}\n${classroomCSS}\n</style>`)
     .replace('  <script defer src="../../assets/js/labs/inequality-review.js"></script>\n', '')
     .replace('  <script defer src="../../assets/js/labs/inequality-review-history.js"></script>\n', '')
@@ -34,7 +33,8 @@ export async function buildStandalone() {
   for (const match of [...html.matchAll(/src="(\.\.\/\.\.\/assets\/images\/[^\"]+)"/g)]) {
     const asset = path.resolve(root, 'labs/algebra', match[1]);
     const bytes = await readFile(asset);
-    html = html.replace(match[0], `src="data:image/png;base64,${bytes.toString('base64')}"`);
+    const mediaType = path.extname(asset).toLowerCase() === '.svg' ? 'image/svg+xml' : 'image/png';
+    html = html.replace(match[0], `src="data:${mediaType};base64,${bytes.toString('base64')}"`);
   }
   const modelOptions = [...new Set(QWEN_VISION_MODELS.map(model => model.group))].map(group =>
     `<optgroup label="${group}">` + QWEN_VISION_MODELS.filter(model => model.group === group).map(model =>
