@@ -140,7 +140,7 @@
 /* Keep selection and generation visible; only the album list scrolls. */
 @media (min-width: 761px) {
   .photo-source-tabs { flex: none; margin-bottom: 10px; }
-  .photo-source-tabs button { min-height: 38px; padding: 7px 15px; font-size: 14px; }
+  .photo-source-tabs button { min-height: 40px; padding: 7px 17px; font-size: 16px; }
   .classroom-mode .upload-layout { margin: 0 auto; }
   .classroom-mode .upload-panel { padding: clamp(12px, 2dvh, 20px); }
   #classroom-photo-panel { flex: 1; min-height: 0; }
@@ -155,8 +155,10 @@
   .classroom-pairing small { font-size: 10px; margin-top: 5px; line-height: 1.4; }
   .classroom-gallery { display: flex; flex-direction: column; min-height: 0; }
   .classroom-gallery-heading, .classroom-gallery-tools, .classroom-message, .classroom-more { flex: none; }
-  .classroom-gallery-heading h2 { font-size: 20px; }
-  .classroom-gallery-tools { margin: 7px 0; }
+  .classroom-gallery-heading h2 { font-size: 23px; }
+  .classroom-gallery-tools { margin: 7px 0; font-size: 14px; }
+  .classroom-photo-meta strong { font-size: 15px; }
+  .classroom-selection { font-size: 16px; }
   .classroom-photo-grid { flex: 1; min-height: 0; max-height: none; align-content: start; grid-auto-rows: max-content; gap: 10px; }
   .classroom-thumbnail { aspect-ratio: 2.1; }
   .classroom-empty { flex: 1; min-height: 0; padding: 12px; }
@@ -164,7 +166,7 @@
   .classroom-empty-steps { margin-top: 12px; }
   .classroom-empty:not([hidden]) + .classroom-photo-grid { flex: none; }
   .classroom-mode .upload-actions { margin-top: 10px; padding-top: 10px; gap: 15px; }
-  .classroom-mode .generate-button { width: 260px; min-height: 44px; font-size: 17px; }
+  .classroom-mode .generate-button { width: 280px; min-height: 48px; font-size: 20px; }
   .classroom-mode .upload-footer { min-height: 30px; margin-top: 4px; }
   .classroom-unavailable { margin: 0 auto; padding: 8px; }
   .classroom-unavailable h2 { font-size: 23px; margin: 4px 0; }

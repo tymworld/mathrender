@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {handleClassroom, cleanupDeleted} from '../cloudflare/classroom-api.mjs';
 import {encryptKeyFile, decryptKeyFile} from '../assets/js/labs/inequality-review-keyfile.mjs';
 
-const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql','0003_review_history.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
+const schema = (await Promise.all(['0001_classroom.sql','0002_classroom_credentials.sql','0003_review_history.sql','0004_photo_rotation.sql'].map(name => readFile(new URL('../cloudflare/migrations/'+name,import.meta.url),'utf8')))).join('\n');
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJFoAAAAASUVORK5CYII=';
 const jpeg = 'data:image/jpeg;base64,'+Buffer.from([255,216,255,224,1,2,255,217]).toString('base64');
 const origin = 'https://mathrender.test';
@@ -77,6 +77,27 @@ test('delete removes originals and thumbnails; late retry cannot recreate the im
   assert.equal((await app.request('/photos/'+body.id+'/image',{token})).status,404);
   assert.equal((await app.request('/photos',{method:'POST',body,token:uploadToken})).status,410);
   assert.equal((await (await app.request('/photos',{token})).json()).photos.length,0);
+});
+
+test('photo rotation is shared, teacher-only, retry-safe and preserves original image bytes',async()=>{
+  const app=environment(), {token,uploadToken}=await app.login(), body=payload();
+  await app.request('/photos',{method:'POST',body,token:uploadToken});
+  const path='/photos/'+body.id;
+  const rotate=(from,rotation,auth=token)=>app.request(path+'/rotation',{method:'POST',body:{from,rotation},token:auth});
+  assert.equal((await rotate(0,90,uploadToken)).status,403);
+  assert.equal((await rotate(0,45)).status,400);
+  assert.equal((await rotate(0,90)).status,200);
+  assert.equal((await rotate(0,90)).status,200,'retry of the same correction is idempotent');
+  assert.equal((await rotate(0,270)).status,409,'stale correction cannot overwrite a newer direction');
+  const image=await app.request(path+'/image',{token:uploadToken});
+  assert.equal(image.headers.get('X-Photo-Rotation'),'90');
+  assert.equal(Buffer.from(await image.arrayBuffer()).toString('base64'),png.split(',')[1]);
+  assert.equal((await app.request(path+'/thumbnail',{token})).headers.get('X-Photo-Rotation'),'90');
+  assert.equal((await (await app.request('/photos',{token})).json()).photos[0].rotation,90);
+  assert.equal((await rotate(90,0)).status,200,'correction can be reversed');
+  assert.equal(app.objects.size,2,'rotation does not create new copies');
+  await app.request(path,{method:'DELETE',token});
+  assert.equal((await rotate(0,90)).status,404);
 });
 
 test('storage failure never publishes an incomplete photo and a retry succeeds',async () => {

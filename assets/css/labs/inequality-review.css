@@ -75,7 +75,6 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 .upload-student { position: absolute; z-index: -1; bottom: -16px; left: -3.4vw; width: clamp(175px, 19vw, 280px); height: clamp(230px, 40vh, 365px); pointer-events: none; }
 .upload-student img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left bottom; }
 .upload-landmark { position: absolute; z-index: -1; right: -3.1vw; bottom: -15px; width: clamp(180px, 19vw, 315px); pointer-events: none; }
-.privacy-note { position: relative; display: table; color: #53698c; font-size: 11px; margin: 10px auto 0; padding: 2px 11px; border-radius: 99px; background: #eff7ffeb; }
 .message { position: relative; z-index: 3; max-width: 630px; margin: 12px auto 0; font-size: 14px; color: #925f28; background: #fff1d9; border: 1px solid #ffe3b3; border-radius: 12px; padding: 10px 16px; }
 .upload-footer { display: flex; justify-content: space-between; align-items: center; gap: 22px; width: 57%; min-height: 55px; margin: 12px auto 0; color: white; text-shadow: 0 1px 2px #328beb55; }
 .upload-footer p { position: relative; font: clamp(19px, 1.8vw, 28px)/1.6 "Kaiti SC", "STKaiti", "KaiTi", serif; letter-spacing: 1px; white-space: nowrap; transform: rotate(-4deg); }
@@ -102,8 +101,8 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 @media (max-width: 600px) {
   .topbar { padding: 20px 19px 10px; gap: 8px; }
   .brand { font-size: 16px; gap: 10px; }
-  .brand small { font-size: 12px; }
-  .brand-mark { width: 44px; }
+  .brand small { font-size: 14px; }
+  .brand-mark { width: 60px; }
   .connection-label { padding: 5px 9px; font-size: 10px; }
   body:not(.review-mode) main { padding: 0 18px; }
   .upload-screen { padding-bottom: 13px; }
@@ -121,7 +120,6 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .file-name { margin: 10px 0 14px; font-size: 11px; }
   .generate-button { width: 100%; font-size: 19px; min-height: 55px; padding: 9px 15px; }
   .dimension-legend { gap: 24px; font-size: 12px; margin-top: 17px; }
-  .privacy-note { margin-top: 12px; font-size: 10px; }
   .upload-footer { width: 100%; justify-content: center; min-height: 64px; margin-top: 26px; }
   .upload-footer p { font-size: 24px; }
   .upload-footer>span { display: none; }
@@ -131,15 +129,15 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 @media (min-width: 761px) {
   body:not(.review-mode) { height: 100dvh; min-height: 0; }
   .topbar { flex-shrink: 0; padding: 10px 3.5vw 6px; }
-  .brand { font-size: 18px; }
-  .brand-mark { width: 44px; }
-  .brand small { font-size: 12px; }
-  .connection-label { padding: 6px 14px; font-size: 13px; }
+  .brand { font-size: 22px; }
+  .brand-mark { width: 60px; }
+  .brand small { font-size: 14px; }
+  .connection-label { padding: 7px 16px; font-size: 15px; }
   body:not(.review-mode) main { min-height: 0; overflow: clip; }
   .upload-screen { display: flex; flex-direction: column; min-height: 0; padding: 2px 0 8px; }
   .upload-heading { flex: none; width: 100%; margin: 0 auto 10px; }
-  .upload-screen h1 { font-size: clamp(30px, 4.8dvh, 46px); }
-  .lead { margin-top: 5px; font-size: clamp(18px, 2.7dvh, 25px); letter-spacing: 1px; }
+  .upload-screen h1 { font-size: clamp(38px, 5.5dvh, 54px); }
+  .lead { margin-top: 5px; font-size: clamp(21px, 3dvh, 28px); letter-spacing: 1px; }
   .paper-plane { width: 85px; top: -5px; }
   .upload-layout { flex: 1; min-height: 0; width: 100%; align-items: stretch; }
   body:not(.classroom-mode) .upload-layout { max-height: 440px; }
@@ -147,25 +145,24 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   #local-photo-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .upload-area { flex: 1; height: auto; min-height: 100px; padding: 10px; }
   .paper-art { width: clamp(120px, 16dvh, 195px); height: clamp(70px, 12dvh, 140px); margin-bottom: 5px; }
-  .upload-area strong { font-size: clamp(18px, 2.4dvh, 22px); }
-  .upload-hint { font-size: 12px; margin-top: 5px; }
-  .file-name { flex: none; margin: 6px 0 10px; }
+  .upload-area strong { font-size: clamp(21px, 2.8dvh, 26px); }
+  .upload-hint { font-size: 14px; margin-top: 5px; }
+  .file-name { flex: none; margin: 6px 0 10px; font-size: 13px; }
   #photo-preview { min-height: 0; }
   .upload-actions { flex: none; }
-  .generate-button { min-height: 46px; font-size: 19px; padding: 7px 18px; }
-  .dimension-legend { flex: none; margin-top: 10px; font-size: 12px; }
+  .generate-button { min-height: 50px; font-size: 22px; padding: 7px 18px; }
+  .dimension-legend { flex: none; margin-top: 10px; font-size: 14px; }
   .upload-tips { transform: none; gap: 12px; align-content: start; }
   .upload-tip { padding: 10px 8px; border-radius: 22px; }
   .tip-icon { width: 52px; }
-  .upload-tip h2 { font-size: 18px; }
-  .upload-tip p { font-size: 12px; }
+  .upload-tip h2 { font-size: 20px; }
+  .upload-tip p { font-size: 13px; }
   .upload-inspiration { padding-top: 3px; }
   .inspiration-motto { font-size: 25px; margin: 0 0 30px; }
   .example-paper { padding: 16px 10px; font-size: 23px; }
   .thought-bubble { font-size: 23px; margin-top: 24px; padding: 10px 18px; }
   .upload-student { bottom: 0; width: min(17vw, 235px); height: min(35dvh, 290px); }
   .upload-landmark { bottom: 0; width: min(17vw, 235px); }
-  .privacy-note { flex: none; margin-top: 6px; }
   .upload-footer { flex: none; width: 58%; min-height: 30px; margin-top: 4px; color: #285a98; text-shadow: none; }
   .upload-footer p { font-size: 21px; }
   .upload-footer>span { font-size: 11px; }
@@ -173,9 +170,9 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 }
 @media (min-width: 761px) and (max-height: 650px) {
   .topbar { padding-top: 6px; padding-bottom: 3px; }
-  .brand-mark { width: 38px; }
+  .brand-mark { width: 50px; }
   .upload-heading { margin-bottom: 7px; }
-  .upload-screen h1 { font-size: 30px; }
+  .upload-screen h1 { font-size: 34px; }
   .lead { display: none; }
   .paper-art { height: 64px; width: 110px; }
   .upload-tip { padding: 7px; }
@@ -194,6 +191,8 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 }
 @media (max-width: 760px) {
   .topbar { padding-top: 12px; }
+  .brand-mark { width: 50px; }
+  .brand small { font-size: 12px; }
   .upload-screen { padding-top: 0; }
   .upload-heading { margin-top: 10px; margin-bottom: 14px; }
   .lead { margin-top: 8px; }
@@ -470,6 +469,28 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   .evaluation-card[data-density="minimal"] .history-save-note { margin-right: 2px; }
 }
 @media (max-width: 760px) { #review-reading-toggle { display: none; } }
+/* Model attribution occupies the open center of the card header. */
+@media (min-width: 1400px) {
+  .evaluation-card[data-density] .card-heading { grid-template-columns: 164px max-content minmax(0, 1fr) 205px; gap: 18px; }
+  .evaluation-card[data-density="compact"] .card-heading { grid-template-columns: 108px max-content minmax(0, 1fr) 205px; }
+  .evaluation-card[data-density] .card-identity h1 { font-size: 36px; }
+  .evaluation-card .card-model { text-align: center; align-self: center; line-height: 1.65; }
+  .evaluation-card .card-model>span { font-size: 19px; }
+  .evaluation-card .card-model strong { font-size: 34px; white-space: nowrap; }
+  .evaluation-card[data-density="minimal"] .card-heading { grid-template-columns: 80px max-content minmax(0, 1fr); }
+}
+@media (min-width: 761px) and (max-width: 1399px) {
+  .evaluation-card[data-density] .card-heading { grid-template-columns: 164px minmax(0, 1fr); gap: 5px 15px; }
+  .evaluation-card[data-density="compact"] .card-heading { grid-template-columns: 108px minmax(0, 1fr); }
+  .evaluation-card[data-density="minimal"] .card-heading { grid-template-columns: 80px minmax(0, 1fr); }
+  .evaluation-card .hero-motto { display: none; }
+  .evaluation-card .card-model { grid-column: 1 / -1; text-align: center; line-height: 1.3; }
+  .evaluation-card .card-model>span { font-size: 17px; }
+  .evaluation-card .card-model strong { font-size: 28px; }
+}
+@media (max-width: 760px) {
+  .card-model { grid-column: 1 / -1; text-align: center; }
+}
 @media print {
   @page { size: A4 landscape; margin: 8mm; }
   .topbar, .return-home, #restart-button, #result-state, .upload-screen, .page-doodles { display: none !important; }
@@ -559,3 +580,9 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 }
 @media (max-width: 480px) { .topbar-actions { flex-direction: column; align-items: flex-end; gap: 5px; } }
 @media print { .history-dialog, .history-photo-dialog, .review-history-button, .history-save-note { display: none !important; } }
+
+.photo-adjustments { flex: none; display: flex; align-items: center; justify-content: center; gap: 9px; margin: 5px 0 8px; color: #75819c; font-size: 12px; }
+.photo-adjustments button { border: 1px solid #dddff6; border-radius: 8px; background: #f4f3ff; color: #6653b5; padding: 4px 12px; min-height: 30px; font-size: 12px; }
+.photo-adjustments button:disabled { opacity: .5; }
+#photo-preview, #classroom-full-photo, #history-photo, #capture-preview { image-orientation: from-image; }
+@media (max-width:600px) { .classroom-preview-dialog footer { flex-wrap: wrap; } }

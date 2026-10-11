@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 const {chromium} = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const browser = await chromium.launch({headless:true,channel:'chrome'});
-const viewports = [[1920,1080],[1440,900],[1366,768],[1280,720],[1024,600],[960,540],[820,600],[390,844]];
+const viewports = [[1920,1080],[1440,900],[1366,1000],[1366,768],[1280,720],[1024,600],[960,540],[820,600],[390,844]];
 const result = {status:'valid',formula:'|2x − 1| + |x + 2| ≥ |3x + 1|\n等号成立当且仅当 x ≤ −2 或 x ≥ 1/2。',verdict:'结论与取等条件成立。',
   scientific:{grade:'A',comment:'由三角不等式可知结论对任意实数成立，取等条件也与原式一致。'},
   rigor:{grade:'A',comment:'写出了代换、推导及取等条件，论证完整。注意明确说明两个代数式同号或至少一个为零。'},
@@ -27,23 +27,28 @@ try {
     if(desktop && size.width>760) {
       assert(layout.height<=size.height+1,`${name} page height ${layout.height} exceeds ${size.height} at ${size.width}`);
       for(const box of layout.boxes) assert(box.top>=-1&&box.bottom<=size.height+1&&box.left>=-1&&box.right<=size.width+1,`${name} clipped ${box.selector} at ${size.width}×${size.height}: ${JSON.stringify(box)}`);
+      if(name.startsWith('review')) assert(await page.evaluate(()=>{
+        const title=document.querySelector('.card-identity').getBoundingClientRect();
+        return ['.review-art','.card-kicker'].every(selector=>document.querySelector(selector).getBoundingClientRect().right<=title.left);
+      }),`Header art overlaps title at ${size.width}×${size.height}`);
     }
-    if(['upload-1280','upload-390','review-1280','review-390','review-960','review-long-960','album-1280','album-960'].includes(`${name}-${size.width}`)) await page.screenshot({path:`docs/qa/inequality-${name}-${size.width}.png`,fullPage:true});
+    if(['upload-1280','upload-1920','upload-390','review-1920','review-1280','review-390','review-960','review-long-960','album-1280','album-960'].includes(`${name}-${size.width}`)) await page.screenshot({path:`docs/qa/inequality-${name}-${size.width}.png`,fullPage:true});
   }
   for(const [width,height] of viewports) {
     await page.setViewportSize({width,height});
     await page.goto(new URL('../labs/algebra/inequality-review.html',import.meta.url).href);
-    await check('upload',['#upload-title','#upload-button','#generate-button','.dimension-legend','.privacy-note','.upload-footer']);
+    await check('upload',['#upload-title','#upload-button','#generate-button','.dimension-legend','.upload-footer']);
     const picture=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=600;c.height=400;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,600,400);x.fillStyle='#28588b';x.font='30px serif';x.fillText('|a| + |b| ≥ |a+b|',100,190);return c.toDataURL('image/png');});
     await page.locator('#photo-input').setInputFiles({name:'手写作品.png',mimeType:'image/png',buffer:Buffer.from(picture.split(',')[1],'base64')});
-    await check('selected',['#photo-preview','#generate-button','.privacy-note']);
+    await check('selected',['#photo-preview','#generate-button']);
     await page.evaluate(async ({result,picture})=>{
       const photo=await (await fetch(picture)).blob();
       await window.inequalityReviewHistory.save(result,{photo,model:'qwen3.8-max'});
     },{result,picture});
     await page.locator('#history-button').click();
     await page.locator('.history-entry').first().getByRole('button',{name:'查看评价',exact:true}).click();
-    await check('review',['.evaluation-card','#card-title','#formula','#scientific-comment','#suggestion','#restart-button']);
+    await check('review',['.evaluation-card','#card-title','.card-model','#formula','#scientific-comment','#suggestion','#restart-button']);
+    if(width>=1400) assert(await page.evaluate(()=>document.querySelector('.card-identity').getBoundingClientRect().right<=document.querySelector('.card-model').getBoundingClientRect().left),'Model attribution must occupy its own central space');
     if(width>760) {
       await page.locator('#review-reading-toggle').click();
       assert.equal(await page.locator('#review-reading-toggle').textContent(),'一屏显示');

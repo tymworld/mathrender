@@ -53,8 +53,9 @@ export async function buildStandalone() {
   const bundledHistory = history.replace('// HISTORY_RECORD_VALIDATION', records);
   const bundledProtocol = protocol.replace(/^import \{ DEFAULT_EVALUATION_PROMPT \} from '\.\/inequality-review-prompts\.mjs';\n/m, '').replace(/^export /gm, '');
   const directScript = `(() => {\n'use strict';\n${prompts.replace(/^export /gm, '')}\n${bundledProtocol}\n${modelScript}\n${historyScript}\n${keyConfigScript}\n${keyfile.replace(/^export /gm, '')}\n${direct}\n})();`;
+  const images = await read('assets/js/labs/inequality-images.js');
   const safeScript = source => source.replace(/<\/script/gi, '<\\/script');
-  html = html.replace('</body>', `${settingsDialog}\n<script>\n${safeScript(directScript)}\n</script>\n<script>\n${safeScript(bundledHistory)}\n${safeScript(qr)}\n${safeScript(classroomClient)}\n${safeScript(classroomGallery)}\n${safeScript(ui)}\n</script>\n</body>`);
+  html = html.replace('</body>', `${settingsDialog}\n<script>\n${safeScript(directScript)}\n</script>\n<script>\n${safeScript(bundledHistory)}\n${safeScript(images)}\n${safeScript(qr)}\n${safeScript(classroomClient)}\n${safeScript(classroomGallery)}\n${safeScript(ui)}\n</script>\n</body>`);
   await writeFile(outputPath, html);
   return { outputPath, bytes: Buffer.byteLength(html) };
 }

@@ -59,7 +59,7 @@ function harness(fetchImpl = async () => providerReply(fixture()), stored = new 
     requestAnimationFrame: callback => {callback(); return 1;}, cancelAnimationFrame() {},
     URL: class extends URL { static createObjectURL() { return 'blob:test-picture'; } static revokeObjectURL() {} },
     Image: class { async decode() {} },
-    TextDecoder, TextEncoder, Uint8Array, DOMException, AbortController, Blob, setTimeout, clearTimeout, crypto: webcrypto, atob,
+    TextDecoder, TextEncoder, Uint8Array, DOMException, AbortController, Blob, File, setTimeout, clearTimeout, crypto: webcrypto, atob,
     btoa: value => Buffer.from(value, 'binary').toString('base64'),
     fetch: (url, options) => mockTranscription && options?.body && JSON.parse(options.body).messages[0].content[0].text === RECOGNITION_PROMPT
       ? providerReply(mockTranscription) : fetchImpl(url, options)
@@ -68,6 +68,7 @@ function harness(fetchImpl = async () => providerReply(fixture()), stored = new 
   for (const script of scripts) vm.runInContext(script.replace(/^const EMBEDDED_KEY_FILE = .*;$/m,
     () => `const EMBEDDED_KEY_FILE = ${JSON.stringify(embeddedKeyFile)};`), context);
   // Isolate direct AI tests from the cloud service; unified-auth cases inject it.
+  win.InequalityImages = {transform:async blob=>blob};
   win.ClassroomPhotos = classroomClient;
   win.inequalityClassroom = {acceptSession() {}, disconnect() {}};
   return {
@@ -321,7 +322,7 @@ test('the twelve rubric clauses are preserved with the requested dimension label
   const original = previousDefaults[0].split('【正式评价标准】')[1].split('【执行量表时的判定规则】')[0].trim();
   for (const {prompt} of PROMPT_VERSIONS) {
     const updated = prompt.split('\n【正式评价标准】\n')[1].split('【量表边界与证据要求】')[0].trim();
-    assert.equal(updated, original.replaceAll('科学性','正确性'));
+    assert.equal(updated, original.replaceAll('科学性','正确性').replaceAll('严谨性','完备性'));
     assert.equal(updated.match(/^[ABCD]：/gm).length, 12);
   }
 });

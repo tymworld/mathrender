@@ -44,7 +44,7 @@
       [...content].every(element => element.scrollWidth <= element.clientWidth + 1);
     const setFont = size => document.body.style.setProperty('--review-font', size + 'px');
     const mobile = window.innerWidth < 761;
-    const preferred = mobile ? 18 : window.innerWidth >= 1400 ? 24 : 22;
+    const preferred = mobile ? 18 : window.innerWidth >= 1400 ? 28 : 24;
     const minimum = 16;
     card.style.zoom = '1';
     screen.removeAttribute('data-overflow');
@@ -123,6 +123,7 @@
     photoURL = null;
     selectedFile = null;
     selectedClassroomId = null;
+    $('photo-adjustments').hidden = true;
     $('photo-preview').removeAttribute('src');
     $('result-photo').removeAttribute('src');
     $('result-photo').hidden = true;
@@ -144,6 +145,13 @@
     if (file.size > 10 * 1024 * 1024) {
       message('图片超过 10 MB，请压缩后上传。'); return;
     }
+    if (!classroomId && window.InequalityImages) {
+      try {
+        const normalized=await window.InequalityImages.transform(file);
+        file=new File([normalized],file.name,{type:normalized.type});
+      } catch (error) { if(request===sequence) message(error.message || '无法读取图片，请重新上传。'); return; }
+      if(request!==sequence) return;
+    }
     const candidate = URL.createObjectURL(file);
     const probe = new Image();
     probe.src = candidate;
@@ -163,7 +171,22 @@
     $('upload-placeholder').hidden = true;
     $('file-name').textContent = file.name;
     $('generate-button').disabled = false;
+    $('photo-adjustments').hidden = false;
     return true;
+  }
+
+  async function rotateSelected(angle) {
+    const original=selectedFile, request=sequence, id=selectedClassroomId;
+    if(!original) return;
+    const blob=await window.InequalityImages.transform(original,angle);
+    if(request!==sequence || original!==selectedFile) return;
+    const from=original.classroomRotation || 0, rotation=(from+angle)%360;
+    if(id) await classroom.saveRotation(id,from,rotation,blob);
+    if(request!==sequence || original!==selectedFile) return;
+    const file=new File([blob],original.name,{type:blob.type}); file.classroomRotation=rotation;
+    selectedFile=file;
+    if(photoURL) URL.revokeObjectURL(photoURL);
+    photoURL=URL.createObjectURL(file); $('photo-preview').src=photoURL;
   }
 
   function setBusy(value) {
@@ -176,6 +199,7 @@
     $('generate-arrow').hidden = value;
     $('history-button').disabled = value;
     $('review-history-button').disabled = value;
+    for(const id of ['photo-rotate-left','photo-rotate-right','classroom-rotate-left','classroom-rotate-right']) $(id).disabled=value;
     if (directAPI) {
       $('connection-label').disabled = value;
       $('review-settings-button').disabled = value;
@@ -246,7 +270,7 @@
     }
     setBusy(true);
     const metadata = directAPI?.reviewMetadata || {model:serverModel, promptVersion:'server-default', promptTitle:'服务默认评价规则'};
-    const submittedPhoto = selectedFile;
+    let submittedPhoto = selectedFile, orientationNotice = '';
     const submittedClassroomId = selectedClassroomId;
     message('');
     controller = new AbortController();
@@ -254,7 +278,10 @@
     try {
       let result;
       if (directAPI) {
-        result = await directAPI.evaluate(selectedFile, { signal: controller.signal });
+        result = await directAPI.evaluate(selectedFile, { signal: controller.signal, onOrientation:async angle=>{
+          try { await rotateSelected(angle); submittedPhoto=selectedFile; orientationNotice=' · 照片已自动转正'; }
+          catch { orientationNotice=' · 照片转正未完成，可返回选图页手动调整'; }
+        }});
       } else {
         const response = await fetch('/api/evaluate', {
           method: 'POST', headers: { 'Content-Type': selectedFile.type },
@@ -273,7 +300,7 @@
         message('');
         try {
           const saved = await history.save(result, {...metadata, photo:submittedPhoto});
-          historyNote(saved?.saveMessage || '已保存到历史记录', Boolean(saved?.pendingSync));
+          historyNote((saved?.saveMessage || '已保存到历史记录')+orientationNotice, Boolean(saved?.pendingSync));
         } catch (error) {
           historyNote('评价卡已生成，但历史未保存。' + error.message, true);
         }
@@ -307,6 +334,15 @@
   });
   window.addEventListener('focus', updateConnection);
   window.addEventListener('resize', scheduleFit);
+  for(const [id,angle] of [['photo-rotate-left',270],['photo-rotate-right',90],['classroom-rotate-left',270],['classroom-rotate-right',90]]) {
+    $(id).addEventListener('click',async()=>{
+      if(busy || !selectedFile) return;
+      setBusy(true); $('generate-label').textContent='正在调整照片方向…';
+      try { await rotateSelected(angle); message('照片方向已调整'); }
+      catch(error) { message(error.message); $('classroom-preview-message').textContent=error.message; }
+      finally { setBusy(false); }
+    });
+  }
   $('review-reading-toggle').addEventListener('click', () => {
     expandedReading = !expandedReading;
     fitCard();

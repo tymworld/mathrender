@@ -86,7 +86,7 @@ function imageData(value, maxBytes) {
   if (!valid) throw new HttpError(415, '图片文件不完整，请重新选择。');
   return {bytes, type:match[1]};
 }
-const photo = row => ({id:row.id, label:row.label || `作品 ${String(row.serial).padStart(2,'0')}`, createdAt:row.created_at, reviewedAt:row.reviewed_at, type:row.type, bytes:row.bytes});
+const photo = row => ({id:row.id, label:row.label || `作品 ${String(row.serial).padStart(2,'0')}`, createdAt:row.created_at, reviewedAt:row.reviewed_at, rotation:row.rotation || 0, type:row.type, bytes:row.bytes});
 const rowById = (env,id) => env.CLASSROOM_DB.prepare('SELECT * FROM classroom_photos WHERE id = ?').bind(id).first();
 async function rateLimit(request, env, kind, maximum) {
   const ip = request.headers.get('CF-Connecting-IP') || 'local';
@@ -190,7 +190,7 @@ async function route(request, env, url) {
       if (!published && safeToClean) await env.CLASSROOM_PHOTOS.delete([key+'/image',key+'/thumbnail']).catch(() => {});
     }
   }
-  const match = /^\/api\/classroom\/photos\/([^/]+)(?:\/(image|thumbnail|reviewed))?$/.exec(path);
+  const match = /^\/api\/classroom\/photos\/([^/]+)(?:\/(image|thumbnail|reviewed|rotation))?$/.exec(path);
   if (!match || !ID.test(match[1])) throw new HttpError(404, '未找到这张照片。');
   const [,id, action] = match;
   const row = await rowById(env,id);
@@ -198,9 +198,18 @@ async function route(request, env, url) {
   if (request.method === 'GET' && ['image','thumbnail'].includes(action)) {
     const object = await env.CLASSROOM_PHOTOS.get(row.storage_key+'/'+action);
     if (!object) throw new HttpError(404, '照片文件不可用，请重新上传。');
-    return new Response(object.body, {headers:{'Content-Type':action === 'thumbnail' ? 'image/jpeg' : row.type}});
+    return new Response(object.body, {headers:{'Content-Type':action === 'thumbnail' ? 'image/jpeg' : row.type,'X-Photo-Rotation':String(row.rotation || 0)}});
   }
   if (role !== 'teacher') throw new HttpError(403, '请在电脑端管理课堂照片。');
+  if (request.method === 'POST' && action === 'rotation') {
+    const {from,rotation} = await readJSON(request,1024);
+    if (![0,90,180,270].includes(from) || ![0,90,180,270].includes(rotation)) throw new HttpError(400,'照片方向无效。');
+    const updated = await env.CLASSROOM_DB.prepare('UPDATE classroom_photos SET rotation = ? WHERE id = ? AND rotation = ? AND deleted_at IS NULL RETURNING *').bind(rotation,id,from).first();
+    const current = updated || await rowById(env,id);
+    if (!current || current.deleted_at) throw new HttpError(404,'这张照片已删除。');
+    if (current.rotation !== rotation) throw new HttpError(409,'照片方向已在其他页面修改，请重新选择照片。');
+    return json({photo:photo(current)});
+  }
   if (request.method === 'POST' && action === 'reviewed') {
     await env.CLASSROOM_DB.prepare('UPDATE classroom_photos SET reviewed_at = ? WHERE id = ? AND deleted_at IS NULL').bind(new Date().toISOString(),id).run();
     return json({ok:true});
@@ -331,6 +340,7 @@ export async function handleClassroom(request, env) {
     response.headers.set('Access-Control-Allow-Origin',origin); response.headers.set('Vary','Origin');
     response.headers.set('Access-Control-Allow-Methods','GET, POST, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers','Authorization, Content-Type');
+    response.headers.set('Access-Control-Expose-Headers','X-Photo-Rotation');
   }
   return response;
 }

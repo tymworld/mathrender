@@ -3,7 +3,7 @@
   'use strict';
   const base = '/api/classroom';
   let token = '';
-  async function request(route, {method = 'GET', body, timeout = 15000, binary = false} = {}) {
+  async function request(route, {method = 'GET', body, timeout = 15000, binary = false, orient = false} = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
     try {
@@ -15,7 +15,12 @@
         try { message = (await response.json()).error || message; } catch {}
         const error = new Error(message); error.status = response.status; throw error;
       }
-      return binary ? await response.blob() : await response.json();
+      if (!binary) return await response.json();
+      let blob=await response.blob();
+      const rotation=Number(response.headers.get('X-Photo-Rotation') || 0);
+      if (orient && rotation) blob=await window.InequalityImages.transform(blob,rotation);
+      blob.classroomRotation=rotation;
+      return blob;
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('连接超时，请检查网络后重试。');
       if (error instanceof TypeError) throw new Error('连接中断，请检查网络后重试。');
@@ -36,6 +41,6 @@
   const dateLabel = value => new Date(value).toLocaleString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
   window.ClassroomPhotos = Object.freeze({request, uuid, make, dateLabel,
     setToken(value) { token = value; },
-    async photo(id, thumbnail = false) { return request('/photos/' + encodeURIComponent(id) + (thumbnail ? '/thumbnail' : '/image'), {binary:true, timeout:30000}); }
+    async photo(id, thumbnail = false) { return request('/photos/' + encodeURIComponent(id) + (thumbnail ? '/thumbnail' : '/image'), {binary:true, orient:true, timeout:30000}); }
   });
 })();

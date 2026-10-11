@@ -57,11 +57,12 @@
         <p id="file-name" class="file-name">JPG、PNG、WebP · 最大 10 MB</p>
         </div>
         <!-- CLASSROOM_PANEL -->
+        <div id="photo-adjustments" class="photo-adjustments" hidden><span>调整方向</span><button id="photo-rotate-left" type="button">↶ 左转</button><button id="photo-rotate-right" type="button">↷ 右转</button></div>
         <div class="upload-actions">
         <div id="classroom-selection" class="classroom-selection" hidden><span id="classroom-selected-label">选择一张作品，开始评价</span><div class="classroom-selection-actions"><button id="classroom-preview" type="button" disabled>查看大图</button><button id="classroom-delete-selected" type="button" disabled>删除作品</button></div></div>
         <button class="generate-button" id="generate-button" type="button" disabled><span class="button-spark" aria-hidden="true">✦</span><b id="generate-label">上传并生成评价卡</b><span id="generate-arrow" aria-hidden="true">→</span></button>
         </div>
-        <div class="dimension-legend" aria-label="评价维度"><span>● 正确性</span><span>● 严谨性</span><span>● 创新性</span></div>
+        <div class="dimension-legend" aria-label="评价维度"><span>● 正确性</span><span>● 完备性</span><span>● 创新性</span></div>
       </div>
         <aside class="upload-inspiration" aria-hidden="true">
           <p class="inspiration-motto">用不等式<br><span>表达你的思考！</span></p>
@@ -69,7 +70,6 @@
           <p class="thought-bubble">数学因思考<br>而精彩！</p>
         </aside>
       </div>
-      <p class="privacy-note">点击生成后，照片将发送至你设置的 AI 服务进行评价。</p>
       <p id="message" class="message" role="status" hidden></p>
       <div class="upload-student" aria-hidden="true"><img src="../../assets/images/inequality-review/student-jianping.png" alt=""></div>
       <img class="upload-landmark" src="../../assets/images/inequality-review/jianping-apple.png" alt="" aria-hidden="true">
@@ -86,7 +86,8 @@
             </svg>
             <p class="card-kicker">不等式探究活动<span>活动 02</span></p>
           </div>
-          <div class="card-identity"><div class="card-title-row"><h1 id="card-title" tabindex="-1">你的<span>不等式</span>评价卡</h1><div class="card-model"><span>采用基于</span><strong id="card-model">—</strong><span>的预训练模型</span></div></div><p class="hero-subtitle">让每一个不等式，都闪耀思考的光芒！</p></div>
+          <div class="card-identity"><div class="card-title-row"><h1 id="card-title" tabindex="-1">你的<span>不等式</span>评价卡</h1></div><p class="hero-subtitle">让每一个不等式，都闪耀思考的光芒！</p></div>
+          <div class="card-model"><span>采用基于</span><strong id="card-model">—</strong><span>的预训练模型</span></div>
           <div class="hero-motto" aria-hidden="true">发现 · 证明 · 创造<br><span>数学因思考而精彩！</span><svg viewBox="0 0 240 24"><path d="M4 20Q115-2 232 9M162 20l62-10"/></svg></div>
         </header>
         <div class="review-paper">
@@ -100,8 +101,8 @@
               <p class="score-comment" id="scientific-comment"></p><div class="grade" aria-label="正确性等级"><strong id="scientific-grade">—</strong><span id="scientific-level">等级</span></div><p class="dimension-note" id="scientific-note"></p>
             </section>
             <section class="score-rigor">
-              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M25 9H11a3 3 0 0 0-3 3v25a3 3 0 0 0 3 3h25a3 3 0 0 0 3-3V23"/><path d="m16 23 8 8L40 13" stroke-width="4"/></svg></span><h2>严谨性<small>论证是否完整</small></h2></div>
-              <p class="score-comment" id="rigor-comment"></p><div class="grade" aria-label="严谨性等级"><strong id="rigor-grade">—</strong><span id="rigor-level">等级</span></div><p class="dimension-note" id="rigor-note"></p>
+              <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M25 9H11a3 3 0 0 0-3 3v25a3 3 0 0 0 3 3h25a3 3 0 0 0 3-3V23"/><path d="m16 23 8 8L40 13" stroke-width="4"/></svg></span><h2>完备性<small>论证是否完整</small></h2></div>
+              <p class="score-comment" id="rigor-comment"></p><div class="grade" aria-label="完备性等级"><strong id="rigor-grade">—</strong><span id="rigor-level">等级</span></div><p class="dimension-note" id="rigor-note"></p>
             </section>
             <section class="score-creativity">
               <div class="score-heading"><span class="dimension-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M15 29a13 13 0 1 1 18 0c-3 3-3 5-3 8H18c0-3 0-5-3-8Zm4 12h10m-8 3h6M24 5V1M9 10 6 7m33 3 3-3M5 23H1m42 0h4M21 36V23l3 3 3-3v13"/></svg></span><h2>创新性<small>变化与推广</small></h2></div>
@@ -128,7 +129,7 @@
   <dialog id="classroom-preview-dialog" class="classroom-preview-dialog" aria-labelledby="classroom-preview-title">
     <header><div><p class="classroom-eyebrow">课堂相册 · 手写原稿</p><h2 id="classroom-preview-title">作品预览</h2></div><button id="classroom-preview-close" type="button" aria-label="关闭作品预览">×</button></header>
     <img id="classroom-full-photo" alt="所选作品的完整照片">
-    <footer><span>双指缩放或放大浏览器查看细节</span><button id="classroom-delete" type="button">删除这张照片</button></footer>
+    <footer><span>双指缩放或放大浏览器查看细节</span><div class="photo-adjustments"><button id="classroom-rotate-left" type="button">↶ 左转</button><button id="classroom-rotate-right" type="button">↷ 右转</button></div><button id="classroom-delete" type="button">删除这张照片</button></footer>
     <div id="classroom-delete-confirm" class="classroom-delete-confirm" hidden><p>删除后台保存的这张照片？已有的评价历史会保留。</p><button id="classroom-delete-cancel" type="button">保留照片</button><button id="classroom-delete-submit" type="button">确认删除</button></div>
     <p id="classroom-preview-message" role="status"></p>
   </dialog>

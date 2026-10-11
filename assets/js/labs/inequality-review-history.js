@@ -4,7 +4,7 @@
   const dialog = $('history-dialog');
   const photoDialog = $('history-photo-dialog');
   const dimensions = ['scientific', 'rigor', 'creativity'];
-  const labels = ['正确性', '严谨性', '创新性'];
+  const labels = ['正确性', '完备性', '创新性'];
   let database;
   let entries = [];
   let selectCard;

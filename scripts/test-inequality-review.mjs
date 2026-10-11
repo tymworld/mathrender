@@ -18,6 +18,18 @@ const result = () => ({
 const providerReply = value => new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(value) } }] }), { status: 200 });
 const transcription = () => ({status:'readable', formula:result().formula, reasoning:'', issue:''});
 
+test('orientation uses the recognition request, runs before grading and ignores uncertain guesses',async()=>{
+  for(const [rotation,rotationConfidence,expected] of [[90,'high',[90]],[270,'high',[270]],[180,'high',[180]],[90,'low',[]],[45,'high',[]],[90,undefined,[]]]) {
+    const turns=[],stages=[];
+    await recognizeAndEvaluate({imageURL:'image',prompt:EVALUATION_PROMPT,onOrientation:angle=>{turns.push(angle);},complete:async(_,stage)=>{
+      stages.push(stage);
+      if(stage==='recognition') return {...transcription(),rotation,rotationConfidence};
+      assert.deepEqual(turns,expected); return result();
+    }});
+    assert.deepEqual(stages,['recognition','evaluation']);
+  }
+});
+
 test('grading cannot rewrite even an incorrect original; complete original text and proof are preserved', async () => {
   const original = {...transcription(), formula:'|a−1|+|a−2|≤|2a−3|\n当且仅当 (a−1)(a−2)≤0 时等号成立\n' + '其他原文条件。'.repeat(20),
     reasoning:'令 u=a−1，v=a−2。\n由三角不等式得证。'};
@@ -27,7 +39,7 @@ test('grading cannot rewrite even an incorrect original; complete original text 
       stages.push(stage);
       if (stage === 'recognition') {
         assert.equal(content[0].text, RECOGNITION_PROMPT);
-        assert.doesNotMatch(content[0].text, /正确性|严谨性|a=1.5/);
+        assert.doesNotMatch(content[0].text, /正确性|完备性|a=1.5/);
         return original;
       }
       assert.equal(content.some(part => part.type === 'image_url'), false);
@@ -264,7 +276,7 @@ async function layoutHarness({ width = 1514, height = 614, measure }) {
 test('short windows reclaim fixed layout space instead of reducing text to 8px', async () => {
   const resize = await layoutHarness({ measure: (font, density) => density === 'normal' ? 700 : 470 + font * 3 });
   const layout = resize();
-  assert.equal(layout.font, 24);
+  assert.equal(layout.font, 28);
   assert.equal(layout.density, 'compact');
   assert.equal(layout.overflow, undefined);
 });
@@ -274,7 +286,7 @@ test('font fitting recovers the preferred size when the window becomes taller', 
   const short = resize();
   assert.ok(short.font >= 18 && short.font < 24);
   assert.equal(short.overflow, undefined);
-  assert.deepEqual(resize(1514, 950), { font: 24, density: 'normal', zoom: 1, overflow: undefined });
+  assert.deepEqual(resize(1514, 950), { font: 28, density: 'normal', zoom: 1, overflow: undefined });
 });
 
 test('long desktop cards fit one screen while mobile cards retain readable scrolling', async () => {

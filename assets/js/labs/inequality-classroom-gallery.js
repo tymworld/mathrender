@@ -83,7 +83,12 @@
     const revision = sessionRevision;
     try {
       const data = await api.request('/photos');
-      if (!active || revision !== sessionRevision) return;
+      if (!active || locked || revision !== sessionRevision) return;
+      for (const previous of photos) {
+        if (data.photos.find(p=>p.id===previous.id)?.rotation !== previous.rotation && thumbnails.has(previous.id)) {
+          URL.revokeObjectURL(thumbnails.get(previous.id)); thumbnails.delete(previous.id);
+        }
+      }
       photos = data.photos;
       $('classroom-count').textContent = String(photos.length);
       $('classroom-total').textContent = `${photos.length} 张作品`;
@@ -92,6 +97,9 @@
       if (snapshot !== lastSnapshot) {
         lastSnapshot = snapshot;
         if (selected && !photos.some(p => p.id === selected.id)) { releaseSelection(); notice('所选照片已被删除，请选择另一张作品。'); }
+        else if (selected && photos.find(p => p.id === selected.id)?.rotation !== selected.rotation) {
+          releaseSelection(); notice('照片方向已在另一台设备更新，请重新选择这张作品。');
+        }
         render();
       }
       if ($('classroom-message').dataset.error === 'true') notice('');
@@ -142,6 +150,7 @@
       const blob = await api.photo(photo.id);
       if (revision !== selectionRevision || !active) return;
       const file = new File([blob], photo.label + ({'image/png':'.png', 'image/webp':'.webp'}[blob.type] || '.jpg'), {type:blob.type});
+      file.classroomRotation=blob.classroomRotation || 0;
       const accepted = await selectFile(file, photo.id);
       if (revision !== selectionRevision || !active) return;
       if (!accepted) { $('classroom-selected-label').textContent = '图片无法读取，请重新上传'; notice('图片无法读取，请重新拍照上传。', true); return; }
@@ -208,6 +217,17 @@
     get active() { return active; }, setBusy,
     reset() { if (active) { releaseSelection(); render(); refresh(); } },
     async markReviewed(id) { await api.request('/photos/' + id + '/reviewed', {method:'POST'}); },
+    async saveRotation(id,from,rotation,blob) {
+      const data=await api.request('/photos/'+id+'/rotation',{method:'POST',body:{from,rotation}});
+      photos=photos.map(p=>p.id===id?data.photo:p);
+      if (thumbnails.has(id)) { URL.revokeObjectURL(thumbnails.get(id)); thumbnails.delete(id); }
+      if (selected?.id===id) {
+        selected=data.photo;
+        if(fullURL) URL.revokeObjectURL(fullURL);
+        fullURL=URL.createObjectURL(blob); $('classroom-full-photo').src=fullURL;
+      }
+      render();
+    },
     resume() { if (active && connected) refresh(); }
   });
 })();

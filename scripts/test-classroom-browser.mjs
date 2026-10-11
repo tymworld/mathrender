@@ -70,12 +70,20 @@ try {
   await desktop.screenshot({path:'docs/qa/classroom-gallery-desktop.png',fullPage:true});
   await desktop.locator('#classroom-preview').click(); await desktop.locator('#classroom-full-photo').waitFor({state:'visible'});
   assert.ok(await desktop.locator('#classroom-full-photo').evaluate(img=>img.complete && img.naturalWidth>0));
+  const selectedPhotoId=await desktop.locator('.classroom-photo[aria-pressed="true"]').getAttribute('data-photo-id');
+  const getSelectedPhoto=async()=> (await (await fetch(base+'/api/classroom/photos',{headers:auth})).json()).photos.find(p=>p.id===selectedPhotoId);
+  await desktop.locator('#classroom-rotate-right').click();
+  await desktop.waitForFunction(()=>!document.getElementById('classroom-rotate-right').disabled && document.getElementById('classroom-full-photo').naturalHeight>document.getElementById('classroom-full-photo').naturalWidth);
+  assert.equal((await getSelectedPhoto()).rotation,90);
+  await desktop.locator('#classroom-rotate-left').click();
+  await desktop.waitForFunction(()=>!document.getElementById('classroom-rotate-left').disabled && document.getElementById('classroom-full-photo').naturalWidth>document.getElementById('classroom-full-photo').naturalHeight);
+  assert.equal((await getSelectedPhoto()).rotation,0);
   await desktop.locator('#classroom-preview-close').click();
   let aiCalls=0;
   await desktop.route('https://dashscope.aliyuncs.com/**',async route => {
     aiCalls++;
     assert.equal(JSON.parse(route.request().postData()).model,'qwen3.8-max');
-    const value = aiCalls%2 ? {status:'readable',formula:'|2x−1|+|x+2|≥|3x+1|',reasoning:'由三角不等式得证。',issue:''} : {
+    const value = aiCalls%2 ? {status:'readable',formula:'|2x−1|+|x+2|≥|3x+1|',reasoning:'由三角不等式得证。',issue:'',rotation:90,rotationConfidence:'high'} : {
       status:'valid',formula:'|2x−1|+|x+2|≥|3x+1|',verdict:'结论成立，论证清楚。',
       scientific:{grade:'A',comment:'正确运用了三角不等式。'},rigor:{grade:'A',comment:'推导完整，取等条件正确。'},creativity:{grade:'B',comment:'构造了有意义的变式。'},highlight:'变量代换清楚。',suggestion:'继续尝试三项之和。'};
     await route.fulfill({contentType:'application/json',body:JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify(value)}}]})});
@@ -85,6 +93,8 @@ try {
   await desktop.locator('#result-screen').waitFor({state:'visible'});
   await desktop.waitForFunction(()=>!document.getElementById('history-button').disabled);
   assert.equal(aiCalls,2); assert.equal(await desktop.locator('#scientific-grade').textContent(),'A');
+  await desktop.waitForFunction(()=>document.getElementById('result-photo').naturalHeight>document.getElementById('result-photo').naturalWidth);
+  assert.equal((await getSelectedPhoto()).rotation,90,'AI direction correction is shared in the album');
   const after = await (await fetch(base+'/api/classroom/photos',{headers:auth})).json(); assert.ok(after.photos[0].reviewedAt);
   await desktop.locator('#restart-button').click();
   await desktop.locator('#classroom-pending-only').check();
@@ -123,9 +133,11 @@ try {
   await historyPage.locator('#key-file-password').fill(password); await historyPage.locator('#submit-key-unlock').click();
   await historyPage.locator('.history-entry').waitFor();
   assert.ok((await historyPage.locator('.history-grades').innerText()).includes('正确性'));
+  assert.ok((await historyPage.locator('.history-grades').innerText()).includes('完备性'));
   assert.ok(!(await historyPage.locator('.history-grades').innerText()).includes('科学性'));
   await historyPage.getByRole('button',{name:'查看原图',exact:true}).click();
   await historyPage.waitForFunction(()=>document.getElementById('history-photo').naturalWidth>0);
+  assert.ok(await historyPage.locator('#history-photo').evaluate(img=>img.naturalHeight>img.naturalWidth),'Corrected history photo survives album deletion and is shared across browsers');
   await historyPage.locator('#close-history-photo').click();
   await historyPage.getByRole('button',{name:'查看评价',exact:true}).click();
   await historyPage.locator('#result-screen').waitFor({state:'visible'}); assert.equal(unintendedAI,0);

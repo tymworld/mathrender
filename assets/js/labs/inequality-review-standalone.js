@@ -420,7 +420,7 @@ async function readReply(response) {
     throw new Error('AI返回内容不完整，请重新生成。');
   } finally { reader.releaseLock(); }
 }
-async function evaluateDirect(file, { signal } = {}) {
+async function evaluateDirect(file, { signal, onOrientation } = {}) {
   if (!sessionKey) throw new Error('请在“AI 设置”中填写 API Key。');
   const { endpoint, model, promptVersion, temperature, maxTokens } = activeSettings;
   const prompt = availablePrompts.get(promptVersion).prompt;
@@ -473,7 +473,7 @@ async function evaluateDirect(file, { signal } = {}) {
     catch { throw new Error('AI返回的评价格式不正确，请重新生成。'); }
     return evaluation;
   };
-  return recognizeAndEvaluate({imageURL, prompt:prompt + '\n' + RESPONSE_CONTRACT, complete});
+  return recognizeAndEvaluate({imageURL, prompt:prompt + '\n' + RESPONSE_CONTRACT, complete, onOrientation});
 }
 window.inequalityReviewAPI = Object.freeze({
   get configured() { return Boolean(sessionKey); },
