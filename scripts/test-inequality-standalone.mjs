@@ -260,7 +260,12 @@ test('select, generate, render and restart use direct API without adding a loadi
   assert.equal(app.node('result-screen').hidden, false);
   assert.equal(app.node('scientific-grade').textContent, 'A');
   assert.equal(app.node('rigor-grade').textContent, 'C');
+  assert.equal(app.node('card-model').textContent, 'qwen3.7-flash');
   assert.equal(app.node('connection-label').disabled, false);
+  app.node('api-model').value = 'qwen3.8-max';
+  await app.submitKey();
+  assert.equal(app.api.model, 'qwen3.8-max');
+  assert.equal(app.node('card-model').textContent, 'qwen3.7-flash');
   app.node('restart-button').dispatch('click');
   assert.equal(app.node('result-screen').hidden, true);
   assert.equal(app.node('upload-screen').hidden, false);

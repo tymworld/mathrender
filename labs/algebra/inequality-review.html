@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#eaf6ff">
-  <title>不等式 AI 评价卡 · 数学教学实验室 · 李老师开心课题</title>
+  <title>不等式 AI 评价卡 · 数学教学实验室 · 李老师开心课堂</title>
   <style>
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -27,18 +27,19 @@ h1, h2, p, figure { margin: 0; }
 .brand { display: flex; align-items: center; gap: 10px; color: #17245a; font-size: clamp(17px, 1.65vw, 24px); font-weight: 750; text-decoration: none; line-height: 1.45; }
 .brand-name { white-space: nowrap; }
 .brand-name strong { display: block; font-weight: inherit; letter-spacing: .35px; }
-.brand small { display: block; margin-top: 2px; font-size: clamp(10px, .94vw, 14px); color: #657293; font-weight: 500; letter-spacing: 1.3px; }
+.brand small { display: block; margin-top: 2px; font-size: clamp(13px, 1.18vw, 17px); color: #7057e8; font-weight: 650; letter-spacing: .8px; }
+.brand-happy { position: relative; display: inline-block; isolation: isolate; }
+.brand-happy::after { content: ''; position: absolute; z-index: -1; left: 0; right: 0; bottom: 1px; height: 4px; border-radius: 50%; background: #ffd66c; opacity: .65; transform: rotate(-1.5deg); }
 .brand-mark { display: block; width: clamp(50px, 4.4vw, 68px); height: auto; aspect-ratio: 1; flex-shrink: 0; }
 .connection-label { font-size: clamp(12px, 1.12vw, 16px); color: #3e538a; background: #ffffffbc; border: 1px solid #fff; border-radius: 99px; padding: 7px 19px; white-space: nowrap; }
 body:not(.review-mode) main { position: relative; display: flex; flex: 1; padding: 0 3.1vw; }
-.upload-screen { position: relative; isolation: isolate; width: 100%; max-width: 1650px; margin: auto; text-align: center; padding: 0 0 14px; }
-.upload-heading { position: relative; z-index: 1; margin: 0 auto clamp(16px, 2.3vh, 26px); }
-.upload-screen h1 { display: inline-block; position: relative; font-size: clamp(38px, 4.75vw, 78px); color: #081563; line-height: 1.25; letter-spacing: -1px; font-weight: 900; text-shadow: 0 3px #fff; }
+.upload-screen { position: relative; isolation: isolate; width: 100%; max-width: 1650px; margin: 0 auto; text-align: center; padding: clamp(8px, 2vh, 18px) 0 14px; }
+.upload-heading { position: relative; z-index: 1; margin: 8px auto 18px; }
+.upload-screen h1 { display: inline-block; position: relative; font-size: clamp(34px, 3.8vw, 54px); color: #081563; line-height: 1.25; letter-spacing: -1px; font-weight: 900; text-shadow: 0 3px #fff; }
 .upload-screen h1::before { content: ""; position: absolute; left: -29px; top: -7px; width: 30px; height: 50px; background: linear-gradient(#ffd44d 0 0) 14px 0/8px 22px no-repeat, linear-gradient(#ffd44d 0 0) 0 31px/20px 7px no-repeat; transform: rotate(-25deg); }
 .title-accent { display: inline-block; color: #2051de; background: linear-gradient(155deg, #ffe47e 0, #ffe363 55%, #ffca25 100%); border-radius: 7px; padding: 0 3px 2px; margin: 0 2px; line-height: 1.04; box-shadow: inset 0 3px 0 #fff0b4, 0 1px 0 #f6c824; text-shadow: 0 2px 0 #ffeeb0; }
-.lead { display: table; position: relative; margin: 10px auto 0; padding: 0 6px 4px; color: #12195e; font: clamp(24px, 2.4vw, 38px)/1.35 "Kaiti SC", "STKaiti", "KaiTi", serif; letter-spacing: 2px; }
+.lead { display: table; position: relative; margin: 10px auto 0; padding: 0 6px 4px; color: #12195e; font: clamp(21px, 2vw, 29px)/1.35 "Kaiti SC", "STKaiti", "KaiTi", serif; letter-spacing: 2px; }
 .lead::after { content: ""; position: absolute; right: 6px; bottom: 0; width: 36%; height: 3px; border-radius: 50%; background: #388cff; transform: rotate(-2deg); }
-.upload-intro { margin-top: 12px; font-size: clamp(13px, 1.25vw, 19px); color: #68739a; }
 .paper-plane { position: absolute; width: clamp(80px, 8vw, 140px); right: 15.5%; top: -23px; transform: translateX(100%); }
 .upload-layout { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(440px, 2.65fr) minmax(170px, 1fr); gap: clamp(18px, 2vw, 34px); align-items: start; }
 .upload-tips { display: grid; gap: clamp(12px, 2vh, 22px); padding-top: 3px; text-align: left; transform: translateY(-56px); }
@@ -94,10 +95,9 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .topbar { padding-top: 15px; padding-bottom: 8px; }
   .brand { font-size: 18px; }
   .brand-mark { width: 50px; }
-  .brand small { font-size: 11px; }
+  .brand small { font-size: 13px; }
   .upload-screen h1 { font-size: clamp(42px, 4.3vw, 65px); }
   .lead { margin-top: 5px; font-size: 28px; }
-  .upload-intro { margin-top: 8px; font-size: 14px; }
   .upload-heading { margin-bottom: 16px; }
   .upload-panel { padding: 17px 19px 15px; }
   .upload-tip { padding: 10px 8px; border-radius: 22px; }
@@ -126,7 +126,6 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .upload-screen { padding-bottom: 8px; }
   .upload-screen h1 { font-size: 49px; }
   .lead { font-size: 24px; margin-top: 4px; }
-  .upload-intro { font-size: 13px; margin-top: 7px; }
   .upload-heading { margin-bottom: 13px; }
   .upload-panel { padding: 14px 18px 12px; }
   .upload-area { height: 164px; }
@@ -155,7 +154,6 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .upload-tips, .upload-inspiration, .paper-plane { display: none; }
   .upload-heading { margin-top: 20px; }
   .upload-screen h1 { font-size: clamp(34px, 5.7vw, 56px); }
-  .upload-intro { max-width: 570px; margin: 12px auto 0; font-size: 14px; }
   .lead { font-size: 29px; }
   .upload-panel { padding: 22px; }
   .upload-area { height: 250px; }
@@ -171,7 +169,7 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 @media (max-width: 600px) {
   .topbar { padding: 20px 19px 10px; gap: 8px; }
   .brand { font-size: 16px; gap: 10px; }
-  .brand small { font-size: 9px; }
+  .brand small { font-size: 12px; }
   .brand-mark { width: 44px; }
   .connection-label { padding: 5px 9px; font-size: 10px; }
   body:not(.review-mode) main { padding: 0 18px; }
@@ -181,7 +179,6 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .upload-screen h1::before { left: -13px; width: 17px; height: 31px; background-size: 5px 13px, 12px 4px; background-position: 9px 0, 0 22px; }
   .title-accent { padding: 0 1px 2px; margin: 0 1px; }
   .lead { margin-top: 14px; font-size: 22px; letter-spacing: .4px; }
-  .upload-intro { max-width: 310px; margin-top: 13px; font-size: 12px; line-height: 1.7; }
   .upload-panel { border-radius: 24px; padding: 17px 15px 18px; }
   .upload-area { height: 258px; padding: 15px 8px; }
   .paper-art { width: 178px; height: 129px; margin-bottom: 14px; }
@@ -211,6 +208,10 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .card-kicker { position: absolute; bottom: -18px; left: 2px; min-width: 144px; padding: 7px 12px; background: linear-gradient(140deg, #fff3ba, #ffdc82); box-shadow: 0 4px 7px #244f9530; border-radius: 21px; color: #80450d; font: 17px/1.3 "Kaiti SC", "STKaiti", "KaiTi", serif; text-align: center; transform: rotate(-7deg); }
 .card-kicker span { display: block; margin-top: 2px; font-family: inherit; font-size: 18px; letter-spacing: 2px; }
 .card-title-row, .card-identity { min-width: 0; }
+.card-title-row { display: flex; align-items: center; gap: clamp(20px, 3vw, 44px); }
+.card-model { flex: 1; min-width: 0; text-align: center; line-height: 1.7; }
+.card-model>span { color: #deefff; font-size: clamp(14px, 1.25vw, 18px); }
+.card-model strong { display: inline; margin: 0 5px; color: #ffe48c; font-size: clamp(24px, 2.5vw, 36px); font-weight: 650; overflow-wrap: anywhere; }
 .card-identity h1 { font-size: clamp(30px, 3.5vw, 48px); font-weight: 650; line-height: 1.25; letter-spacing: .5px; white-space: nowrap; color: white; text-shadow: 0 2px 8px #06459b35; outline: none; }
 .card-identity h1>span { color: #ffdd3c; }
 .hero-subtitle { margin-top: 8px; color: #f4faff; font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: 1px; }
@@ -318,6 +319,10 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   .review-art { width: 60px; height: 53px; top: -2px; left: -8px; }
   .card-kicker, .hero-motto { display: none; }
   .card-identity h1 { font-size: clamp(23px, 5.8vw, 35px); letter-spacing: 0; text-shadow: 0 2px 6px #06408f30; }
+  .card-title-row { flex-wrap: wrap; gap: 6px 16px; }
+  .card-model { flex: 1 0 100%; text-align: left; line-height: 1.5; }
+  .card-model>span { font-size: 11px; }
+  .card-model strong { font-size: 20px; }
   .hero-subtitle { font-size: 11px; letter-spacing: .5px; margin-top: 5px; white-space: nowrap; }
   .review-paper { padding: 17px 9px 10px; border-radius: 22px; }
   .work-review { display: block; padding: 20px 10px 9px; min-height: 0; border-radius: 13px; margin-bottom: 7px; }
@@ -626,20 +631,16 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 @media print { .key-unlock-dialog { display: none !important; } }
 
 /* The shared classroom palette extends the existing upload page. */
-.photo-source-tabs { display:flex; align-items:center; gap:6px; margin:0 0 16px; text-align:left; }
+.photo-source-tabs { display:flex; align-items:center; justify-content:center; gap:6px; max-width:1150px; margin:0 auto 16px; text-align:left; }
 .photo-source-tabs button { border:0; border-radius:11px; background:#f3f7fd; color:#425485; padding:10px 17px; font-size:16px; font-weight:650; min-height:44px; white-space:nowrap; }
 .photo-source-tabs button[aria-selected="true"] { background:linear-gradient(115deg,#8169fb,#6c56ed); color:#fff; box-shadow:0 3px 8px #7057e823; }
 #classroom-count { font-size:11px; margin-left:6px; padding:2px 7px; border-radius:12px; background:#ffffff4f; font-weight:500; }
-.classroom-sync { margin-left:auto; font-size:12px; color:#637290; white-space:nowrap; }
+.classroom-sync { font-size:12px; color:#637290; white-space:nowrap; }
 .classroom-sync::before { content:""; display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#a2aabd; }
 .classroom-sync[data-state="online"]::before { background:#30a879; box-shadow:0 0 0 3px #30a87913; }
 .classroom-sync[data-state="offline"]::before { background:#d38a31; }
 .classroom-mode .upload-layout { display:block; max-width:1150px; margin:auto; }
-.classroom-mode .upload-tips,.classroom-mode .upload-inspiration,.classroom-mode .paper-plane { display:none; }
-.classroom-mode .upload-heading { margin:8px auto 18px; }
-.classroom-mode .upload-screen h1 { font-size:clamp(34px,3.8vw,54px); }
-.classroom-mode .lead { font-size:clamp(21px,2vw,29px); }
-.classroom-mode .upload-intro { display:none; }
+.classroom-mode .upload-tips,.classroom-mode .upload-inspiration { display:none; }
 .classroom-mode .upload-panel { padding:22px; text-align:left; }
 .classroom-mode .upload-student { width:150px; height:210px; bottom:0; }
 .classroom-mode .upload-landmark { width:150px; bottom:0; }
@@ -662,8 +663,8 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 .classroom-gallery-heading h2 span { font-size:13px; font-weight:400; margin-left:12px; color:#637594; }
 .classroom-gallery-heading p { color:#79849e; font-size:12px; margin-top:1px; }
 #classroom-refresh { width:42px; height:42px; font-size:26px; border:1px solid #e0e7f7; border-radius:50%; color:#5363a3; background:#fff; }
-.classroom-gallery-tools { display:flex; justify-content:space-between; gap:12px; color:#73809b; font-size:12px; margin:12px 0; }
-.classroom-gallery-tools label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+.classroom-gallery-tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; color:#73809b; font-size:12px; margin:12px 0; }
+.classroom-gallery-tools label { display:flex; align-items:center; gap:6px; margin-left:auto; cursor:pointer; }
 .classroom-gallery-tools input { accent-color:#7857ed; width:16px; height:16px; }
 .classroom-photo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-height:360px; overflow:auto; padding:2px 3px 5px; scrollbar-width:thin; scrollbar-color:#c4cfe5 transparent; }
 .classroom-photo { padding:0; display:block; min-width:0; text-align:left; background:#fff; border:2px solid #edf0f7; border-radius:12px; overflow:hidden; color:#182757; transition:border-color .15s,box-shadow .15s; }
@@ -718,9 +719,6 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
 #classroom-delete-submit { background:#a45462; color:white; }
 #classroom-preview-message { color:#a1663c; font-size:13px; margin-top:10px; }
 @media(min-width:1001px) and (max-height:760px) {
-  .classroom-mode .upload-heading { margin:4px auto 12px; }
-  .classroom-mode .upload-screen h1 { font-size:38px; }
-  .classroom-mode .lead { font-size:21px; }
   .classroom-mode .upload-panel { padding:16px 20px; }
   .classroom-workspace { grid-template-columns:185px minmax(0,1fr); gap:20px; }
   .classroom-pairing { padding:12px; }
@@ -747,9 +745,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   .photo-source-tabs { flex-wrap:wrap; gap:5px; margin-bottom:14px; }
   .photo-source-tabs button { font-size:14px; padding:9px 11px; flex:1; }
   #classroom-count { font-size:10px; padding:1px 5px; }
-  .classroom-sync { flex-basis:100%; text-align:right; font-size:11px; }
-  .classroom-mode .upload-heading { margin:20px auto; }
-  .classroom-mode .upload-screen h1 { font-size:clamp(27px,7vw,39px); }
+  .classroom-sync { font-size:11px; }
   .classroom-mode .upload-panel { padding:15px; border-radius:22px; }
   .classroom-workspace { display:flex; flex-direction:column; }
   .classroom-pairing { width:100%; display:grid; grid-template-columns:106px 1fr; gap:6px 15px; padding:15px; text-align:left; }
@@ -781,7 +777,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
     <svg class="bottom-waves" viewBox="0 0 1600 240" preserveAspectRatio="none"><defs><linearGradient id="uploadWave" x2="1" y2="1"><stop stop-color="#78c7ff"/><stop offset="1" stop-color="#2485ff"/></linearGradient></defs><path d="M0 20c172 39 224 166 470 142s292 59 489 32 398-154 641-115v161H0Z" fill="#afE5ff"/><path d="M0 66c238 11 285 35 499 10s337 15 486 22 369-47 615-18v160H0Z" fill="url(#uploadWave)"/></svg>
   </div>
   <header class="topbar">
-    <a class="brand" href="../../index.html#algebra" aria-label="数学教学实验室 · 李老师开心课题 · 返回实验目录"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxhYi1wdXJwbGUiIHgxPSI2IiB5MT0iOCIgeDI9IjU0IiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agc3RvcC1jb2xvcj0iIzg5NjlmNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1YzQzY2UiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjIiIHk9IjEyIiB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHJ4PSIxNiIgZmlsbD0iI2RkZDVmYSIvPgogIDxyZWN0IHg9IjIiIHk9IjgiIHdpZHRoPSI1MiIgaGVpZ2h0PSI1MiIgcng9IjE2IiBmaWxsPSJ1cmwoI2xhYi1wdXJwbGUpIi8+CiAgPHBhdGggZD0iTTE0IDIwdjMwaDMzbS0zNi0yNyAzLTMgMyAzbTI3IDI0IDMgMy0zIDMiIHN0cm9rZT0iI2Q4Y2JmZiIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xOSAyOFEzMCA1OSA0NiAyNSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iNDAiIGN5PSIzNS44NSIgcj0iNCIgZmlsbD0iI2ZmZDY1YyIgc3Ryb2tlPSIjNzA1MWRiIiBzdHJva2Utd2lkdGg9IjEuOCIvPgogIDxwYXRoIGQ9Im01MyAwIDMuMyA4LjdMNjQgMTJsLTcuNyAzLjNMNTMgMjRsLTMuMy04LjdMNDIgMTJsNy43LTMuM1oiIGZpbGw9IiNmZmQ2NWMiLz4KPC9zdmc+Cg==" width="64" height="64" alt="" aria-hidden="true"><span class="brand-name"><strong>数学教学实验室</strong><small>李老师开心课题</small></span></a>
+    <a class="brand" href="../../index.html#algebra" aria-label="数学教学实验室 · 李老师开心课堂 · 返回实验目录"><img class="brand-mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxhYi1wdXJwbGUiIHgxPSI2IiB5MT0iOCIgeDI9IjU0IiB5Mj0iNjAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agc3RvcC1jb2xvcj0iIzk4NzRmZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2ODQ2ZGQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0zIDI4IDM1KSI+CiAgICA8cmVjdCB4PSIzIiB5PSIxMyIgd2lkdGg9IjUwIiBoZWlnaHQ9IjQ5IiByeD0iMTYiIGZpbGw9IiNkZmQ0ZmYiLz4KICAgIDxyZWN0IHg9IjMiIHk9IjkiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcng9IjE2IiBmaWxsPSJ1cmwoI2xhYi1wdXJwbGUpIi8+CiAgICA8cGF0aCBkPSJNMTQgMjF2MjloMzNtLTM2LTI2IDMtMyAzIDNtMjcgMjMgMyAzLTMgMyIgc3Ryb2tlPSIjZDhjYmZmIiBzdHJva2Utd2lkdGg9IjEuOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNMjIgMjZxMi0zIDQgMG05LTJxMi0zIDQgMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNMjAgMzNRMzEgNTYgNDQgMzAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPGNpcmNsZSBjeD0iNDAiIGN5PSIzNi45MSIgcj0iNCIgZmlsbD0iI2ZmZDY1YyIgc3Ryb2tlPSIjNzY1MGRmIiBzdHJva2Utd2lkdGg9IjEuOCIvPgogIDwvZz4KICA8cGF0aCBkPSJtNTMgMCAzLjMgOC43TDY0IDEybC03LjcgMy4zTDUzIDI0bC0zLjMtOC43TDQyIDEybDcuNy0zLjNaIiBmaWxsPSIjZmZkNjVjIi8+Cjwvc3ZnPgo=" width="64" height="64" alt="" aria-hidden="true"><span class="brand-name"><strong>数学教学实验室</strong><small>李老师<span class="brand-happy">开心课堂</span></small></span></a>
     <div class="topbar-actions"><button id="history-button" type="button" class="connection-label" aria-haspopup="dialog" aria-controls="history-dialog">历史记录</button><button class="connection-label" id="connection-label" type="button" aria-haspopup="dialog" aria-controls="api-settings">AI 设置 · 待配置</button></div>
   </header>
   <main>
@@ -789,20 +785,18 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
       <header class="upload-heading">
         <h1 id="upload-title">上传你的<span class="title-accent">不等式</span>作品</h1>
         <p class="lead">拍下手写作品，让 AI 帮你评价！</p>
-        <p class="upload-intro">支持拍照上传，自动识别并从正确性、严谨性、创新性三个维度进行评价。</p>
         <svg class="paper-plane" viewBox="0 0 150 115" fill="none" aria-hidden="true"><path d="M3 104c39 0 62-44 42-42s-8 34 23 8c13-11 19-21 25-33" stroke="#94caff" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"/><path d="m72 24 71-21-35 56-12-20-15 9Z" fill="#71c5ff" stroke="#4baeff" stroke-width="2" stroke-linejoin="round"/><path d="m82 48 61-45-47 36" fill="#158bff"/><path d="m96 39 47-36-35 56" fill="#9bdcff"/></svg>
       </header>
+      <div class="photo-source-tabs" role="tablist" aria-label="照片来源">
+        <button id="local-photo-tab" type="button" role="tab" aria-selected="true" aria-controls="local-photo-panel">▧ 本机上传</button>
+        <button id="classroom-photo-tab" type="button" role="tab" aria-selected="false" aria-controls="classroom-photo-panel" tabindex="-1">▤ 课堂照片 <span id="classroom-count">手机扫码</span></button>
+      </div>
       <div class="upload-layout">
         <aside class="upload-tips" aria-label="上传说明">
           <div class="upload-tip tip-camera"><span class="tip-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M7 14h9l4-6h10l4 6h7a3 3 0 0 1 3 3v23H4V17a3 3 0 0 1 3-3Z" fill="currentColor" stroke="none"/><circle cx="24" cy="27" r="9" stroke="white" fill="none"/><circle cx="37" cy="20" r="2" fill="white" stroke="none"/></svg></span><div><h2>拍照上传</h2><p>用手机或相机拍摄<br>你的不等式作品</p></div></div>
           <div class="upload-tip tip-clear"><span class="tip-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M27 40H9V6h23l7 8v9M31 6v10h8M15 17h10M15 24h9M15 31h5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="8" fill="none"/><path d="m38 38 7 7" stroke-linecap="round"/></svg></span><div><h2>清晰识别</h2><p>拍全推导、证明过程<br>与取等条件及理由</p></div></div>
         </aside>
       <div class="upload-panel">
-        <div class="photo-source-tabs" role="tablist" aria-label="照片来源">
-          <button id="local-photo-tab" type="button" role="tab" aria-selected="true" aria-controls="local-photo-panel">▧ 本机上传</button>
-          <button id="classroom-photo-tab" type="button" role="tab" aria-selected="false" aria-controls="classroom-photo-panel" tabindex="-1">▤ 课堂照片 <span id="classroom-count">手机扫码</span></button>
-          <span id="classroom-sync" class="classroom-sync" role="status" hidden>正在连接…</span>
-        </div>
         <div id="local-photo-panel" role="tabpanel" aria-labelledby="local-photo-tab">
         <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" hidden>
         <button class="upload-area" id="upload-button" type="button" aria-label="拍照或上传作品图片">
@@ -845,7 +839,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
     </aside>
     <section class="classroom-gallery" aria-label="已上传的作品">
       <div class="classroom-gallery-heading"><div><h2>课堂相册 <span id="classroom-total">0 张作品</span></h2><p>每一个数学想法，都值得被看见</p></div><button id="classroom-refresh" type="button" aria-label="刷新课堂照片">↻</button></div>
-      <div class="classroom-gallery-tools"><span>最新上传在前</span><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
+      <div class="classroom-gallery-tools"><span>最新上传在前</span><span id="classroom-sync" class="classroom-sync" role="status" hidden>正在连接…</span><label><input id="classroom-pending-only" type="checkbox">只看待评价</label></div>
       <p id="classroom-message" class="classroom-message" role="status" hidden></p>
       <div id="classroom-empty" class="classroom-empty"><span class="classroom-empty-icon" aria-hidden="true">▧</span><h3>等待第一张数学作品</h3><p>用手机扫描左侧二维码，拍下手写作品<br>照片会自动出现在这里</p><span class="classroom-empty-steps">① 扫码进入　② 拍照上传　③ 电脑评价</span></div>
       <div id="classroom-photo-grid" class="classroom-photo-grid" aria-label="选择作品照片"></div>
@@ -883,7 +877,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
             </svg>
             <p class="card-kicker">不等式探究活动<span>活动 02</span></p>
           </div>
-          <div class="card-identity"><h1 id="card-title" tabindex="-1">你的<span>不等式</span>评价卡</h1><p class="hero-subtitle">让每一个不等式，都闪耀思考的光芒！</p></div>
+          <div class="card-identity"><div class="card-title-row"><h1 id="card-title" tabindex="-1">你的<span>不等式</span>评价卡</h1><div class="card-model"><span>采用基于</span><strong id="card-model">—</strong><span>的预训练模型</span></div></div><p class="hero-subtitle">让每一个不等式，都闪耀思考的光芒！</p></div>
           <div class="hero-motto" aria-hidden="true">发现 · 证明 · 创造<br><span>数学因思考而精彩！</span><svg viewBox="0 0 240 24"><path d="M4 20Q115-2 232 9M162 20l62-10"/></svg></div>
         </header>
         <div class="review-paper">
@@ -930,7 +924,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
     <p id="classroom-preview-message" role="status"></p>
   </dialog>
   <dialog class="history-dialog" id="history-dialog" aria-labelledby="history-title">
-    <header class="history-header"><div><p class="history-eyebrow">数学教学实验室 · 李老师开心课题</p><h2 id="history-title">评价历史</h2><p>回看每一次思考与发现</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
+    <header class="history-header"><div><p class="history-eyebrow">数学教学实验室 · 李老师开心课堂</p><h2 id="history-title">评价历史</h2><p>回看每一次思考与发现</p></div><button id="close-history" type="button" aria-label="关闭历史记录">×</button></header>
     <div class="history-sources" role="tablist" aria-label="历史记录来源"><button id="history-cloud-tab" type="button" role="tab" aria-selected="true">云端历史</button><button id="history-local-tab" type="button" role="tab" aria-selected="false">本机记录</button></div>
     <div class="history-toolbar"><span id="history-count">暂无记录</span><div><button id="history-sync" type="button">同步本机历史</button><button id="history-refresh" type="button">刷新</button><button id="clear-history" type="button" disabled>清空记录</button></div></div>
     <div id="history-cloud-unlock" class="history-cloud-unlock" hidden><p>输入课堂密码，查看所有设备保存的评价卡与原图。</p><button id="history-unlock" class="key-unlock-button" type="button">解锁云端历史</button></div>
@@ -942,7 +936,7 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   <dialog class="api-dialog" id="api-settings" aria-labelledby="api-settings-title">
     <form id="api-settings-form" autocomplete="off">
       <header class="settings-header">
-        <div class="settings-title"><span class="settings-mark" aria-hidden="true">✦</span><div><p class="settings-eyebrow">数学教学实验室 · 李老师开心课题</p><h2 id="api-settings-title">AI 设置</h2></div></div>
+        <div class="settings-title"><span class="settings-mark" aria-hidden="true">✦</span><div><p class="settings-eyebrow">数学教学实验室 · 李老师开心课堂</p><h2 id="api-settings-title">AI 设置</h2></div></div>
         <button class="settings-close" id="close-api-settings" type="button" aria-label="关闭设置，返回评价卡">×</button>
       </header>
       <div class="settings-content">
@@ -3337,7 +3331,8 @@ var qrcodegen;
     }
   }
 
-  function renderCard(result, sourcePhoto = photoURL) {
+  function renderCard(result, sourcePhoto = photoURL, model = '') {
+    $('card-model').textContent = model || '未记录模型';
     if (sourcePhoto) $('result-photo').src = sourcePhoto;
     else $('result-photo').removeAttribute('src');
     $('result-photo').hidden = !sourcePhoto;
@@ -3385,7 +3380,7 @@ var qrcodegen;
       releaseHistoryPhoto();
       historyPhotoURL = photo instanceof Blob ? URL.createObjectURL(photo) : null;
       historyNote('');
-      renderCard(entry.result, historyPhotoURL);
+      renderCard(entry.result, historyPhotoURL, entry.model);
       historyNote(`历史评价 · ${new Date(entry.createdAt).toLocaleString('zh-CN')} · ${entry.model || 'AI'} · ${entry.promptTitle || entry.promptVersion || '默认评价规则'}`);
     });
   };
@@ -3422,7 +3417,7 @@ var qrcodegen;
       } else {
         releaseHistoryPhoto();
         historyNote('');
-        renderCard(result);
+        renderCard(result, photoURL, metadata.model);
         message('');
         try {
           const saved = await history.save(result, {...metadata, photo:submittedPhoto});

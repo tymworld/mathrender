@@ -159,7 +159,8 @@
     }
   }
 
-  function renderCard(result, sourcePhoto = photoURL) {
+  function renderCard(result, sourcePhoto = photoURL, model = '') {
+    $('card-model').textContent = model || '未记录模型';
     if (sourcePhoto) $('result-photo').src = sourcePhoto;
     else $('result-photo').removeAttribute('src');
     $('result-photo').hidden = !sourcePhoto;
@@ -207,7 +208,7 @@
       releaseHistoryPhoto();
       historyPhotoURL = photo instanceof Blob ? URL.createObjectURL(photo) : null;
       historyNote('');
-      renderCard(entry.result, historyPhotoURL);
+      renderCard(entry.result, historyPhotoURL, entry.model);
       historyNote(`历史评价 · ${new Date(entry.createdAt).toLocaleString('zh-CN')} · ${entry.model || 'AI'} · ${entry.promptTitle || entry.promptVersion || '默认评价规则'}`);
     });
   };
@@ -244,7 +245,7 @@
       } else {
         releaseHistoryPhoto();
         historyNote('');
-        renderCard(result);
+        renderCard(result, photoURL, metadata.model);
         message('');
         try {
           const saved = await history.save(result, {...metadata, photo:submittedPhoto});

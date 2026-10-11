@@ -1,22 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="500" height="148" viewBox="0 0 500 148" role="img" aria-labelledby="logo-title logo-desc">
-  <title id="logo-title">数学教学实验室 · 李老师开心课题</title>
-  <desc id="logo-desc">紫色坐标轴与函数曲线，搭配金色探索节点和星芒。横向双行中文标识，数学教学实验室为主标题。</desc>
+  <title id="logo-title">数学教学实验室 · 李老师开心课堂</title>
+  <desc id="logo-desc">微微倾斜的紫色坐标图标，函数曲线化为开心笑脸，搭配金色探索节点与星芒。主标题为数学教学实验室，放大的紫色副标题为李老师开心课堂。</desc>
   <svg x="8" y="12" width="120" height="120" viewBox="0 0 64 64" fill="none">
   <defs>
     <linearGradient id="lab-purple" x1="6" y1="8" x2="54" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8969f5"/>
-      <stop offset="1" stop-color="#5c43ce"/>
+      <stop stop-color="#9874ff"/>
+      <stop offset="1" stop-color="#6846dd"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="12" width="52" height="52" rx="16" fill="#ddd5fa"/>
-  <rect x="2" y="8" width="52" height="52" rx="16" fill="url(#lab-purple)"/>
-  <path d="M14 20v30h33m-36-27 3-3 3 3m27 24 3 3-3 3" stroke="#d8cbff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M19 28Q30 59 46 25" stroke="#fff" stroke-width="3.8" stroke-linecap="round"/>
-  <circle cx="40" cy="35.85" r="4" fill="#ffd65c" stroke="#7051db" stroke-width="1.8"/>
+  <g transform="rotate(-3 28 35)">
+    <rect x="3" y="13" width="50" height="49" rx="16" fill="#dfd4ff"/>
+    <rect x="3" y="9" width="50" height="50" rx="16" fill="url(#lab-purple)"/>
+    <path d="M14 21v29h33m-36-26 3-3 3 3m27 23 3 3-3 3" stroke="#d8cbff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 26q2-3 4 0m9-2q2-3 4 0" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M20 33Q31 56 44 30" stroke="#fff" stroke-width="3.8" stroke-linecap="round"/>
+    <circle cx="40" cy="36.91" r="4" fill="#ffd65c" stroke="#7650df" stroke-width="1.8"/>
+  </g>
   <path d="m53 0 3.3 8.7L64 12l-7.7 3.3L53 24l-3.3-8.7L42 12l7.7-3.3Z" fill="#ffd65c"/>
 </svg>
   <g font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif">
-    <text x="136" y="76" fill="#17245a" font-size="44" font-weight="750" letter-spacing=".7">数学教学实验室</text>
-    <text x="138" y="118" fill="#657293" font-size="24" font-weight="500" letter-spacing="2.6">李老师开心课题</text>
+    <text x="136" y="70" fill="#17245a" font-size="44" font-weight="750" letter-spacing=".7">数学教学实验室</text>
+    <path d="M240 125Q310 120 373 125" fill="none" stroke="#ffd66c" stroke-width="6" stroke-linecap="round" opacity=".65"/>
+    <text x="138" y="119" fill="#7057e8" font-size="32" font-weight="650" letter-spacing="1.6">李老师开心课堂</text>
   </g>
 </svg>

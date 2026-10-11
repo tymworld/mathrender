@@ -38,7 +38,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .brand-mark { display: block; width: 56px; height: 56px; flex-shrink: 0; }
 .brand-name { white-space: nowrap; }
 .brand-name strong { display: block; font-size: 22px; font-weight: 750; line-height: 1.45; letter-spacing: .35px; }
-.brand-name small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; letter-spacing: 1.3px; }
+.brand-name small { display: block; font-size: 16px; font-weight: 650; color: var(--purple); margin-top: 2px; line-height: 1.45; letter-spacing: .8px; }
+.brand-happy { position: relative; display: inline-block; isolation: isolate; }
+.brand-happy::after { content: ''; position: absolute; z-index: -1; left: 0; right: 0; bottom: 1px; height: 4px; border-radius: 50%; background: #ffd66c; opacity: .65; transform: rotate(-1.5deg); }
 .header-nav { display: flex; align-items: center; gap: 30px; margin-left: auto; }
 .header-nav a { font-size: 16px; color: var(--muted); white-space: nowrap; text-decoration: none; padding: 8px 0; }
 .header-nav a:hover, .header-nav .nav-active { color: var(--purple); }
@@ -192,7 +194,7 @@ body[data-theme="dark"] .section-kicker, body[data-theme="dark"] .guide-heading 
   .header-nav a:last-child { display: none; }
   .header-inner { gap: 18px; }
   .brand-name strong { font-size: 20px; }
-  .brand-name small { font-size: 11px; }
+  .brand-name small { font-size: 14px; }
   .brand-mark { width: 50px; height: 50px; }
   .hero-inner { padding-top: 40px; padding-bottom: 65px; }
   .hero h1 { font-size: 54px; }
@@ -256,7 +258,7 @@ body[data-theme="dark"] .section-kicker, body[data-theme="dark"] .guide-heading 
   .header-inner { padding: 13px 18px; gap: 15px; flex-wrap: wrap; }
   .brand { gap: 9px; }
   .brand-name strong { font-size: 18px; }
-  .brand-name small { font-size: 10px; }
+  .brand-name small { font-size: 13px; }
   .brand-mark { width: 44px; height: 44px; }
   .header-tools { gap: 0; }
   .header-tools button { font-size: 12px; padding: 5px 7px; min-height: 36px; }
