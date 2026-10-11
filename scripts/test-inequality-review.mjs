@@ -234,14 +234,14 @@ async function layoutHarness({ width = 1514, height = 614, measure }) {
   const style = { value: 24, setProperty(name, value) { if (name === '--review-font') this.value = parseFloat(value); } };
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
-      hidden: false, dataset: {}, addEventListener() {},
+      hidden: false, dataset: {}, addEventListener() {}, setAttribute() {},
       removeAttribute(name) { if (name === 'data-overflow') delete this.dataset.overflow; }
     });
     return elements.get(id);
   };
   const card = {
-    dataset: {}, querySelectorAll: () => [{ clientWidth: 100, scrollWidth: 100 }],
-    getBoundingClientRect: () => ({ height: measure(style.value, card.dataset.density) })
+    dataset: {}, style: {zoom: 1}, querySelectorAll: () => [{ clientWidth: 100, scrollWidth: 100 }],
+    getBoundingClientRect: () => ({ height: measure(style.value, card.dataset.density) * Number(card.style.zoom) })
   };
   const win = { innerWidth: width, innerHeight: height, addEventListener(name, callback) { listeners[name] = callback; } };
   const context = {
@@ -256,7 +256,7 @@ async function layoutHarness({ width = 1514, height = 614, measure }) {
   new vm.Script(source).runInNewContext(context);
   const resize = (nextWidth = win.innerWidth, nextHeight = win.innerHeight) => {
     win.innerWidth = nextWidth; win.innerHeight = nextHeight; listeners.resize();
-    return { font: style.value, density: card.dataset.density, overflow: element('result-screen').dataset.overflow };
+    return { font: style.value, density: card.dataset.density, zoom: Number(card.style.zoom), overflow: element('result-screen').dataset.overflow };
   };
   return resize;
 }
@@ -274,12 +274,17 @@ test('font fitting recovers the preferred size when the window becomes taller', 
   const short = resize();
   assert.ok(short.font >= 18 && short.font < 24);
   assert.equal(short.overflow, undefined);
-  assert.deepEqual(resize(1514, 950), { font: 24, density: 'normal', overflow: undefined });
+  assert.deepEqual(resize(1514, 950), { font: 24, density: 'normal', zoom: 1, overflow: undefined });
 });
 
-test('excessive content remains complete at a readable minimum instead of shrinking indefinitely', async () => {
-  for (const [width, minimum] of [[1514, 18], [390, 16]]) {
-    const resize = await layoutHarness({ width, measure: () => 1400 });
-    assert.deepEqual(resize(), { font: minimum, density: 'minimal', overflow: 'true' });
-  }
+test('long desktop cards fit one screen while mobile cards retain readable scrolling', async () => {
+  const desktop = await layoutHarness({ width: 1514, measure: () => 1400 });
+  const overview = desktop();
+  assert.equal(overview.font,16);
+  assert.equal(overview.overflow,undefined);
+  assert.ok(overview.zoom * 1400 <= 599);
+  assert.ok(overview.zoom * 1400 > 580, 'overview uses the available height');
+  assert.equal(desktop(1514,1600).zoom,1, 'resizing restores normal scale');
+  const mobile = await layoutHarness({ width:390, measure:()=>1400 });
+  assert.deepEqual(mobile(),{font:16,density:'minimal',zoom:1,overflow:'true'});
 });

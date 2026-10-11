@@ -20,6 +20,7 @@
   let controller = null;
   let fitFrame = 0;
   let historyPhotoURL = null;
+  let expandedReading = false;
 
   function releaseHistoryPhoto() {
     if (historyPhotoURL) URL.revokeObjectURL(historyPhotoURL);
@@ -44,8 +45,17 @@
     const setFont = size => document.body.style.setProperty('--review-font', size + 'px');
     const mobile = window.innerWidth < 761;
     const preferred = mobile ? 18 : window.innerWidth >= 1400 ? 24 : 22;
-    const minimum = mobile ? 16 : 18;
+    const minimum = 16;
+    card.style.zoom = '1';
     screen.removeAttribute('data-overflow');
+    $('review-reading-toggle').textContent = expandedReading ? '一屏显示' : '放大阅读';
+    $('review-reading-toggle').setAttribute('aria-pressed', String(expandedReading));
+    if (!mobile && expandedReading) {
+      card.dataset.density = 'compact';
+      setFont(preferred);
+      screen.dataset.overflow = 'true';
+      return;
+    }
 
     // Fixed row heights and decorations cannot be fixed by shrinking text.
     // Reclaim that space first, then search only within readable font sizes.
@@ -56,8 +66,21 @@
     }
     setFont(minimum);
     if (!fits()) {
-      // Unusually long feedback must remain readable and complete.
-      screen.dataset.overflow = 'true';
+      // Desktop defaults to a complete overview; the reader can expand the
+      // original text. Phones keep readable text and natural page scrolling.
+      if (mobile) screen.dataset.overflow = 'true';
+      else {
+        // Zoom also changes line wrapping; measure each candidate instead of
+        // scaling once from the original height and leaving unused space.
+        let low = .1, high = 1;
+        while (high - low > .005) {
+          const mid = (low + high) / 2;
+          card.style.zoom = String(mid);
+          if (fits()) low = mid;
+          else high = mid;
+        }
+        card.style.zoom = String(low);
+      }
       return;
     }
     let low = minimum;
@@ -160,6 +183,7 @@
   }
 
   function renderCard(result, sourcePhoto = photoURL, model = '') {
+    expandedReading = false;
     $('card-model').textContent = model || '未记录模型';
     if (sourcePhoto) $('result-photo').src = sourcePhoto;
     else $('result-photo').removeAttribute('src');
@@ -283,6 +307,11 @@
   });
   window.addEventListener('focus', updateConnection);
   window.addEventListener('resize', scheduleFit);
+  $('review-reading-toggle').addEventListener('click', () => {
+    expandedReading = !expandedReading;
+    fitCard();
+    window.scrollTo({top:0, behavior:'instant'});
+  });
   window.visualViewport?.addEventListener('resize', scheduleFit);
   document.fonts?.ready.then(scheduleFit);
   window.addEventListener('pagehide', () => controller?.abort());

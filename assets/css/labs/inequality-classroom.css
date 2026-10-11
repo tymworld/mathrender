@@ -136,3 +136,53 @@
   #classroom-reconnect { font-size:13px; padding:10px; }
   .classroom-preview-dialog { padding:16px; }
 }
+
+/* Keep selection and generation visible; only the album list scrolls. */
+@media (min-width: 761px) {
+  .photo-source-tabs { flex: none; margin-bottom: 10px; }
+  .photo-source-tabs button { min-height: 38px; padding: 7px 15px; font-size: 14px; }
+  .classroom-mode .upload-layout { margin: 0 auto; }
+  .classroom-mode .upload-panel { padding: clamp(12px, 2dvh, 20px); }
+  #classroom-photo-panel { flex: 1; min-height: 0; }
+  .classroom-workspace { height: 100%; min-height: 0; grid-template-columns: 185px minmax(0, 1fr); gap: 20px; }
+  .classroom-pairing { padding: 10px 12px; max-height: 100%; overflow: auto; scrollbar-width: thin; }
+  .classroom-link-message:empty { display: none; }
+  .pairing-phone { display: none; }
+  .classroom-pairing h2 { font-size: 18px; margin-bottom: 7px; }
+  .classroom-qr { width: clamp(100px, 19dvh, 155px); }
+  .classroom-pairing>p { font-size: 12px; margin: 6px 0; }
+  .classroom-pairing button { min-height: 32px; padding: 5px; font-size: 12px; margin-top: 5px; }
+  .classroom-pairing small { font-size: 10px; margin-top: 5px; line-height: 1.4; }
+  .classroom-gallery { display: flex; flex-direction: column; min-height: 0; }
+  .classroom-gallery-heading, .classroom-gallery-tools, .classroom-message, .classroom-more { flex: none; }
+  .classroom-gallery-heading h2 { font-size: 20px; }
+  .classroom-gallery-tools { margin: 7px 0; }
+  .classroom-photo-grid { flex: 1; min-height: 0; max-height: none; align-content: start; grid-auto-rows: max-content; gap: 10px; }
+  .classroom-thumbnail { aspect-ratio: 2.1; }
+  .classroom-empty { flex: 1; min-height: 0; padding: 12px; }
+  .classroom-empty h3 { font-size: 18px; margin: 4px 0; }
+  .classroom-empty-steps { margin-top: 12px; }
+  .classroom-empty:not([hidden]) + .classroom-photo-grid { flex: none; }
+  .classroom-mode .upload-actions { margin-top: 10px; padding-top: 10px; gap: 15px; }
+  .classroom-mode .generate-button { width: 260px; min-height: 44px; font-size: 17px; }
+  .classroom-mode .upload-footer { min-height: 30px; margin-top: 4px; }
+  .classroom-unavailable { margin: 0 auto; padding: 8px; }
+  .classroom-unavailable h2 { font-size: 23px; margin: 4px 0; }
+  .classroom-unavailable p { margin: 7px 0 12px; }
+  .classroom-unavailable small { margin-top: 10px; }
+}
+@media (min-width: 761px) and (max-height: 650px) {
+  .photo-source-tabs { margin-bottom: 7px; }
+  .classroom-workspace { grid-template-columns: 162px minmax(0, 1fr); gap: 14px; }
+  .classroom-pairing { padding: 6px 8px; }
+  .classroom-pairing h2 { font-size: 16px; margin-bottom: 4px; }
+  .classroom-pairing>p:not(.classroom-link-message) { display: none; }
+  .classroom-qr { width: 120px; padding: 3px; }
+  .classroom-pairing small { font-size: 9px; margin-top: 3px; }
+  .classroom-gallery-heading p { display: none; }
+  .classroom-empty-icon { font-size: 28px; }
+  .classroom-empty p { font-size: 12px; }
+  .classroom-empty-steps { margin-top: 6px; }
+  .classroom-thumbnail { aspect-ratio: 2.8; }
+  .classroom-mode .upload-footer { min-height: 25px; }
+}

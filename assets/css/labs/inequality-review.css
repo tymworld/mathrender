@@ -82,65 +82,6 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
 .upload-footer p::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 3px; background: #ffdc51; transform: rotate(-2deg); border-radius: 50%; }
 .upload-footer>span { font-size: clamp(10px, 1vw, 15px); white-space: nowrap; letter-spacing: 2px; }
 .review-mode .upload-backdrop { display: none; }
-/* Short desktop windows keep the upload action in view, with comfortable text. */
-@media (min-width: 1001px) and (max-height: 760px) {
-  .topbar { padding-top: 15px; padding-bottom: 8px; }
-  .brand { font-size: 18px; }
-  .brand-mark { width: 50px; }
-  .brand small { font-size: 13px; }
-  .upload-screen h1 { font-size: clamp(42px, 4.3vw, 65px); }
-  .lead { margin-top: 5px; font-size: 28px; }
-  .upload-heading { margin-bottom: 16px; }
-  .upload-panel { padding: 17px 19px 15px; }
-  .upload-tip { padding: 10px 8px; border-radius: 22px; }
-  .tip-icon { width: 55px; }
-  .upload-tip h2 { font-size: 19px; }
-  .upload-tip p { font-size: 12px; }
-  .upload-tips { gap: 12px; }
-  .upload-area { height: clamp(188px, 29vh, 218px); }
-  .paper-art { width: 150px; height: 108px; margin-bottom: 6px; }
-  .upload-area strong { font-size: 19px; }
-  .upload-hint { margin-top: 5px; font-size: 12px; }
-  .generate-button { min-height: 51px; padding: 8px 18px; font-size: 20px; }
-  .dimension-legend { margin-top: 13px; }
-  .file-name { margin: 7px 0 10px; }
-  .upload-student { width: min(21vw, 230px); }
-  .upload-landmark { width: min(19vw, 200px); }
-  .upload-footer { min-height: 43px; margin-top: 8px; }
-  .inspiration-motto { font-size: 25px; margin-top: -79px; margin-bottom: 43px; }
-  .upload-inspiration { padding-top: 14px; }
-  .example-paper { padding: 20px 9px; font-size: 23px; }
-  .thought-bubble { font-size: 23px; padding: 10px 18px; margin-top: 18px; }
-}
-@media (min-width: 1001px) and (max-height: 650px) {
-  .topbar { padding-top: 9px; padding-bottom: 5px; }
-  .brand-mark { width: 44px; }
-  .upload-screen { padding-bottom: 8px; }
-  .upload-screen h1 { font-size: 49px; }
-  .lead { font-size: 24px; margin-top: 4px; }
-  .upload-heading { margin-bottom: 13px; }
-  .upload-panel { padding: 14px 18px 12px; }
-  .upload-area { height: 164px; }
-  .paper-art { height: 86px; width: 125px; margin-bottom: 3px; }
-  .upload-area strong { font-size: 18px; }
-  .upload-hint { font-size: 11px; }
-  .file-name { margin: 5px 0 7px; font-size: 11px; }
-  .generate-button { min-height: 47px; font-size: 19px; }
-  .dimension-legend { margin-top: 11px; font-size: 12px; }
-  .upload-tip { padding: 7px 8px; }
-  .upload-tip h2 { font-size: 17px; margin-bottom: 4px; }
-  .upload-tip p { font-size: 11px; line-height: 1.5; }
-  .tip-icon { width: 47px; }
-  .upload-tips { gap: 10px; transform: translateY(-40px); }
-  .upload-student { width: 188px; }
-  .upload-landmark { width: 188px; }
-  .inspiration-motto { font-size: 22px; margin-top: -67px; margin-bottom: 36px; }
-  .example-paper { padding: 16px 9px; font-size: 21px; }
-  .thought-bubble { font-size: 22px; padding: 9px 20px; margin-top: 22px; }
-  .upload-footer { min-height: 40px; margin-top: 5px; }
-  .upload-footer p { font-size: 23px; }
-  .privacy-note { margin-top: 8px; }
-}
 @media (max-width: 1000px) {
   .upload-layout { grid-template-columns: minmax(0, 650px); justify-content: center; }
   .upload-tips, .upload-inspiration, .paper-plane { display: none; }
@@ -185,6 +126,80 @@ body:not(.review-mode) main { position: relative; display: flex; flex: 1; paddin
   .upload-footer p { font-size: 24px; }
   .upload-footer>span { display: none; }
   .bottom-waves { height: 150px; }
+}
+/* Desktop height is shared by the header, workspace and footer. */
+@media (min-width: 761px) {
+  body:not(.review-mode) { height: 100dvh; min-height: 0; }
+  .topbar { flex-shrink: 0; padding: 10px 3.5vw 6px; }
+  .brand { font-size: 18px; }
+  .brand-mark { width: 44px; }
+  .brand small { font-size: 12px; }
+  .connection-label { padding: 6px 14px; font-size: 13px; }
+  body:not(.review-mode) main { min-height: 0; overflow: clip; }
+  .upload-screen { display: flex; flex-direction: column; min-height: 0; padding: 2px 0 8px; }
+  .upload-heading { flex: none; width: 100%; margin: 0 auto 10px; }
+  .upload-screen h1 { font-size: clamp(30px, 4.8dvh, 46px); }
+  .lead { margin-top: 5px; font-size: clamp(18px, 2.7dvh, 25px); letter-spacing: 1px; }
+  .paper-plane { width: 85px; top: -5px; }
+  .upload-layout { flex: 1; min-height: 0; width: 100%; align-items: stretch; }
+  body:not(.classroom-mode) .upload-layout { max-height: 440px; }
+  .upload-panel { display: flex; flex-direction: column; min-height: 0; height: 100%; padding: clamp(12px, 2dvh, 22px); border-radius: 23px; }
+  #local-photo-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .upload-area { flex: 1; height: auto; min-height: 100px; padding: 10px; }
+  .paper-art { width: clamp(120px, 16dvh, 195px); height: clamp(70px, 12dvh, 140px); margin-bottom: 5px; }
+  .upload-area strong { font-size: clamp(18px, 2.4dvh, 22px); }
+  .upload-hint { font-size: 12px; margin-top: 5px; }
+  .file-name { flex: none; margin: 6px 0 10px; }
+  #photo-preview { min-height: 0; }
+  .upload-actions { flex: none; }
+  .generate-button { min-height: 46px; font-size: 19px; padding: 7px 18px; }
+  .dimension-legend { flex: none; margin-top: 10px; font-size: 12px; }
+  .upload-tips { transform: none; gap: 12px; align-content: start; }
+  .upload-tip { padding: 10px 8px; border-radius: 22px; }
+  .tip-icon { width: 52px; }
+  .upload-tip h2 { font-size: 18px; }
+  .upload-tip p { font-size: 12px; }
+  .upload-inspiration { padding-top: 3px; }
+  .inspiration-motto { font-size: 25px; margin: 0 0 30px; }
+  .example-paper { padding: 16px 10px; font-size: 23px; }
+  .thought-bubble { font-size: 23px; margin-top: 24px; padding: 10px 18px; }
+  .upload-student { bottom: 0; width: min(17vw, 235px); height: min(35dvh, 290px); }
+  .upload-landmark { bottom: 0; width: min(17vw, 235px); }
+  .privacy-note { flex: none; margin-top: 6px; }
+  .upload-footer { flex: none; width: 58%; min-height: 30px; margin-top: 4px; color: #285a98; text-shadow: none; }
+  .upload-footer p { font-size: 21px; }
+  .upload-footer>span { font-size: 11px; }
+  .message { flex: none; margin-top: 6px; padding: 6px 12px; font-size: 13px; }
+}
+@media (min-width: 761px) and (max-height: 650px) {
+  .topbar { padding-top: 6px; padding-bottom: 3px; }
+  .brand-mark { width: 38px; }
+  .upload-heading { margin-bottom: 7px; }
+  .upload-screen h1 { font-size: 30px; }
+  .lead { display: none; }
+  .paper-art { height: 64px; width: 110px; }
+  .upload-tip { padding: 7px; }
+  .upload-tip h2 { font-size: 16px; }
+  .upload-tip p { font-size: 11px; }
+  .tip-icon { width: 42px; }
+  .inspiration-motto { font-size: 20px; margin-bottom: 20px; }
+  .example-paper { font-size: 19px; }
+  .thought-bubble { display: none; }
+  .upload-footer { min-height: 25px; }
+  .upload-footer p { font-size: 18px; }
+}
+@media (min-width: 761px) and (max-width: 1000px) {
+  .upload-layout { grid-template-columns: minmax(0, 720px); }
+  .upload-footer { width: 80%; }
+}
+@media (max-width: 760px) {
+  .topbar { padding-top: 12px; }
+  .upload-screen { padding-top: 0; }
+  .upload-heading { margin-top: 10px; margin-bottom: 14px; }
+  .lead { margin-top: 8px; }
+  .upload-area { height: clamp(180px, 27dvh, 250px); }
+  .paper-art { height: 95px; width: 145px; margin-bottom: 8px; }
+  .upload-footer { margin-top: 14px; min-height: 45px; color: #285a98; text-shadow: none; }
 }
 /* Bright classroom poster, based on the teacher's reference card. */
 body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradient(162deg, #0874f0 0, #0849b3 20%, #1688ff 43%, #7ddaff 72%, #c6f5ff 100%); }
@@ -428,13 +443,41 @@ body.review-mode { --review-font: 24px; color: #111b34; background: linear-gradi
   .evaluation-card[data-density="minimal"] .card-actions { grid-area: 1 / 2; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+/* A single-screen overview can be expanded for comfortable reading. */
+#review-reading-toggle { border: 1px solid #d7e9ff; border-radius: 8px; padding: 5px 9px; background: #edf6ff; color: #2269c5; font-size: 12px; white-space: nowrap; }
+@media (min-width: 761px) {
+  .review-mode main { padding: 12px 18px; }
+  .result-screen { justify-content: center; }
+  .evaluation-card { flex-shrink: 0; }
+  .card-title-row { flex-wrap: wrap; gap: 3px 20px; }
+  .card-model { flex: 1 0 100%; text-align: left; line-height: 1.4; }
+  .card-model strong { font-size: clamp(19px, 2vw, 27px); }
+  .card-model>span { font-size: 13px; }
+  .evaluation-card[data-density="minimal"] .scores>section { grid-template-columns: 180px minmax(0, 1fr) 64px; gap: 12px; padding: 8px 12px; }
+  .evaluation-card[data-density="minimal"] .score-heading { gap: 8px; }
+  .evaluation-card[data-density="minimal"] .dimension-icon { width: 35px; height: 35px; }
+  .evaluation-card[data-density="minimal"] .dimension-icon svg { width: 26px; height: 26px; }
+  .evaluation-card[data-density="minimal"] .score-heading h2 { font-size: 21px; }
+  .evaluation-card[data-density="minimal"] .score-heading h2 small { font-size: 14px; }
+  .evaluation-card[data-density="minimal"] .score-comment { line-height: 1.5; }
+  .evaluation-card[data-density="minimal"] .grade { min-height: 52px; }
+  .evaluation-card[data-density="minimal"] .feedback { padding-right: 0; }
+  .evaluation-card[data-density="minimal"] .feedback>div { padding: 8px 12px; }
+  .evaluation-card[data-density="minimal"] .feedback p { line-height: 1.5; }
+  .evaluation-card[data-density="minimal"] .books-art,
+  .evaluation-card[data-density="minimal"] .footer-motto { display: none; }
+  .evaluation-card[data-density="minimal"] .card-footer { padding: 8px 2px 0; flex-wrap: wrap; gap: 5px 12px; }
+  .evaluation-card[data-density="minimal"] .history-save-note { margin-right: 2px; }
+}
+@media (max-width: 760px) { #review-reading-toggle { display: none; } }
 @media print {
   @page { size: A4 landscape; margin: 8mm; }
   .topbar, .return-home, #restart-button, #result-state, .upload-screen, .page-doodles { display: none !important; }
   body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body::before { display: none; }
   .review-mode main { padding: 0; height: auto; }
-  .evaluation-card { height: auto; --review-font: 18px; box-shadow: none; }
+  .evaluation-card { height: auto; zoom: 1 !important; --review-font: 18px; box-shadow: none; }
+  #review-reading-toggle { display: none; }
   .card-heading { background: #0b60cb; border-radius: 20px; padding-top: 8px; }
   .review-paper { box-shadow: none; }
   .books-art { display: none; }
